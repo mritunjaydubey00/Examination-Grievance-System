@@ -1,0 +1,11 @@
+1. Prototype
+    Section 1.0: Strcuture of Program
+        > Made a class for faculty members to establish hierarchy and encapsulate function and their data members.
+        > Made a linked list strcuture to save the pointers to the objects for faculty members.
+        > Made insert function in linked list.
+        > made linked list search function to search for a faculty based on their ID. 
+    Section 2.0: Terms
+        > ID : It is a 4 digit number to locate the faculty members and is used for the ease of searching. 
+        > Desig: It is a string to store the designation of the faculty member, it can be anything as listed in Designation Array at the start.
+        > Department: Is used to classify the faculty members according to their respective departments to parse the message to a department when necessary.
+        > 
