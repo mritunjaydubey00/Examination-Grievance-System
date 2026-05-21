@@ -19,6 +19,7 @@ struct DOB{
     int year;
 };
 
+/* Faculty class definition */
 class faculty{
     private:
         string password;
