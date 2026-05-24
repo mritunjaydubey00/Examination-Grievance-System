@@ -36,20 +36,6 @@ class faculty {
         int ID;
         string fEmail;
 
-        faculty(string fname, string lname) {
-            faculty_name.first_name = fname;
-            faculty_name.last_name = lname;
-            
-            // Sequential registration flow
-            email(0);
-            phone(0);
-            dobFunction(0);
-            departmentFunction(0);
-            designationFunction(0);
-            passwordFunction(0);
-            IDfunctions(7);
-        }
-
         int email(int e) {
             while (e != 9) {
                 switch(e) {
@@ -179,7 +165,7 @@ class faculty {
                         cout << "Enter L to see list of departments or type the department name directly" << endl;
                         cout << "Enter the Department : ";
                         cin.ignore(); // Clears trailing spaces/newlines
-                        getline(cin, department);
+                        getline(cin, department);  
                         if (department == "L" || department == "l") {
                             return 4;
                         } else {
@@ -193,7 +179,7 @@ class faculty {
                         break;
                     }
                     case 2: {
-                        bool found = false;
+                        bool found;
                         for(int i = 0; i < number_of_departments; i++) {
                             if (department == departments[i]) {
                                 found = true;
@@ -201,7 +187,7 @@ class faculty {
                                 break;
                             }
                         }
-                        if (!found) {
+                        if (found == false) {
                             cout << "Invalid department selected." << endl;
                             return 4; // Show options list
                         }
@@ -353,7 +339,7 @@ class faculty {
                         cout << "ID: " << ID << endl;
                         return 9;
                     }
-                    
+
                     case 7: {
                         int des = 0;
                         int dep = 0;
@@ -380,6 +366,65 @@ class faculty {
                 }
             }
             return 9;
+        }
+        
+        faculty(string fname, string lname) {
+            faculty_name.first_name = fname;
+            faculty_name.last_name = lname;
+            int next = 404;
+            for (int i = 0; i < 7; i++) {
+                switch(i){
+                    case 0:{
+                        next = 0;
+                        while (next != 9) {
+                            next = email(next);
+                        }
+                        break;
+                    }
+                    case 1: {
+                        next = 0;
+                        while (next != 9) {
+                            next = phone(next);
+                        }
+                        break;
+                    }
+                    case 2: {
+                        next = 0;
+                        while (next != 9) {
+                            next = dobFunction(next);
+                        }
+                        break;
+                    }
+                    case 3: {
+                        next = 4;
+                        while (next != 9) {
+                            next = departmentFunction(next);
+                        }
+                        break;
+                    }
+                    case 4: {
+                        next = 0;
+                        while (next != 9) {
+                            next = designationFunction(next);
+                        }
+                        break;
+                    }
+                    case 5: {
+                        next = 0;
+                        while (next != 9) {
+                            next = passwordFunction(next);
+                        }
+                        break;
+                    }
+                    case 6: {
+                        next = 7;
+                        while (next != 9) {
+                            next = IDfunctions(next);
+                        }
+                        break;
+                    }
+                }
+            }
         }
 };
 
