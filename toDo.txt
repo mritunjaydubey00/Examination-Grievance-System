@@ -1,3 +1,2 @@
-> Implement doubly linked list for Faculty using classes only
-> Make class for students 
-> Implement doubly linked list for students using classes only
+1. Run and debug the program.
+2. Create the function to link the nodes 
