@@ -9,6 +9,7 @@ const int number_of_designations = 5;
 string departments[number_of_departments] = {"Computer Science", "Mathematics", "Physics", "Chemistry", "Biology"};
 string designations[number_of_designations] = {"Professor", "Associate Professor", "Assistant Professor", "Lecturer", "Instructor"};
 
+//Linked list creation 
 // Renamed structs to avoid collision with function names
 struct UserName {
     string first_name;
@@ -335,7 +336,7 @@ class student {
                 }
             }
         }
-
+        friend int insertAtHead(string fname, string lname, int command);
 };
 class faculty {
     private:
@@ -709,8 +710,50 @@ class faculty {
                 }
             }
         }
+        friend int insertAtHead(string fname, string lname, int command);
 };
+faculty * fHead = NULL;
+student * sHead = NULL;
 
+int insertAtHead(string fname, string lname, int command) {
+    switch(command){
+        case 1:{
+            faculty * newFaculty = new faculty(fname, lname);
+            if (fHead == NULL){
+                newFaculty->prev = NULL;
+                newFaculty->next = NULL;
+                fHead = newFaculty;
+                cout << "Faculty Onboarded !";
+                return 11;
+            }
+            else{
+                newFaculty->next = fHead;
+                newFaculty->prev = NULL;
+                newFaculty = fHead;
+                cout << "Faculty Onboarded !";
+                return 12;
+            }
+            return 10;
+        }
+        case 2:{
+            student * newStudent = new student(fname, lname);
+            if(sHead == NULL){
+                newStudent->prev = NULL;
+                newStudent->next = NULL;
+                sHead = newStudent;
+                return 21;
+            }
+            else{
+                newStudent->next = sHead;
+                newStudent->prev = NULL;
+                newStudent = sHead;
+                return 22;
+            }
+            return 20;
+        }
+
+    }
+}
 int main() {
     string fname, lname;
     cout << "Enter first name: ";

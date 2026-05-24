@@ -1,2 +1,5 @@
-1. Run and debug the program.
-2. Create the function to link the nodes 
+1. Create the function to link the nodes 
+2. Make the member functions as the friend functions, and use common function for both students and faculty mail.
+3. Create a 2d array to make connection between designation and departments.
+4. Make a better student ID verification system. 
+5. Make a menu driven main fucntion, that uses dynamic memoery allocation. 

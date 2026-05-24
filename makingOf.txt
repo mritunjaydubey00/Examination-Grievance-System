@@ -8,7 +8,8 @@
         > ID : It is a 4 digit number to locate the faculty members and is used for the ease of searching. 
         > Desig: It is a string to store the designation of the faculty member, it can be anything as listed in Designation Array at the start.
         > Department: Is used to classify the faculty members according to their respective departments to parse the message to a department when necessary.
-        > 
+        > fname :
+        >lname:
     Section 3.0: Funtions
         section 3.1: faculty class
             Section 3.1.1: Switch cases
@@ -21,3 +22,26 @@
                 > case 6: cross authentication
                 > case 7: Automatic ID generation.
                 > case 9: default case for terminating the switch case returning to the previous menu (if made).
+        section 3.2: Student class
+            Section 3.2.1: Switch cases
+                > case 0: To take the values and fit them in the data members .
+                > case 1: To the display the value set in data members.
+                > case 2: For varification of the entered values. Ex: Varification that the phone number is of 10 digits.
+                > case 3: for changing the data members after varification of password.
+                > case 4: to display available options.
+                > case 5: exlusive to changing of password.
+                > case 6: cross authentication
+                > case 7: Automatic ID generation.
+                > case 9: default case for terminating the switch case returning to the previous menu (if made).
+        Section 3.3: Linked List
+            Section 3.3.1: InsertionAtHead
+                > Is a function of return type int.
+                > Uses three parameters; fname, lanme and command.
+                > command controls the switch case, 1 being for faculty and 2 being for student.
+                > Dynamically Allocates memeory if any new user is being created, calls the constrcuctor to the respective class.
+                > Insertion is done usign doubly linked list. 
+                > Return Values:- 
+                    1. 11 : insertion is done at head for faculty. 
+                    2. 12 : head existed, new node created for faculty.
+                    3. 10 : No insertion happened, maybe an error.
+                    
