@@ -19,5 +19,5 @@
                 > case 4: to display available options.
                 > case 5: exlusive to changing of password.
                 > case 6: cross authentication
-                > case 7: ID generation.
+                > case 7: Automatic ID generation.
                 > case 9: default case for terminating the switch case returning to the previous menu (if made).
