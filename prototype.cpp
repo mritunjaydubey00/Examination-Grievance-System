@@ -27,8 +27,8 @@ class faculty {
         faculty* next;
         faculty* prev;
     protected:
-        string department;
-        string designation;
+        int department  = -1;
+        int  designation = -1 ;
         DateOfBirth date_of_birth;
         long int phone_number;
     public:
@@ -162,32 +162,21 @@ class faculty {
             while (df != 9) {
                 switch(df) {
                     case 0: {
-                        cout << "Enter L to see list of departments or type the department name directly" << endl;
-                        cout << "Enter the Department : ";
-                        cin.ignore(); // Clears trailing spaces/newlines
-                        getline(cin, department);  
-                        if (department == "L" || department == "l") {
-                            return 4;
-                        } else {
-                            return 2; // Pass to verification
-                        }
-                        break;
+                        cout << "Enter the department number: ";
+                        cin >> department;
+                        department--; // Adjusting for 0-based index
+                        return 2;
                     }
                     case 1: {
-                        cout << "Department: " << department << endl;
+                        cout << "Department: " << departments[department] << endl;
                         return 1;
                         break;
                     }
                     case 2: {
-                        bool found;
-                        for(int i = 0; i < number_of_departments; i++) {
-                            if (department == departments[i]) {
-                                found = true;
-                                return 9;
-                                break;
-                            }
+                        if (department >= 0 && department < number_of_departments) {
+                            return 9;
                         }
-                        if (found == false) {
+                        else{
                             cout << "Invalid department selected." << endl;
                             return 4; // Show options list
                         }
@@ -226,30 +215,21 @@ class faculty {
             while (def != 9) {
                 switch(def) {
                     case 0: {
-                        cout << "Enter Designation (Type full name or 'list'): ";
-                        getline(cin, designation);
-                        if (designation == "list") {
-                            return 4;
-                        } else {
-                            return 2; // Pass to verification
-                        }
-                        break;
+                        cout << "Enter the designation number: ";
+                        cin >> designation;
+                        designation--; // Adjusting for 0-based index
+                        return 2;
                     }
                     case 1: {
-                        cout << "Designation: " << designation << endl;
+                        cout << "Designation: " << designations[designation] << endl;
                         return 9;
                         break;
                     }
                     case 2: {
-                        bool found = false;
-                        for(int i = 0; i < number_of_designations; i++) {
-                            if (designation == designations[i]) {
-                                found = true;
-                                return 9;
-                                break;
-                            }
+                        if (designation >= 0 && designation < number_of_designations) {
+                            return 9;
                         }
-                        if (!found) {
+                        else{
                             cout << "Invalid designation selected." << endl;
                             return 4; // Show options list
                         }
@@ -341,22 +321,9 @@ class faculty {
                     }
 
                     case 7: {
-                        int des = 0;
-                        int dep = 0;
-                        for (int i = 0; i < number_of_departments; i++) {
-                            if (department == departments[i]) {
-                                dep = i;
-                                break;
-                            }
-                        }
-                        for (int i = 0; i < number_of_designations; i++) {
-                            if (designation == designations[i]) {
-                                des = i;
-                                break;
-                            }
-                        }
-                        ID = dep * 1000 + des * 100 + date_of_birth.day;
-                        cout << "Generated Registration ID: " << ID << endl;
+                        ID = department * 1000 + designation * 100 + date_of_birth.day;
+                        cout << "Generated ExGrev ID: " << ID << endl;
+                        cout << "Please remember this ID for future reference." << endl;
                         idf = 9;
                         return 9;
                     }
@@ -403,7 +370,7 @@ class faculty {
                         break;
                     }
                     case 4: {
-                        next = 0;
+                        next = 4;
                         while (next != 9) {
                             next = designationFunction(next);
                         }
