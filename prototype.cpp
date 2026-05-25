@@ -876,13 +876,11 @@ int insertAtHead(string fname, string lname, int command) {
         }
     }
 }
+
 int main() {
-    string fname, lname;
-    cout << "Enter first name: ";
-    cin >> fname;
-    cout << "Enter last name: ";
-    cin >> lname;
-    
-    student s1(fname, lname);
-    return 0;
+    cout << "ExGrev : Examination Grievance System ";
+    int isActive = 0;
+    do{
+        
+    }while (isActive != 9);
 }
