@@ -337,6 +337,7 @@ class student {
             }
         }
         friend int insertAtHead(string fname, string lname, int command);
+        friend student * searchStudent(string Id);
 };
 class faculty {
     private:
@@ -711,9 +712,41 @@ class faculty {
             }
         }
         friend int insertAtHead(string fname, string lname, int command);
+        friend faculty * searchFaculty(int id);
 };
 faculty * fHead = NULL;
 student * sHead = NULL;
+
+faculty * searchFaculty(int Id){
+    faculty * temp = fHead;
+    while(temp->next != NULL){
+        if(temp->ID == Id){
+            return temp;
+        }
+        else{
+            temp = temp->next;
+        }
+    }
+    cout << "No faculty of Entered ID found";
+    faculty * none = NULL;
+    return none;
+}
+
+student * searchStudent(string Id){
+    student * temp = sHead;
+    while(temp->next != NULL){
+        if (temp->ID == Id)
+        {
+            return temp;
+        }
+        else{
+            temp = temp->next;
+        }
+    }
+    cout << "No student found in records";
+    student * none = NULL;
+    return none;
+}
 
 int insertAtHead(string fname, string lname, int command) {
     switch(command){
@@ -751,7 +784,6 @@ int insertAtHead(string fname, string lname, int command) {
             }
             return 20;
         }
-
     }
 }
 int main() {
