@@ -338,6 +338,7 @@ class student {
         }
         friend int insertAtHead(string fname, string lname, int command);
         friend student * searchStudent(string Id);
+        friend int deleteStudent(string Id);
 };
 class faculty {
     private:
@@ -713,6 +714,7 @@ class faculty {
         }
         friend int insertAtHead(string fname, string lname, int command);
         friend faculty * searchFaculty(int id);
+        friend int deleteFaculty(int Id);
 };
 faculty * fHead = NULL;
 student * sHead = NULL;
@@ -746,6 +748,94 @@ student * searchStudent(string Id){
     cout << "No student found in records";
     student * none = NULL;
     return none;
+}
+
+int deleteFaculty(int Id){
+    cout << "Enter Password: ";
+    string pass;
+    cin >> pass;
+    faculty * toDelete;
+    toDelete = searchFaculty(Id);
+    if(pass != toDelete->password){
+        cout << "Password Incorect";
+        return 0;
+    }
+    int command = 0;
+    if(toDelete->next == NULL && toDelete->prev != NULL){
+        command = 1; // Node is the last node in linked list
+    }
+    else if(toDelete ->next != NULL && toDelete->prev != NULL){
+        command = 2; // Node is a middle node in linked list
+    }
+    else if(toDelete->next != NULL && toDelete->prev == NULL){
+        command = 3; //Node is the head node in linked list
+    }
+    switch (command)
+    {
+    case 1:{
+        toDelete->prev->next = NULL;
+        delete toDelete;
+        toDelete = NULL;
+        return 1;
+    }
+    case 2:{
+        toDelete->prev->next = toDelete->next;
+        toDelete->next->prev = toDelete->prev;
+        delete toDelete;
+        toDelete = NULL;
+        return 2;
+    }
+    case 3:{
+        toDelete->next->prev = NULL;
+        delete toDelete;
+        toDelete = NULL;
+        return 3;
+    }
+    }
+}
+
+int deleteStudent(string Id){
+    cout << "Enter Password: ";
+    string pass;
+    cin >> pass;
+    student * toDelete;
+    toDelete = searchStudent(Id);
+    if(pass != toDelete->password){
+        cout << "Password Incorect";
+        return 0;
+    }
+    int command = 0;
+    if(toDelete->next == NULL && toDelete->prev != NULL){
+        command = 1; // Node is the last node in linked list
+    }
+    else if(toDelete ->next != NULL && toDelete->prev != NULL){
+        command = 2; // Node is a middle node in linked list
+    }
+    else if(toDelete->next != NULL && toDelete->prev == NULL){
+        command = 3; //Node is the head node in linked list
+    }
+    switch (command)
+    {
+    case 1:{
+        toDelete->prev->next = NULL;
+        delete toDelete;
+        toDelete = NULL;
+        return 1;
+    }
+    case 2:{
+        toDelete->prev->next = toDelete->next;
+        toDelete->next->prev = toDelete->prev;
+        delete toDelete;
+        toDelete = NULL;
+        return 2;
+    }
+    case 3:{
+        toDelete->next->prev = NULL;
+        delete toDelete;
+        toDelete = NULL;
+        return 3;
+    }
+    }
 }
 
 int insertAtHead(string fname, string lname, int command) {
