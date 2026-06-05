@@ -1,0 +1,21 @@
+The program is in the process of making and uses modular programming to achieve different tasks.
+By Modular Programming I mean that all the different aspects of the program are made into different separate modules, that can be reused when needed. 
+
+Module 1 : userFunction 
+    > Used to save all the functions related to user management. 
+    > Used to :- 
+        1. Create a new user
+        2. Save their name 
+        3. Save their password 
+        4. Save phone number 
+        5. Save the department name 
+        6. Save the userID 
+        7. Save the password
+
+    > One way communication : Means that the data is transferred from userFunction to localStorage. 
+
+Module 2: localStorage 
+    > Takes data from other modules and then writes them into designated files. 
+    > It can create a new file as required 
+    > It can read an existing file 
+    > It can append to an existing file
