@@ -1,0 +1,9 @@
+John
+Doe
+JD123
+password123
+password123
+john.doe@example.com
+1234567890
+Computer Science
+Student

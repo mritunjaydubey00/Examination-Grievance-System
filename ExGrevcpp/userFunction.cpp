@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include "userFunction.h"
+#include "localStorage.h"
 using namespace std;
 
 class User
@@ -14,21 +14,22 @@ public:
     friend int displayUserInfo(User &user);
     friend int password(User &user, int choice);
     friend int completeProfile(User &user);
+    friend string makeString(User &user);
 };
 
 int makeUser(User &user)
 {
     cout << "Enter your first name: ";
-    cin >> user.fname;
+    getline(cin, user.fname);
     cout << "Enter your Last name: ";
-    cin >> user.lname;
+    getline(cin, user.lname);
     return 0;
 }
 
 int userID(User &user)
 {
     cout << "Enter your new ID: ";
-    cin >> user.userID;
+    getline(cin, user.userID);
     return 0;
 }
 
@@ -51,9 +52,9 @@ int password(User &user, int choice)
     {
         string tempPass1, tempPass2;
         cout << "Enter Password: ";
-        cin >> tempPass1;
+        getline(cin, tempPass1);
         cout << "Confirm Password: ";
-        cin >> tempPass2;
+        getline(cin, tempPass2);
         if (tempPass1 == tempPass2)
         {
             user.password = tempPass1;
@@ -67,10 +68,14 @@ int password(User &user, int choice)
     }
     case 2:
     {
-        cout << "Current Password: ";
-        cin >> user.password;
-        cout << "Enter your new password: ";
-        cin >> user.password;
+        {
+            string current, newpass;
+            cout << "Current Password: ";
+            getline(cin, current);
+            cout << "Enter your new password: ";
+            getline(cin, newpass);
+            user.password = newpass;
+        }
         return 0;
     }
     }
@@ -79,13 +84,13 @@ int password(User &user, int choice)
 int completeProfile(User &user)
 {
     cout << "Enter your email: ";
-    cin >> user.email;
+    getline(cin, user.email);
     cout << "Enter your phone number: ";
-    cin >> user.phoneNumber;
+    getline(cin, user.phoneNumber);
     cout << "Enter your department: ";
-    cin >> user.department;
+    getline(cin, user.department);
     cout << "Enter your position: ";
-    cin >> user.position;
+    getline(cin, user.position);
     return 0;
 }
 
@@ -95,5 +100,23 @@ int makeProfile(User &user)
     userID(user);
     password(user, 1);
     completeProfile(user);
+    return 0;
+}
+
+string makeString(User &user)
+{
+    string dataRow = user.fname + "," + user.lname + "," + user.email + "," + user.phoneNumber + "," + user.department + "," + user.position + "," + user.userID + "," + user.password;
+    return dataRow;
+}
+
+int main()
+{
+    User *newUser = new User;
+    makeUser(*newUser);
+    userID(*newUser);
+    password(*newUser, 1);
+    completeProfile(*newUser);
+    string dataRow = makeString(*newUser);
+    writeFile(dataRow, "userData.txt");
     return 0;
 }
