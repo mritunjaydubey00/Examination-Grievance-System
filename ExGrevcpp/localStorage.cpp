@@ -37,5 +37,4 @@ int createFile(string fileName)
     newFile.close();
     return 0;
 }
-
 // Removed test main() to avoid duplicate symbol when linking with other modules.

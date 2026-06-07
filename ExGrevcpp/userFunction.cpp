@@ -1,23 +1,10 @@
 #include <iostream>
 #include <string>
+#include "User.h"
 #include "localStorage.h"
 using namespace std;
 
-class User
-{
-private:
-    string fname, lname, email, phoneNumber, department, position, userID, password;
-
-public:
-    friend int makeUser(User &user);
-    friend int userID(User &user);
-    friend int displayUserInfo(User &user);
-    friend int password(User &user, int choice);
-    friend int completeProfile(User &user);
-    friend string makeString(User &user);
-};
-
-int makeUser(User &user)
+int NamingFunction(User &user)
 {
     cout << "Enter your first name: ";
     getline(cin, user.fname);
@@ -94,29 +81,18 @@ int completeProfile(User &user)
     return 0;
 }
 
-int makeProfile(User &user)
-{
-    makeUser(user);
-    userID(user);
-    password(user, 1);
-    completeProfile(user);
-    return 0;
-}
-
 string makeString(User &user)
 {
     string dataRow = user.fname + "," + user.lname + "," + user.email + "," + user.phoneNumber + "," + user.department + "," + user.position + "," + user.userID + "," + user.password;
     return dataRow;
 }
 
-int main()
+int makeUser(User &user)
 {
-    User *newUser = new User;
-    makeUser(*newUser);
-    userID(*newUser);
-    password(*newUser, 1);
-    completeProfile(*newUser);
-    string dataRow = makeString(*newUser);
-    writeFile(dataRow, "userData.txt");
+    NamingFunction(user);
+    userID(user);
+    password(user, 1);
+    completeProfile(user);
+    completeProfile(user);
     return 0;
 }
