@@ -93,6 +93,6 @@ int makeUser(User &user)
     userID(user);
     password(user, 1);
     completeProfile(user);
-    completeProfile(user);
+    displayUserInfo(user);
     return 0;
 }

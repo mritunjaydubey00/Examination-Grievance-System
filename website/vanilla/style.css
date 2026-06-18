@@ -1,0 +1,12 @@
+.Hero {
+  display: flex;
+}
+
+.Hero div {
+  width: 50%;
+}
+.Hero img {
+  margin-top: 10%;
+  height: 7cap;
+  width: 82%;
+}
