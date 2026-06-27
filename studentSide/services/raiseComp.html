@@ -49,43 +49,53 @@
           <h4>Drop a Complaint</h4>
           <div class="p-3 mb-2 bg-white text-dark rounded">
             <div class="mb-3 text-primary-emphasis">
-              <label for="exampleFormControlInput1" class="form-label"
+              <label for="currentUser-email" class="form-label"
                 >Email address</label
               >
               <input
                 type="email"
                 class="form-control"
-                id="exampleFormControlInput1"
+                id="currentUser-email"
                 placeholder="25ab1ab11@mitsgwl.ac.in"
               />
             </div>
             <div class="mb-3 text-primary-emphasis">
-              <label for="exampleFormControlTextarea1" class="form-label"
-                >Example textarea</label
+              <label for="complaint-text" class="form-label"
+                >Explain your problem</label
               >
               <textarea
                 class="form-control"
-                id="exampleFormControlTextarea1"
+                id="complaint-text"
                 rows="3"
               ></textarea>
             </div>
-            <div class="mb-3 text-primary-emphasis">
-              <label for="formFileMultiple" class="form-label"
-                >Upload Supporting Documents</label
+            <div class="mb-3">
+              <label for="formFile" class="form-label"
+                >Default file input example</label
               >
-              <input
-                class="form-control"
-                type="file"
-                id="formFileMultiple"
-                multiple
-              />
+              <input class="form-control" type="file" id="formFile" />
             </div>
+            <button type="button" id="submit-button" class="btn btn-success">
+              Submit
+            </button>
           </div>
         </div>
       </section>
     </main>
     <footer></footer>
   </body>
+  <script>
+    const submitButton = document.getElementById("submit-button");
+    function manageSubmit() {
+      const currentUserEmail =
+        document.getElementById("currentUser-email").value;
+      const complaintDescription =
+        document.getElementById("complaint-text").value;
+      console.log(currentUserEmail);
+      console.log(complaintDescription);
+    }
+    submitButton.addEventListener("click", manageSubmit);
+  </script>
   <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
