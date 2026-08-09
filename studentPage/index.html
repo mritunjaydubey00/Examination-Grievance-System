@@ -47,15 +47,40 @@
               class="btn btn-info dropdown-toggle"
               data-bs-toggle="dropdown"
               aria-expanded="false"
+              id="examDropdown"
             >
               Exam
             </button>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">Minor</a></li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  id="minor"
+                  href="#"
+                  onClick="handleChoice('exam', 'Minor')"
+                  >Minor</a
+                >
+              </li>
               <li><hr class="dropdown-divider" /></li>
-              <li><a class="dropdown-item" href="#">Major</a></li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  id="major"
+                  href="#"
+                  onClick="handleChoice('exam', 'Major')"
+                  >Major</a
+                >
+              </li>
               <li><hr class="dropdown-divider" /></li>
-              <li><a class="dropdown-item" href="#">Quiz</a></li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  id="quiz"
+                  href="#"
+                  onClick="handleChoice('exam', 'Quiz')"
+                  >Quiz</a
+                >
+              </li>
             </ul>
           </div>
           <div class="btn-group dropup m-3 p-2">
@@ -64,18 +89,44 @@
               class="btn btn-info dropdown-toggle"
               data-bs-toggle="dropdown"
               aria-expanded="false"
+              id="typeDropdown"
             >
               Type
             </button>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">problem type 1</a></li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  href="#"
+                  onClick="handleChoice('type', 'Problem type 1')"
+                  >Problem type 1</a
+                >
+              </li>
               <li><hr class="dropdown-divider" /></li>
-              <li><a class="dropdown-item" href="#">Problem type 2</a></li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  href="#"
+                  onClick="handleChoice('type', 'Problem type 2')"
+                  >Problem type 2</a
+                >
+              </li>
               <li><hr class="dropdown-divider" /></li>
-              <li><a class="dropdown-item" href="#">Problem type 3</a></li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  href="#"
+                  onClick="handleChoice('type', 'Problem type 3')"
+                  >Problem type 3</a
+                >
+              </li>
             </ul>
           </div>
-          <button type="button" class="btn btn-success m-1 ms-auto p-2">
+          <button
+            type="button"
+            class="btn btn-success m-1 ms-auto p-2"
+            onclick="handleSubmit()"
+          >
             Submit
           </button>
         </div>
@@ -87,5 +138,6 @@
       integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
       crossorigin="anonymous"
     ></script>
+    <script src="./indexLogic.js"></script>
   </body>
 </html>
