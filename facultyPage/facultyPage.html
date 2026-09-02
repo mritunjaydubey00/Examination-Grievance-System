@@ -10,6 +10,7 @@
       integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
       crossorigin="anonymous"
     />
+    <link rel="stylesheet" href="./facultyPage.css" />
   </head>
   <body>
     <header>
@@ -18,23 +19,34 @@
       </div>
     </header>
     <main>
-      <section class="m-3 bg-primary text-white p-2 rounded">
-        <section>
-          <div class="card" style="width: 18rem">
-            <div class="card-body">
-              <h5 class="card-title">Card title</h5>
-              <h6 class="card-subtitle mb-2 text-body-secondary">
-                Card subtitle
-              </h6>
-              <p class="card-text">
-                Some quick example text to build on the card title and make up
-                the bulk of the card’s content.
+      <section class="bg-primary text-white p-4 rounded ">
+        <ul class="list-group container">
+          <li id="problem1" class="list-group-item d-flex justify-content-between align-items-start">
+            <div class="problem Statement col-6">
+              <h5>####| Problem Title</h5>
+              <p class="project-description">
+                This is a simple problem description.
               </p>
-              <a href="#" class="card-link">Card link</a>
-              <a href="#" class="card-link">Another link</a>
+              <span>
+                <p><a href="#" class="link-info">View Documents</a></p>
+              </span>
+              <button type="button" class="btn btn-primary" disabled>
+                Tag 1
+              </button>
+              <button type="button" class="btn btn-secondary" disabled>
+                Tag 2
+              </button>
             </div>
-          </div>
-        </section>
+            <div class="problem-control-buttons col-4 align-self-center d-flex justify-content-end">
+              <span>
+              <button type="button" class="btn btn-success m-1">Reply</button>
+            </span>
+            <span>
+              <button type="button" class="btn btn-primary m-1">Redirect</button>
+            </div>
+          </span>
+          </li>
+        </ul>
       </section>
     </main>
     <footer></footer>

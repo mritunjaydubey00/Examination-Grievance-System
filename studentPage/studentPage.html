@@ -40,96 +40,72 @@
             ></textarea>
           </div>
         </form>
-        <div id="tags" class="d-flex">
-          <div class="btn-group dropup m-3 p-2">
+        <div class="container d-flex justify-content-start">
+          <div class="dropdown m-2">
             <button
+              class="btn btn-secondary dropdown-toggle"
               type="button"
-              class="btn btn-info dropdown-toggle"
               data-bs-toggle="dropdown"
               aria-expanded="false"
-              id="examDropdown"
             >
-              Exam
+              Select Problem Type
             </button>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu" id="problemTypeDropdown">
               <li>
                 <a
                   class="dropdown-item"
-                  id="minor"
-                  href="#"
-                  onClick="handleChoice('exam', 'Minor')"
-                  >Minor</a
+                  href="# "
+                  onclick="manageTagSelection('1')"
+                  >Major Exam</a
                 >
               </li>
-              <li><hr class="dropdown-divider" /></li>
               <li>
                 <a
                   class="dropdown-item"
-                  id="major"
                   href="#"
-                  onClick="handleChoice('exam', 'Major')"
-                  >Major</a
+                  onclick="manageTagSelection('2')"
+                  >Minor Exam</a
                 >
               </li>
-              <li><hr class="dropdown-divider" /></li>
               <li>
                 <a
                   class="dropdown-item"
-                  id="quiz"
                   href="#"
-                  onClick="handleChoice('exam', 'Quiz')"
+                  onclick="manageTagSelection('3')"
                   >Quiz</a
                 >
               </li>
+              <li>
+                <a
+                  class="dropdown-item"
+                  href="#"
+                  onclick="manageTagSelection('4')"
+                  >Result/Marksheet</a
+                >
+              </li>
             </ul>
           </div>
-          <div class="btn-group dropup m-3 p-2">
+          <div class="dropdown m-2">
             <button
+              class="btn btn-secondary dropdown-toggle"
               type="button"
-              class="btn btn-info dropdown-toggle"
               data-bs-toggle="dropdown"
               aria-expanded="false"
-              id="typeDropdown"
             >
-              Type
+              Select Grievance Type
             </button>
-            <ul class="dropdown-menu">
-              <li>
-                <a
-                  class="dropdown-item"
-                  href="#"
-                  onClick="handleChoice('type', 'Problem type 1')"
-                  >Problem type 1</a
-                >
-              </li>
-              <li><hr class="dropdown-divider" /></li>
-              <li>
-                <a
-                  class="dropdown-item"
-                  href="#"
-                  onClick="handleChoice('type', 'Problem type 2')"
-                  >Problem type 2</a
-                >
-              </li>
-              <li><hr class="dropdown-divider" /></li>
-              <li>
-                <a
-                  class="dropdown-item"
-                  href="#"
-                  onClick="handleChoice('type', 'Problem type 3')"
-                  >Problem type 3</a
-                >
-              </li>
+            <ul class="dropdown-menu" id="grievanceTypeDropdown">
+              <li><a class="dropdown-item" href="#"></a></li>
             </ul>
           </div>
-          <button
-            type="button"
-            class="btn btn-success m-1 ms-auto p-2"
-            onclick="handleSubmit()"
-          >
-            Submit
-          </button>
         </div>
+        <button
+          type="button"
+          class="btn btn-success m-2 ms-auto p-2"
+          onclick="handleSubmit()"
+        >
+          Submit
+        </button>
       </section>
     </main>
     <footer></footer>
@@ -139,6 +115,5 @@
       crossorigin="anonymous"
     ></script>
     <script src="./studentPage.js"></script>
-    <script src="D:\GitHub\Examination Grievance System\loadConnect.js"></script>
   </body>
 </html>

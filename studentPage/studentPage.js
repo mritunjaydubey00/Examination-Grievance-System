@@ -1,35 +1,69 @@
-function SaveData(subject, description, exam, problemType) {
-  const problemID = Math.floor(Math.random() * 1000000); // Generate a random problem ID
-  const grievanceData = {
-    problemID: problemID,
-    subject: subject,
-    description: description,
-    exam: exam,
-    problemType: problemType,
-  };
+const majorExamProblemType = {
+  '0001': "Absent on exam day",
+  '0002': "Problem in the desktop",
+  '0003': "Complaint for Misconduct",
+  '0004': "Date Clash with another exam",
 }
 
-function handleChoice(tagSection, targetID) {
-  switch (tagSection) {
-    case "exam":
-      console.log(tagSection + " choice selected: " + targetID);
-      document.getElementById("examDropdown").textContent = targetID;
-      break;
-    case "type":
-      console.log(tagSection + " choice selected: " + targetID);
-      document.getElementById("typeDropdown").textContent = targetID;
-      break;
-  }
+const minorExamProblemType = {
+  '0001': "Absent on exam day",
+  '0002': "Complaint for Misconduct",
+  '0003': "Date Clash with another exam",
+  '0004': "Problem in question paper",
+  '0005': "Marks Correction Issue",
+}
+const QuizProblemType = {
+  '0001': "Absent on quiz day",
+  '0002': "Problem in the desktop",
+  '0003': "Complaint for Misconduct",
+  '0004': "Date Clash with another exam",
+}
+const marksheetProblemType = {
+  '0001': "Marks Correction Issue",
+  '0002': "Data correction in marksheet",
+  '0003': "Request for duplicate marksheet",
+  '0004': "Request for speedy process of marksheet",
 }
 
-function handleSubmit() {
-  let subject = document.getElementById("grievanceSubject").value;
-  let description = document.getElementById("grievanceDescription").value;
-  let exam = document.getElementById("examDropdown").textContent;
-  let problemType = document.getElementById("typeDropdown").textContent;
 
-  console.log(subject);
-  console.log(description);
-  console.log("selected exam: " + exam);
-  console.log("selected problem type: " + problemType);
+
+function manageTagSelection(grievanceType) { 
+  switch (grievanceType) {
+    case "1":
+      console.log("Major Exam");
+      for (const [key, value] of Object.entries(majorExamProblemType)) {
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.classList.add("dropdown-item");
+        a.href = "#";
+        a.textContent = value;
+        li.appendChild(a);
+        document.getElementById("grievanceTypeDropdown").appendChild(li);
+      };
+      break;
+    case "2":
+      console.log("Minor Exam");
+      for (const [key, value] of Object.entries(minorExamProblemType)) {
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.classList.add("dropdown-item");
+        a.href = "#";
+        a.textContent = value;
+        li.appendChild(a);
+        document.getElementById("grievanceTypeDropdown").appendChild(li);
+      };
+      break;
+    case "3":
+      console.log("Quiz");
+      for (const [key, value] of Object.entries(QuizProblemType)) {
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.classList.add("dropdown-item");
+        a.href = "#";
+        a.textContent = value;
+        li.appendChild(a);
+        document.getElementById("grievanceTypeDropdown").appendChild(li);
+      };
+      break;
+    
 }
