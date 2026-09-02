@@ -9,7 +9,7 @@ function LogIn() {
         <h4>Login</h4>
         <div className="d-flex flex-column gap-2">
           <form className="row m-3">
-            <label for="userId" className="col-sm-2 col-form-label ">
+            <label htmlFor="userId" className="col-sm-2 col-form-label ">
               User ID
             </label>
             <div className="col-sm-10">
@@ -20,7 +20,7 @@ function LogIn() {
                 placeholder="Enter your user ID"
               />
             </div>
-            <label for="password" className="col-sm-2 col-form-label">
+            <label htmlFor="password" className="col-sm-2 col-form-label">
               Password
             </label>
             <div className="col-sm-10">
