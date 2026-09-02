@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "dev": "npm --prefix ./exgrev run dev",
+    "build": "npm --prefix ./exgrev run build",
+    "lint": "npm --prefix ./exgrev run lint"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.8",
+    "react-bootstrap": "^2.10.10"
+  }
+}
