@@ -12,12 +12,16 @@ export const problemTypeOptions = {
     "Desktop issue",
     "Incorrect Question",
     "Exam date clash with another exam",
+    "Exam paper issue",
+    "Course not in time-table",
   ],
   "Minor Exam": [
     "Absent on exam day",
     "Report Misconduct",
     "Incorrect Question",
     "Date Clash with another exam",
+    "Discrepancy in question paper",
+    "Exam paper issue",
   ],
   "Central Level Quiz": [
     "Absent on quiz day",
