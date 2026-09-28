@@ -1,16 +1,60 @@
-import users from "../data/users.js";
+import { supabase } from "../lib/supabase.js";
 
-// Keep the UI independent of where users are stored.
-export async function authenticateUser(username, password) {
-  const user = users.find(
-    (candidate) =>
-      candidate.username === username && candidate.password === password,
-  );
+const PROFILE_KEY = "exgrev.profile";
 
-  if (!user) {
-    return null;
+export async function authenticateUser(userId, password) {
+  const { data, error } = await supabase.functions.invoke("login-by-user-id", {
+    body: { userId: userId.trim(), password },
+  });
+
+  if (error || !data?.session || !data?.profile) {
+    return { user: null, error: "Invalid user ID or password." };
   }
 
-  const { password: _password, ...safeUser } = user;
-  return safeUser;
+  const { error: sessionError } = await supabase.auth.setSession(data.session);
+  if (sessionError) {
+    return { user: null, error: "Unable to start your session. Please try again." };
+  }
+
+  sessionStorage.setItem(PROFILE_KEY, JSON.stringify(data.profile));
+  return { user: data.profile, error: null };
+}
+
+export async function getAuthenticatedProfile() {
+  const { data: sessionData } = await supabase.auth.getSession();
+  if (!sessionData.session) return null;
+  const storedProfile = sessionStorage.getItem(PROFILE_KEY);
+  if (storedProfile) return JSON.parse(storedProfile);
+
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data.user?.user_metadata?.user_id) return null;
+  const metadata = data.user.user_metadata;
+  const profile = {
+    userId: metadata.user_id,
+    name: metadata.full_name,
+    department: metadata.department,
+    branch: metadata.branch,
+    mustChangePassword: metadata.must_change_password === true,
+  };
+  sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  return profile;
+}
+
+export async function changePassword(password) {
+  const { error } = await supabase.auth.updateUser({
+    password,
+    data: { must_change_password: false },
+  });
+  if (error) throw error;
+  const storedProfile = sessionStorage.getItem(PROFILE_KEY);
+  const profile = storedProfile ? JSON.parse(storedProfile) : {};
+  const updatedProfile = { ...profile, mustChangePassword: false };
+  sessionStorage.setItem(PROFILE_KEY, JSON.stringify(updatedProfile));
+  return updatedProfile;
+}
+
+export async function signOut() {
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
+  sessionStorage.removeItem(PROFILE_KEY);
 }
