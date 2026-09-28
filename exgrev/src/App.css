@@ -167,7 +167,7 @@
 
   &::before,
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     top: -4.5px;
     border: 5px solid transparent;
@@ -180,5 +180,273 @@
   &::after {
     right: 0;
     border-right-color: var(--border);
+  }
+}
+
+.student-page {
+  width: min(100% - 48px, 960px);
+  margin: 0 auto 48px;
+  text-align: left;
+}
+
+.student-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 32px 0 28px;
+  border-bottom: 1px solid #dfe5e4;
+}
+
+.eyebrow {
+  margin-bottom: 8px;
+  color: #0b807a;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.student-header h2,
+.grievance-panel h3 {
+  margin: 0;
+  color: #172b35;
+  font-family: var(--heading);
+  font-weight: 650;
+}
+
+.student-header h2 {
+  font-size: clamp(1.7rem, 3vw, 2.35rem);
+}
+
+.student-context {
+  margin-top: 8px;
+  color: #65777d;
+  font-size: 0.94rem;
+}
+
+.student-context span {
+  padding: 0 6px;
+  color: #b4c1c1;
+}
+
+.student-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.session-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #65777d;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.session-status strong {
+  margin-left: 3px;
+  color: #172b35;
+  font-weight: 700;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #16a085;
+  box-shadow: 0 0 0 4px #d9f2ed;
+}
+
+.logout-button,
+.submit-button {
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.logout-button {
+  padding: 9px 15px;
+  color: #24605d;
+  background: #e5f1ef;
+}
+
+.logout-button:hover,
+.submit-button:hover {
+  transform: translateY(-1px);
+}
+
+.grievance-panel {
+  max-width: 760px;
+  margin: 42px auto 0;
+  padding: 34px 38px 38px;
+  border: 1px solid #dfe5e4;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 16px 40px rgba(28, 61, 65, 0.08);
+}
+
+.panel-intro {
+  margin-bottom: 30px;
+}
+
+.panel-intro h3 {
+  font-size: 1.55rem;
+}
+
+.panel-intro > p:last-child {
+  margin-top: 8px;
+  color: #65777d;
+  font-size: 0.95rem;
+}
+
+.grievance-form,
+.form-grid {
+  display: grid;
+  gap: 22px;
+}
+
+.form-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.form-field {
+  display: grid;
+  gap: 8px;
+}
+
+.form-field label,
+.form-label {
+  color: #344d55;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.form-field input,
+.form-field textarea,
+.dropdown-button {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #cbd8d7;
+  border-radius: 7px;
+  background: #fbfdfc;
+  color: #172b35;
+  font: inherit;
+  font-size: 0.92rem;
+  outline: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.form-field input,
+.form-field textarea {
+  padding: 12px 13px;
+}
+
+.form-field textarea {
+  resize: vertical;
+}
+
+.form-field input::placeholder,
+.form-field textarea::placeholder {
+  color: #99a9aa;
+}
+
+.form-field input:focus,
+.form-field textarea:focus,
+.dropdown-button:focus {
+  border-color: #15958c;
+  box-shadow: 0 0 0 3px rgba(21, 149, 140, 0.13);
+}
+
+.dropdown-field {
+  position: relative;
+}
+
+.dropdown-button {
+  min-height: 47px;
+  padding: 10px 38px 10px 13px;
+  text-align: left;
+}
+
+.dropdown-menu {
+  width: 100%;
+  border: 1px solid #d5e0df;
+  box-shadow: 0 12px 28px rgba(28, 61, 65, 0.12);
+}
+
+.dropdown-item {
+  padding: 9px 13px;
+  font-size: 0.9rem;
+}
+
+.form-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-top: 4px;
+}
+
+.form-footer p {
+  max-width: 390px;
+  color: #718286;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.submit-button {
+  padding: 12px 20px;
+  color: #fff;
+  background: #137f78;
+  box-shadow: 0 6px 14px rgba(19, 127, 120, 0.2);
+  white-space: nowrap;
+}
+
+.submit-button:hover {
+  background: #0f6e68;
+  box-shadow: 0 8px 18px rgba(19, 127, 120, 0.28);
+}
+
+@media (max-width: 640px) {
+  .student-page {
+    width: min(100% - 28px, 960px);
+  }
+
+  .student-header {
+    align-items: flex-start;
+    flex-direction: column;
+    padding-top: 22px;
+  }
+
+  .student-header-actions {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .grievance-panel {
+    margin-top: 24px;
+    padding: 25px 20px 24px;
+  }
+
+  .form-grid,
+  .form-footer {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .submit-button {
+    width: 100%;
   }
 }

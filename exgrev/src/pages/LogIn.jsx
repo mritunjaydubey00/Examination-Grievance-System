@@ -1,6 +1,25 @@
-function LogIn() {
-  function handleLogin(event) {
+import { useState } from "react";
+import { createUserSession } from "../logic/LogIn/loggedInUser.js";
+import { authenticateUser } from "../services/userService.js";
+
+function LogIn({ onLogin }) {
+  const [error, setError] = useState("");
+
+  async function handleLogin(event) {
     event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const user = await authenticateUser(
+      formData.get("username"),
+      formData.get("password"),
+    );
+
+    if (!user) {
+      setError("Invalid user ID or password.");
+      return;
+    }
+
+    setError("");
+    onLogin(createUserSession(user));
   }
 
   return (
@@ -8,7 +27,7 @@ function LogIn() {
       <div className="bg bg-primary text-white p-3 m-3 rounded">
         <h4>Login</h4>
         <div className="d-flex flex-column gap-2">
-          <form className="row m-3">
+          <form className="row m-3" onSubmit={handleLogin}>
             <label htmlFor="userId" className="col-sm-2 col-form-label ">
               User ID
             </label>
@@ -17,6 +36,7 @@ function LogIn() {
                 type="text"
                 className="form-control"
                 id="userId"
+                name="username"
                 placeholder="Enter your user ID"
               />
             </div>
@@ -28,17 +48,18 @@ function LogIn() {
                 type="password"
                 className="form-control"
                 id="password"
+                name="password"
                 placeholder="Enter your password"
               />
             </div>
+            {error && <p className="text-warning mb-0">{error}</p>}
+            <button
+              type="submit"
+              className="btn btn-success w-25 m-3 align-self-center"
+            >
+              Login
+            </button>
           </form>
-          <button
-            type="submit"
-            className="btn btn-success w-25 m-3 align-self-center"
-            onClick={handleLogin}
-          >
-            Login
-          </button>
         </div>
       </div>
     </>

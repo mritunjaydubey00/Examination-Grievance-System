@@ -4,14 +4,15 @@ function DropDown({ label, options, selectedOption, onSelect }) {
   }
 
   return (
-    <div className="col-12 col-sm-6 d-flex justify-content-sm-end justify-content-center dropdown">
+    <div className="form-field dropdown-field dropdown">
+      <span className="form-label">{label}</span>
       <button
-        className="btn btn-secondary dropdown-toggle"
+        className="dropdown-button dropdown-toggle"
         data-bs-toggle="dropdown"
         type="button"
         aria-expanded="false"
       >
-        {selectedOption || label}
+        {selectedOption || "Choose an option"}
       </button>
       <ul className="dropdown-menu">
         {options.map((option) => (
