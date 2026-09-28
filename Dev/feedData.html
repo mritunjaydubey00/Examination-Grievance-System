@@ -1,0 +1,1127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#000000" />
+    <title>ExGrev: Dev Panel</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+      :root {
+        --bg: #000000;
+        --surface: #0d0d0f;
+        --surface-2: #151419;
+        --text: #fff8ff;
+        --muted: #b9aebd;
+        --border: rgba(204, 102, 218, 0.24);
+        --primary: #9929ea;
+        --primary-2: #cc66da;
+        --accent: #faeb92;
+        --danger: #ff6b81;
+        --success: #64e6a8;
+        --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+      }
+
+      [data-theme="light"] {
+        --bg: #fff7d1;
+        --surface: #fffdf0;
+        --surface-2: #f7edc4;
+        --text: #20172d;
+        --muted: #665b72;
+        --border: rgba(86, 58, 156, 0.22);
+        --primary: #8b5dff;
+        --primary-2: #6a42c2;
+        --accent: #563a9c;
+        --danger: #b92d4d;
+        --success: #147d50;
+        --shadow: 0 18px 50px rgba(86, 58, 156, 0.14);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        transition:
+          background 0.25s ease,
+          color 0.25s ease;
+      }
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+      button {
+        cursor: pointer;
+      }
+
+      .app-shell {
+        min-height: 100vh;
+      }
+      .container {
+        width: min(1100px, calc(100% - 28px));
+        margin: 0 auto;
+      }
+
+      header {
+        padding: 24px 0 8px;
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: color-mix(in srgb, var(--bg) 88%, transparent);
+        backdrop-filter: blur(14px);
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .brand-mark {
+        width: 42px;
+        height: 42px;
+        display: grid;
+        place-items: center;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        color: #fff;
+        font-weight: 900;
+        box-shadow: 0 10px 30px
+          color-mix(in srgb, var(--primary) 25%, transparent);
+      }
+
+      .hero-title {
+        margin: 0;
+        font-size: clamp(1.45rem, 4vw, 2.2rem);
+        letter-spacing: -0.04em;
+        line-height: 1;
+      }
+
+      .hero-subtitle {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .icon-btn,
+      .btn {
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text);
+        border-radius: 12px;
+        min-height: 42px;
+        padding: 0 14px;
+        transition: 0.18s ease;
+      }
+      .icon-btn {
+        width: 42px;
+        padding: 0;
+      }
+      .btn:hover,
+      .icon-btn:hover {
+        transform: translateY(-1px);
+        border-color: var(--primary);
+      }
+      .btn-primary {
+        border-color: transparent;
+        color: #fff;
+        background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        box-shadow: 0 10px 25px
+          color-mix(in srgb, var(--primary) 22%, transparent);
+      }
+      .btn-danger {
+        color: #fff;
+        background: var(--danger);
+        border-color: transparent;
+      }
+      .btn-ghost {
+        background: transparent;
+      }
+
+      main {
+        padding: 24px 0 50px;
+      }
+      .statusbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        background: var(--surface);
+        margin-bottom: 18px;
+      }
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 0.9rem;
+      }
+      .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--danger);
+      }
+      .dot.connected {
+        background: var(--success);
+        box-shadow: 0 0 0 4px
+          color-mix(in srgb, var(--success) 12%, transparent);
+      }
+
+      .card {
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        background: var(--surface);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .card-head {
+        padding: 20px 20px 10px;
+      }
+      .card-head h2 {
+        margin: 0;
+        font-size: 1.1rem;
+      }
+      .card-head p {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      .form {
+        padding: 20px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 15px;
+      }
+      .field {
+        display: grid;
+        gap: 7px;
+      }
+      .field.full {
+        grid-column: 1 / -1;
+      }
+      label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: var(--muted);
+      }
+      input,
+      select {
+        width: 100%;
+        min-height: 46px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 0 13px;
+        outline: none;
+        color: var(--text);
+        background: var(--surface-2);
+      }
+      input:focus,
+      select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px
+          color-mix(in srgb, var(--primary) 14%, transparent);
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 0.76rem;
+      }
+      .form-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px;
+        margin-top: 20px;
+      }
+
+      .import-panel {
+        margin-top: 18px;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        border-top: 1px solid var(--border);
+        background: color-mix(in srgb, var(--surface-2) 55%, transparent);
+      }
+      .import-copy h3 {
+        margin: 0;
+        font-size: 0.96rem;
+      }
+      .import-copy p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 0.8rem;
+      }
+      .file-label {
+        display: inline-flex;
+        align-items: center;
+        min-height: 42px;
+        padding: 0 14px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        background: var(--surface);
+      }
+      #csvFile {
+        display: none;
+      }
+
+      .toast {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 100;
+        max-width: min(380px, calc(100% - 36px));
+        padding: 13px 15px;
+        border-radius: 14px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        display: none;
+        font-size: 0.9rem;
+      }
+      .toast.show {
+        display: block;
+        animation: rise 0.2s ease;
+      }
+      .toast.error {
+        border-color: color-mix(in srgb, var(--danger) 55%, var(--border));
+      }
+      .toast.success {
+        border-color: color-mix(in srgb, var(--success) 55%, var(--border));
+      }
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      .modal-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 90;
+        background: rgba(0, 0, 0, 0.66);
+        padding: 18px;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-backdrop.open {
+        display: flex;
+      }
+      .modal {
+        width: min(620px, 100%);
+        max-height: min(88vh, 760px);
+        overflow: auto;
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        background: var(--surface);
+        box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+      }
+      .modal-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 20px;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        background: var(--surface);
+        z-index: 1;
+      }
+      .modal-head h3 {
+        margin: 0;
+        font-size: 1rem;
+      }
+      .modal-body {
+        padding: 20px;
+      }
+      .modal-body p {
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .steps {
+        margin: 0;
+        padding-left: 20px;
+      }
+      .steps li {
+        margin: 12px 0;
+        line-height: 1.5;
+      }
+      code,
+      pre {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.8rem;
+      }
+      code {
+        background: var(--surface-2);
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+      .details {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 9px;
+        margin-top: 16px;
+      }
+      .detail-row {
+        display: grid;
+        grid-template-columns: 125px 1fr;
+        gap: 10px;
+        padding: 11px 12px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--surface-2);
+      }
+      .detail-key {
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 700;
+      }
+      .detail-value {
+        overflow-wrap: anywhere;
+      }
+      .warning {
+        padding: 12px;
+        border-radius: 11px;
+        background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+        border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--border));
+        margin-bottom: 14px;
+      }
+
+      .connection-grid {
+        display: grid;
+        gap: 14px;
+      }
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 18px;
+      }
+
+      .preview {
+        margin-top: 14px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: auto;
+        max-height: 280px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 680px;
+      }
+      th,
+      td {
+        padding: 9px 11px;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+        font-size: 0.78rem;
+        white-space: nowrap;
+      }
+      th {
+        background: var(--surface-2);
+        position: sticky;
+        top: 0;
+      }
+
+      .empty {
+        text-align: center;
+        padding: 30px 15px;
+        color: var(--muted);
+        font-size: 0.86rem;
+      }
+
+      @media (max-width: 680px) {
+        header {
+          padding-top: 16px;
+        }
+        .container {
+          width: min(100% - 20px, 1100px);
+        }
+        .hero-subtitle {
+          display: none;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .field.full {
+          grid-column: auto;
+        }
+        .statusbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+        .form-actions .btn {
+          flex: 1;
+        }
+        .import-panel {
+          align-items: stretch;
+        }
+        .file-label {
+          justify-content: center;
+        }
+        .detail-row {
+          grid-template-columns: 100px 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header>
+        <div class="container topbar">
+          <div class="brand">
+            <div class="brand-mark">EX</div>
+            <div>
+              <h1 class="hero-title">ExGrev: Dev Panel</h1>
+              <p class="hero-subtitle">
+                Minimal Supabase data administration panel
+              </p>
+            </div>
+          </div>
+          <div class="header-actions">
+            <button
+              class="icon-btn"
+              id="themeToggle"
+              aria-label="Toggle theme"
+              title="Toggle dark/light mode"
+            >
+              ☀︎
+            </button>
+            <button class="btn" id="connectBtn">Connect Supabase</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="container">
+        <div class="statusbar">
+          <div class="status">
+            <span class="dot" id="statusDot"></span
+            ><span id="statusText">Not connected</span>
+          </div>
+          <span class="hint" id="tableStatus">Table: not configured</span>
+        </div>
+
+        <section class="card">
+          <div class="card-head">
+            <h2>Add User</h2>
+            <p>
+              Enter a college user. The panel checks the User ID before
+              inserting.
+            </p>
+          </div>
+
+          <form class="form" id="userForm">
+            <div class="grid">
+              <div class="field">
+                <label for="userId">User ID *</label>
+                <input
+                  id="userId"
+                  maxlength="11"
+                  autocomplete="off"
+                  placeholder="e.g. 24CSB10001"
+                  required
+                />
+                <span class="hint"
+                  >Exactly 11 characters: letters and numbers only.</span
+                >
+              </div>
+
+              <div class="field">
+                <label for="fullName">Full Name *</label>
+                <input
+                  id="fullName"
+                  maxlength="120"
+                  autocomplete="name"
+                  placeholder="Full name"
+                  required
+                />
+              </div>
+
+              <div class="field">
+                <label for="department">Department *</label>
+                <input
+                  id="department"
+                  maxlength="100"
+                  placeholder="e.g. Computer Science"
+                  required
+                />
+              </div>
+
+              <div class="field">
+                <label for="branch">Branch *</label>
+                <input
+                  id="branch"
+                  maxlength="100"
+                  placeholder="e.g. CSBS"
+                  required
+                />
+              </div>
+
+              <div class="field">
+                <label for="phone">Phone Number *</label>
+                <input
+                  id="phone"
+                  inputmode="tel"
+                  maxlength="15"
+                  placeholder="10-digit phone number"
+                  required
+                />
+              </div>
+
+              <div class="field">
+                <label for="email">Email *</label>
+                <input
+                  id="email"
+                  type="email"
+                  maxlength="180"
+                  autocomplete="email"
+                  placeholder="name@example.com"
+                  required
+                />
+              </div>
+
+              <div class="field full">
+                <label for="exFactor">Ex Factor *</label>
+                <select id="exFactor" required>
+                  <option value="" selected disabled>Select category</option>
+                  <option>Student</option>
+                  <option>Teaching Staff</option>
+                  <option>Examination Cell</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="saveBtn">
+                Save User
+              </button>
+              <button type="reset" class="btn btn-ghost">Clear</button>
+            </div>
+          </form>
+
+          <div class="import-panel">
+            <div class="import-copy">
+              <h3>Bulk CSV Import</h3>
+              <p>
+                Import users using the required column names. Duplicates are
+                skipped and reported.
+              </p>
+            </div>
+            <label class="file-label" for="csvFile">Choose CSV File</label>
+            <input id="csvFile" type="file" accept=".csv,text/csv" />
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="modal-backdrop" id="modalBackdrop">
+      <div class="modal" role="dialog" aria-modal="true">
+        <div class="modal-head">
+          <h3 id="modalTitle">Modal</h3>
+          <button class="icon-btn" id="modalClose" aria-label="Close">×</button>
+        </div>
+        <div class="modal-body" id="modalBody"></div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      const REQUIRED_COLUMNS = [
+        "User ID",
+        "Full Name",
+        "Department",
+        "Branch",
+        "Phone Number",
+        "email",
+        "Ex Factor",
+      ];
+      const EX_FACTORS = ["Student", "Teaching Staff", "Examination Cell"];
+      const STORAGE_KEY = "exgrev_connection";
+      let supabaseClient = null;
+      let config = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+
+      const $ = (id) => document.getElementById(id);
+
+      function showToast(message, type = "") {
+        const el = $("toast");
+        el.textContent = message;
+        el.className = "toast show " + type;
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => (el.className = "toast"), 3800);
+      }
+
+      function openModal(title, html) {
+        $("modalTitle").textContent = title;
+        $("modalBody").innerHTML = html;
+        $("modalBackdrop").classList.add("open");
+      }
+      function closeModal() {
+        $("modalBackdrop").classList.remove("open");
+      }
+
+      $("modalClose").onclick = closeModal;
+      $("modalBackdrop").addEventListener("click", (e) => {
+        if (e.target === $("modalBackdrop")) closeModal();
+      });
+
+      function escapeHtml(value) {
+        return String(value ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#039;",
+            })[c],
+        );
+      }
+
+      function setStatus(connected, message) {
+        $("statusDot").classList.toggle("connected", connected);
+        $("statusText").textContent = message;
+        $("tableStatus").textContent = config?.table
+          ? `Table: ${config.table}`
+          : "Table: not configured";
+      }
+
+      function showConnectModal() {
+        const saved = config || {};
+        openModal(
+          "Connect Supabase",
+          `
+      <div class="warning">
+        <strong>Browser connection:</strong> use your Supabase project URL and the project's
+        <strong>publishable/anon key</strong>. Never paste a service-role/secret key here.
+      </div>
+      <div class="connection-grid">
+        <div class="field">
+          <label for="sbUrl">Supabase Project URL</label>
+          <input id="sbUrl" placeholder="https://xxxxxxxx.supabase.co" value="${escapeHtml(saved.url || "")}">
+        </div>
+        <div class="field">
+          <label for="sbKey">Publishable / anon key</label>
+          <input id="sbKey" type="password" placeholder="eyJ..." value="${escapeHtml(saved.key || "")}">
+        </div>
+        <div class="field">
+          <label for="sbTable">Table name</label>
+          <input id="sbTable" value="${escapeHtml(saved.table || "users")}" placeholder="users">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="howToBtn">How to connect</button>
+        <button class="btn btn-primary" id="saveConnectionBtn">Connect & Save</button>
+      </div>
+    `,
+        );
+
+        $("howToBtn").onclick = showHowTo;
+        $("saveConnectionBtn").onclick = connectFromModal;
+      }
+
+      function showHowTo() {
+        openModal(
+          "How to connect your Supabase database",
+          `
+      <ol class="steps">
+        <li>Open your Supabase project and go to <strong>Project Settings → API</strong>.</li>
+        <li>Copy the <strong>Project URL</strong> into the first field.</li>
+        <li>Copy the <strong>Publishable key</strong> (or legacy <strong>anon</strong> key) into the second field.</li>
+        <li>Enter the exact name of the table containing your seven columns. The default is <code>users</code>.</li>
+        <li>Make sure your table has <strong>Row Level Security (RLS)</strong> configured for the operations you want this browser app to perform.</li>
+        <li>For production, create narrowly scoped RLS policies. Do <strong>not</strong> disable RLS just to make the app work.</li>
+      </ol>
+      <p><strong>Important:</strong> a Supabase URL alone cannot authenticate database requests. The browser client also needs the publishable/anon key.</p>
+      <div class="modal-actions"><button class="btn btn-primary" id="backToConnect">Back</button></div>
+    `,
+        );
+        $("backToConnect").onclick = showConnectModal;
+      }
+
+      async function connectFromModal() {
+        const url = $("sbUrl").value.trim().replace(/\/$/, "");
+        const key = $("sbKey").value.trim();
+        const table = $("sbTable").value.trim();
+
+        if (!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)) {
+          showToast("Enter a valid Supabase project URL.", "error");
+          return;
+        }
+        if (!key) {
+          showToast("Enter your publishable/anon key.", "error");
+          return;
+        }
+        if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(table)) {
+          showToast("Table name contains invalid characters.", "error");
+          return;
+        }
+
+        config = { url, key, table };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+        try {
+          supabaseClient = window.supabase.createClient(url, key);
+          // Lightweight table access test. This intentionally selects one row.
+          const { error } = await supabaseClient
+            .from(table)
+            .select("*")
+            .limit(1);
+          if (error) throw error;
+          setStatus(true, "Connected to Supabase");
+          closeModal();
+          showToast("Supabase connected successfully.", "success");
+        } catch (err) {
+          supabaseClient = null;
+          setStatus(false, "Connection failed");
+          showToast(
+            "Connection failed: " +
+              (err.message || "Check URL, key, table and RLS policies."),
+            "error",
+          );
+        }
+      }
+
+      function ensureConnection() {
+        if (!supabaseClient) {
+          showConnectModal();
+          return false;
+        }
+        return true;
+      }
+
+      function validateForm(data) {
+        if (!/^[A-Za-z0-9]{11}$/.test(data["User ID"]))
+          return "User ID must be exactly 11 letters/numbers.";
+        if (!data["Full Name"].trim()) return "Full Name is required.";
+        if (!data["Department"].trim()) return "Department is required.";
+        if (!data["Branch"].trim()) return "Branch is required.";
+        if (!/^[0-9+()\\-\\s]{7,15}$/.test(data["Phone Number"]))
+          return "Enter a valid phone number.";
+        const emailValue = (data["email"] || "").trim();
+        const validEmail =
+          /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/i.test(emailValue) ||
+          /@(?:[A-Za-z0-9-]+\.)*mitsgwl\.ac\.in$/i.test(emailValue);
+        if (!validEmail) return "Enter a valid email.";
+        if (!EX_FACTORS.includes(data["Ex Factor"]))
+          return "Select a valid Ex Factor.";
+        return null;
+      }
+
+      async function findUser(userId) {
+        const { data, error } = await supabaseClient
+          .from(config.table)
+          .select("*")
+          .eq("User ID", userId)
+          .limit(1);
+        if (error) throw error;
+        return data?.[0] || null;
+      }
+
+      function showExistingUser(user) {
+        const rows = REQUIRED_COLUMNS.map((key) => {
+          const actualKey = Object.keys(user).find(
+            (k) => k.toLowerCase() === key.toLowerCase(),
+          );
+          return `<div class="detail-row"><div class="detail-key">${escapeHtml(key)}</div><div class="detail-value">${escapeHtml(actualKey ? user[actualKey] : "—")}</div></div>`;
+        }).join("");
+        openModal(
+          "User already exist",
+          `
+      <p>The User ID <strong>${escapeHtml(user["User ID"] || "")}</strong> is already present in the database. No new row was inserted.</p>
+      <div class="details">${rows}</div>
+    `,
+        );
+      }
+
+      $("userForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (!ensureConnection()) return;
+
+        const data = {
+          "User ID": $("userId").value.trim(),
+          "Full Name": $("fullName").value.trim(),
+          Department: $("department").value.trim(),
+          Branch: $("branch").value.trim(),
+          "Phone Number": $("phone").value.trim(),
+          email: $("email").value.trim(),
+          "Ex Factor": $("exFactor").value,
+        };
+
+        const errorText = validateForm(data);
+        if (errorText) {
+          showToast(errorText, "error");
+          return;
+        }
+
+        $("saveBtn").disabled = true;
+        $("saveBtn").textContent = "Checking…";
+        try {
+          const existing = await findUser(data["User ID"]);
+          if (existing) {
+            showExistingUser(existing);
+            return;
+          }
+
+          $("saveBtn").textContent = "Saving…";
+          const { error } = await supabaseClient
+            .from(config.table)
+            .insert(data);
+          if (error) throw error;
+
+          $("userForm").reset();
+          showToast("User added successfully.", "success");
+        } catch (err) {
+          showToast(
+            "Could not save user: " + (err.message || "Unknown error"),
+            "error",
+          );
+        } finally {
+          $("saveBtn").disabled = false;
+          $("saveBtn").textContent = "Save User";
+        }
+      });
+
+      function parseCSV(text) {
+        const rows = [];
+        let row = [],
+          cell = "",
+          quoted = false;
+        for (let i = 0; i < text.length; i++) {
+          const ch = text[i],
+            next = text[i + 1];
+          if (ch === '"') {
+            if (quoted && next === '"') {
+              cell += '"';
+              i++;
+            } else quoted = !quoted;
+          } else if (ch === "," && !quoted) {
+            row.push(cell);
+            cell = "";
+          } else if ((ch === "\\n" || ch === "\\r") && !quoted) {
+            if (ch === "\\r" && next === "\\n") i++;
+            row.push(cell);
+            cell = "";
+            if (row.some((v) => v.trim() !== "")) rows.push(row);
+            row = [];
+          } else cell += ch;
+        }
+        if (cell.length || row.length) {
+          row.push(cell);
+          if (row.some((v) => v.trim() !== "")) rows.push(row);
+        }
+        return rows;
+      }
+
+      function normalizeHeader(h) {
+        return String(h)
+          .trim()
+          .replace(/^["']|["']$/g, "");
+      }
+
+      $("csvFile").addEventListener("change", async (e) => {
+        const file = e.target.files[0];
+        e.target.value = "";
+        if (!file) return;
+        if (!ensureConnection()) return;
+
+        try {
+          const text = await file.text();
+          const rows = parseCSV(text);
+          if (!rows.length) throw new Error("CSV is empty.");
+
+          const headers = rows[0].map(normalizeHeader);
+          const missing = REQUIRED_COLUMNS.filter(
+            (col) =>
+              !headers.some((h) => h.toLowerCase() === col.toLowerCase()),
+          );
+          if (missing.length)
+            throw new Error("Missing columns: " + missing.join(", "));
+
+          const index = {};
+          headers.forEach((h, i) => (index[h.toLowerCase()] = i));
+
+          const records = rows.slice(1).map((r, rowNo) => {
+            const get = (key) => (r[index[key.toLowerCase()]] ?? "").trim();
+            return {
+              "User ID": get("User ID"),
+              "Full Name": get("Full Name"),
+              Department: get("Department"),
+              Branch: get("Branch"),
+              "Phone Number": get("Phone Number"),
+              email: get("email"),
+              "Ex Factor": get("Ex Factor"),
+              __row: rowNo + 2,
+            };
+          });
+
+          const invalid = [];
+          for (const record of records) {
+            const msg = validateForm(record);
+            if (msg) invalid.push(`Row ${record.__row}: ${msg}`);
+          }
+          if (invalid.length) {
+            openModal(
+              "CSV validation failed",
+              `<p>Fix these rows before importing:</p><div class="warning">${invalid.slice(0, 12).map(escapeHtml).join("<br>")}${invalid.length > 12 ? "<br>…and more." : ""}</div>`,
+            );
+            return;
+          }
+
+          const ids = [...new Set(records.map((r) => r["User ID"]))];
+          const existing = [];
+          // Query in batches so larger CSV files remain manageable.
+          for (let i = 0; i < ids.length; i += 80) {
+            const batch = ids.slice(i, i + 80);
+            const { data, error } = await supabaseClient
+              .from(config.table)
+              .select("*")
+              .in("User ID", batch);
+            if (error) throw error;
+            existing.push(...(data || []));
+          }
+
+          const existingMap = new Map(
+            existing.map((u) => [String(u["User ID"]), u]),
+          );
+          const duplicateRows = records.filter((r) =>
+            existingMap.has(r["User ID"]),
+          );
+          const newRecords = records
+            .filter((r) => !existingMap.has(r["User ID"]))
+            .map(({ __row, ...r }) => r);
+
+          // Remove duplicates within the CSV itself, preserving first occurrence.
+          const seen = new Set();
+          const uniqueNew = newRecords.filter((r) => {
+            if (seen.has(r["User ID"])) return false;
+            seen.add(r["User ID"]);
+            return true;
+          });
+
+          if (!uniqueNew.length) {
+            const first = duplicateRows[0]
+              ? existingMap.get(duplicateRows[0]["User ID"])
+              : null;
+            if (first) showExistingUser(first);
+            showToast("No new users to import.", "error");
+            return;
+          }
+
+          openModal(
+            "Import preview",
+            `
+        <p><strong>${uniqueNew.length}</strong> new users will be inserted. <strong>${duplicateRows.length}</strong> CSV rows already exist and will be skipped.</p>
+        <div class="preview"><table><thead><tr>${REQUIRED_COLUMNS.map((c) => `<th>${escapeHtml(c)}</th>`).join("")}</tr></thead><tbody>
+        ${uniqueNew
+          .slice(0, 8)
+          .map(
+            (r) =>
+              `<tr>${REQUIRED_COLUMNS.map((c) => `<td>${escapeHtml(r[c])}</td>`).join("")}</tr>`,
+          )
+          .join("")}
+        </tbody></table></div>
+        ${uniqueNew.length > 8 ? `<p>Showing first 8 new rows.</p>` : ""}
+        <div class="modal-actions">
+          <button class="btn btn-ghost" id="cancelImport">Cancel</button>
+          <button class="btn btn-primary" id="confirmImport">Import ${uniqueNew.length} Users</button>
+        </div>
+      `,
+          );
+
+          $("cancelImport").onclick = closeModal;
+          $("confirmImport").onclick = async () => {
+            $("confirmImport").disabled = true;
+            $("confirmImport").textContent = "Importing…";
+            try {
+              const { error } = await supabaseClient
+                .from(config.table)
+                .insert(uniqueNew);
+              if (error) throw error;
+              closeModal();
+              showToast(
+                `Imported ${uniqueNew.length} users. Skipped ${duplicateRows.length} duplicates.`,
+                "success",
+              );
+            } catch (err) {
+              showToast(
+                "CSV import failed: " + (err.message || "Unknown error"),
+                "error",
+              );
+              $("confirmImport").disabled = false;
+              $("confirmImport").textContent =
+                `Import ${uniqueNew.length} Users`;
+            }
+          };
+        } catch (err) {
+          showToast("CSV error: " + (err.message || "Invalid CSV"), "error");
+        }
+      });
+
+      $("connectBtn").onclick = showConnectModal;
+
+      const savedTheme = localStorage.getItem("exgrev_theme") || "dark";
+      document.documentElement.dataset.theme = savedTheme;
+      $("themeToggle").textContent = savedTheme === "dark" ? "☀︎" : "☾";
+      $("themeToggle").onclick = () => {
+        const next =
+          document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem("exgrev_theme", next);
+        $("themeToggle").textContent = next === "dark" ? "☀︎" : "☾";
+      };
+
+      if (config?.url && config?.key && config?.table) {
+        try {
+          supabaseClient = window.supabase.createClient(config.url, config.key);
+          setStatus(true, "Supabase configured");
+        } catch {
+          setStatus(false, "Invalid saved connection");
+        }
+      }
+    </script>
+  </body>
+</html>
