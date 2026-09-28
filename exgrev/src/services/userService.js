@@ -7,7 +7,34 @@ export async function authenticateUser(userId, password) {
     body: { userId: userId.trim(), password },
   });
 
-  if (error || !data?.session || !data?.profile) {
+  if (error) {
+    if (error.context?.status === 404) {
+      return {
+        user: null,
+        error: "The login function is not deployed to this Supabase project yet.",
+      };
+    }
+
+    let responseBody;
+    try {
+      responseBody = await error.context?.clone?.().json();
+    } catch {
+      responseBody = null;
+    }
+
+    if (responseBody?.error && responseBody?.code !== "INVALID_CREDENTIALS") {
+      return { user: null, error: responseBody.error };
+    }
+    if (!error.context) {
+      return {
+        user: null,
+        error: "Could not reach the login function. Check your connection and Supabase project settings.",
+      };
+    }
+    return { user: null, error: "Invalid user ID or password." };
+  }
+
+  if (!data?.session || !data?.profile) {
     return { user: null, error: "Invalid user ID or password." };
   }
 

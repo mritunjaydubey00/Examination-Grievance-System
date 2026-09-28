@@ -1,47 +1,23 @@
-# Connect ExGrev to Supabase
+# Supabase login setup
 
-This setup now has three Supabase steps. You do **not** need to create Auth accounts one by one or run a bulk provisioning step. On a user's first login, the app checks their User ID, verifies that the submitted temporary password matches the phone number in `public.users`, and creates their Supabase Auth account. They then choose a new password.
+The login form uses `User ID` and password. The Edge Function finds the user's email using `User ID`, then signs in through Supabase's **Email + Password** Auth provider. On first login, it creates that Auth account with the phone number as a temporary password. The user is then asked to set a new password. No Phone Auth provider or SMS setup is needed.
 
-## 1. Protect the Users table
+The `email` and `Phone Number` fields must be present for each account. Emails must be unique, and phone numbers should be stored as text.
 
-In Supabase, open **SQL Editor**, paste this, and run it:
+## One-time setup
 
-```sql
-drop policy if exists "ExGrev Dev Panel - Read" on public.users;
-drop policy if exists "ExGrev Dev Panel - Insert" on public.users;
-drop policy if exists "Allow user inserts" on public.users;
-drop policy if exists "Allow user lookup" on public.users;
-revoke all on table public.users from anon, authenticated;
-```
+1. In Supabase, make sure **Authentication → Sign In / Providers → Email** is enabled. This is normally enabled by default.
+2. In **Project Settings → Edge Functions → Secrets**, add `SUPABASE_SERVICE_ROLE_KEY` with your project's secret/service-role key. Keep this key in Supabase only.
+3. In PowerShell, go to the project folder, sign in to the Supabase CLI, then deploy the current login function:
 
-This removes the current public read/insert access to users' phone numbers and profile information. The Edge Function will perform the limited lookup securely.
+   ```powershell
+   cd "D:\GitHub\Examination Grievance System\exgrev"
+   npx supabase login
+   npx supabase functions deploy login-by-user-id --project-ref hkdonpsbywfegfvzvqik
+   ```
 
-## 2. Turn on phone sign-in
+   The first `npx` command may ask to install the Supabase CLI; type `y` to continue. `npx supabase login` asks for a Supabase access token. Create one in the Supabase dashboard under **Account → Access Tokens** and paste it into the terminal prompt. Do not share that token.
 
-In Supabase, open **Authentication → Sign In / Providers** and enable **Phone**. The app uses phone plus password; it does not send SMS codes.
+The app's Supabase URL and publishable key are already in the ignored `.env.local` file. The development table policies can remain as they are for now.
 
-Make sure `Phone Number` is unique and stored as text in international format, such as `+91…`. The table and columns must be named `public.users`, `User ID`, `Phone Number`, `Full Name`, `Department`, and `Branch`.
-
-## 3. Deploy one Edge Function
-
-The Supabase CLI is needed to deploy the function. Sign in to it once, then run this from the project folder:
-
-```powershell
-supabase functions deploy login-by-user-id --project-ref hkdonpsbywfegfvzvqik
-```
-
-Before deployment, open **Project Settings → Edge Functions → Secrets** and add:
-
-- Name: `SUPABASE_SERVICE_ROLE_KEY`
-- Value: your project's secret/service-role key
-
-Keep this key in Supabase only. Do not add it to the app or send it to me. The function is the only part of the app that uses it.
-
-## Try the app
-
-The project already has its Supabase URL and publishable key in the ignored `.env.local` file. Start the app. A user's first sign-in is:
-
-- **User ID:** their value from the `User ID` column
-- **Password:** their value from `Phone Number`
-
-They will then be asked to create a password of at least 8 characters. Later sign-ins use that password.
+First login: use the User ID and the exact phone number stored in the row as the password. Later logins use the new password. If login reports that the function is not deployed, complete step 3; if it reports that Email Auth is disabled, enable Email in step 1.

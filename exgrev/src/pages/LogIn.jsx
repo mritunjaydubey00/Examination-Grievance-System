@@ -7,10 +7,16 @@ function LogIn({ onLogin }) {
   async function handleLogin(event) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    const result = await authenticateUser(
-      formData.get("username"),
-      formData.get("password"),
-    );
+    let result;
+    try {
+      result = await authenticateUser(
+        formData.get("username"),
+        formData.get("password"),
+      );
+    } catch {
+      setError("Could not reach the login service. Please try again later.");
+      return;
+    }
 
     if (!result.user) {
       setError(result.error);

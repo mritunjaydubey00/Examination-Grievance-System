@@ -22,40 +22,57 @@ Deno.serve(async (request) => {
     });
     const { data: row, error: lookupError } = await admin
       .from("users")
-      .select('"User ID", "Phone Number", "Full Name", "Department", "Branch"')
+      .select('"User ID", "Phone Number", "Full Name", "Department", "Branch", email')
       .eq("User ID", userId.trim())
       .maybeSingle();
 
-    if (lookupError || !row?.["Phone Number"]) {
-      return respond({ error: "Invalid user ID or password." }, 401);
+    if (lookupError) {
+      return respond({
+        code: "LOGIN_SETUP_ERROR",
+        error: "The login function could not read the Users table. Check its secret key and column names.",
+      }, 500);
+    }
+    if (!row) return respond({ error: "Invalid user ID or password." }, 401);
+    if (!row["Phone Number"] || !row.email) {
+      return respond({
+        code: "LOGIN_SETUP_ERROR",
+        error: "This user needs both a phone number and email in the Users table.",
+      }, 500);
     }
 
     const authClient = createClient(url, request.headers.get("apikey") ?? "", {
       auth: { persistSession: false },
     });
     let { data: authData, error: authError } = await authClient.auth.signInWithPassword({
-      phone: String(row["Phone Number"]),
+      email: String(row.email),
       password,
     });
 
-    // On first login, the registered phone number is the temporary password.
+    // On first login, the phone number is the temporary password for the email-based Auth account.
     if (authError && password === String(row["Phone Number"])) {
       const { data: created, error: createError } = await admin.auth.admin.createUser({
-        phone: String(row["Phone Number"]),
-        phone_confirm: true,
+        email: String(row.email),
+        email_confirm: true,
         password,
         user_metadata: { must_change_password: true },
       });
 
       if (!createError && created.user) {
         ({ data: authData, error: authError } = await authClient.auth.signInWithPassword({
-          phone: String(row["Phone Number"]),
+          email: String(row.email),
           password,
         }));
       }
     }
 
     if (authError || !authData.session || !authData.user) {
+      const message = authError?.message?.toLowerCase() ?? "";
+      if (message.includes("provider") && (message.includes("disabled") || message.includes("not enabled"))) {
+        return respond({
+          code: "EMAIL_AUTH_DISABLED",
+          error: "Enable Email password sign-in in the Supabase Auth settings.",
+        }, 503);
+      }
       return respond({ error: "Invalid user ID or password." }, 401);
     }
 
