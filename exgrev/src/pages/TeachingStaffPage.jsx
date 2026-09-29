@@ -1,34 +1,12 @@
+import { useCallback, useEffect, useState } from "react";
+import { supabase } from "../lib/supabase.js";
+import { listAssignedGrievances, updateGrievance } from "../services/grievanceService.js";
+import "./ExaminationCell.css";
 function TeachingStaffPage({ session, onLogout }) {
-  return (
-    <main className="student-page teaching-staff-page">
-      <header className="student-header">
-        <div>
-          <p className="eyebrow">Teaching staff portal</p>
-          <h2>Welcome, {session.name}</h2>
-          <p className="student-context">
-            {session.department || "Examination grievance review"}
-          </p>
-        </div>
-        <button type="button" className="logout-button" onClick={onLogout}>
-          Log out
-        </button>
-      </header>
-      <section className="grievance-panel" aria-labelledby="staff-cases-title">
-        <div className="panel-intro">
-          <p className="eyebrow">Faculty review</p>
-          <h3 id="staff-cases-title">Assigned examination grievances</h3>
-          <p>Cases assigned to you by the Examination Cell will appear here.</p>
-        </div>
-        <div className="admin-empty-state staff-empty-state">
-          <strong>No assigned cases to display</strong>
-          <span>
-            New assignments will be available here when grievance records are
-            connected.
-          </span>
-        </div>
-      </section>
-    </main>
-  );
+  const [rows, setRows] = useState([]); const [remarks, setRemarks] = useState({}); const [notice, setNotice] = useState("");
+  const refresh = useCallback(async () => { try { setRows(await listAssignedGrievances(session.userId)); } catch (error) { setNotice(error.message || "Could not load assigned cases."); } }, [session.userId]);
+  useEffect(() => { refresh(); const channel = supabase.channel(`faculty-${session.userId}`).on("postgres_changes", { event: "*", schema: "public", table: "grievances" }, refresh).subscribe(); return () => { supabase.removeChannel(channel); }; }, [refresh]);
+  async function resolve(row) { try { await updateGrievance({ grievance: row, action: "resolve", userId: session.userId, notes: remarks[row.id] || "" }); setNotice("Grievance resolved and the student has been notified."); await refresh(); } catch (error) { setNotice(error.message || "Could not resolve grievance."); } }
+  return <main className="student-page examination-cell-page"><header className="admin-header"><div><p className="eyebrow">Teaching staff portal</p><h2>Welcome, {session.name}</h2><p className="admin-header-description">{session.department || "Your assigned grievances"}</p></div><button type="button" className="logout-button" onClick={onLogout}>Log out</button></header><section className="admin-case-panel"><div className="admin-case-heading"><div><p className="eyebrow">Faculty review</p><h3>Assigned examination grievances</h3></div><span className="admin-case-count">{rows.length} cases</span></div>{notice && <p role="status" className="grievance-message">{notice}</p>}{rows.length ? rows.map((row) => <article className="student-grievance" key={row.id}><div className="student-grievance-heading"><div><strong>{row.grievance_number || row.id} · {row.student_user_id}</strong><h4>{row.subject}</h4></div><span className="admin-status">{row.status}</span></div><p>{row.problem_category} · {row.problem_type} · {new Date(row.created_at).toLocaleString()}</p><p>{row.description}</p>{row.status !== "Resolved" && <><label className="form-field"><span>Resolution remarks for student</span><textarea rows="3" value={remarks[row.id] || ""} onChange={(e) => setRemarks((prev) => ({ ...prev, [row.id]: e.target.value }))}/></label><button className="admin-confirm-button is-resolve" type="button" disabled={!remarks[row.id]?.trim()} onClick={() => resolve(row)}>Resolve grievance</button></>}{row.resolution_remark && <p><strong>Resolution:</strong> {row.resolution_remark}</p>}</article>) : <p className="admin-empty-state">No assigned cases to display.</p>}</section></main>;
 }
-
 export default TeachingStaffPage;

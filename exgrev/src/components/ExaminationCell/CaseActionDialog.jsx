@@ -1,120 +1,21 @@
-import { useEffect, useState } from "react";
-
-const facultyOptions = [
-  "Prof. Rajesh Verma",
-  "Prof. Ananya Sen",
-  "Dr. Meenakshi Sundaram",
-];
-
-function CaseActionDialog({ grievance, action, onClose, onSubmit }) {
-  const [faculty, setFaculty] = useState(grievance?.assignedFaculty || "");
-  const [notes, setNotes] = useState("");
-
-  useEffect(() => {
-    function handleKeyDown(event) {
-      if (event.key === "Escape") onClose();
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
+import { useEffect, useMemo, useState } from "react";
+function CaseActionDialog({ grievance, action, users, onClose, onSubmit, onChooseAction }) {
+  const [query, setQuery] = useState(""); const [faculty, setFaculty] = useState(null);
+  const [notes, setNotes] = useState(""); const [dueDate, setDueDate] = useState(""); const [priority, setPriority] = useState("medium");
+  useEffect(() => { setFaculty(null); setNotes(""); setDueDate(""); setPriority("medium"); }, [grievance, action]);
+  useEffect(() => { function key(e) { if (e.key === "Escape") onClose(); } window.addEventListener("keydown", key); return () => window.removeEventListener("keydown", key); }, [onClose]);
+  const matches = useMemo(() => users.filter((user) => `${user["Full Name"]} ${user["User ID"]} ${user.Department}`.toLowerCase().includes(query.toLowerCase())), [users, query]);
   if (!grievance || !action) return null;
+  const isViewing = action === "view";
   const isForwarding = action === "forward";
-
-  function handleSubmit(event) {
-    event.preventDefault();
-    onSubmit({ faculty, notes });
-  }
-
-  return (
-    <div
-      className="admin-dialog-backdrop"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-    >
-      <section
-        className="admin-dialog"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="admin-dialog-title"
-      >
-        <button
-          type="button"
-          className="admin-dialog-close"
-          onClick={onClose}
-          aria-label="Close dialog"
-        >
-          ×
-        </button>
-        <p className="eyebrow">
-          {isForwarding ? "Faculty assignment" : "Official decision"}
-        </p>
-        <h3 id="admin-dialog-title">
-          {isForwarding ? "Forward case" : "Resolve grievance"}
-        </h3>
-        <div className="admin-dialog-summary">
-          <strong>
-            {grievance.id}: {grievance.title}
-          </strong>
-          <span>
-            {grievance.studentName} · {grievance.studentId}
-          </span>
-          <span>{grievance.subject}</span>
-        </div>
-        <form className="admin-dialog-form" onSubmit={handleSubmit}>
-          {isForwarding && (
-            <label className="form-field">
-              <span>Assign subject faculty</span>
-              <select
-                value={faculty}
-                onChange={(event) => setFaculty(event.target.value)}
-                required
-              >
-                <option value="">Select faculty member</option>
-                {facultyOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-          <label className="form-field">
-            <span>
-              {isForwarding ? "Instructions for faculty" : "Resolution remarks"}
-            </span>
-            <textarea
-              rows="4"
-              value={notes}
-              onChange={(event) => setNotes(event.target.value)}
-              placeholder={
-                isForwarding
-                  ? "Explain what should be reviewed."
-                  : "Record the official resolution."
-              }
-              required
-            />
-          </label>
-          <div className="admin-dialog-footer">
-            <button
-              type="button"
-              className="admin-cancel-button"
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className={`admin-confirm-button ${isForwarding ? "is-forward" : "is-resolve"}`}
-            >
-              {isForwarding ? "Forward case" : "Mark resolved"}
-            </button>
-          </div>
-        </form>
-      </section>
-    </div>
-  );
+  return <div className="admin-dialog-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}><section className="admin-dialog admin-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="admin-dialog-title"><button type="button" className="admin-dialog-close" onClick={onClose} aria-label="Close">×</button><p className="eyebrow">Grievance details</p><h3 id="admin-dialog-title">{grievance.grievance_number || grievance.id}: {grievance.subject}</h3>
+    <dl className="grievance-detail-grid"><div><dt>Student</dt><dd>{grievance.student_name} · {grievance.student_user_id}</dd></div><div><dt>Created</dt><dd>{new Date(grievance.created_at).toLocaleString()}</dd></div><div><dt>Category</dt><dd>{grievance.problem_category} · {grievance.problem_type}</dd></div><div><dt>Status / priority</dt><dd>{grievance.status} · {grievance.priority}</dd></div><div><dt>Due date</dt><dd>{grievance.due_date || "Not set"}</dd></div><div><dt>Assigned faculty</dt><dd>{grievance.assigned_faculty_name || "ExGrev Unforward"}</dd></div><div className="detail-description"><dt>Description</dt><dd>{grievance.description}</dd></div>{grievance.resolution_remark && <div className="detail-description"><dt>Resolution remark</dt><dd>{grievance.resolution_remark}</dd></div>}</dl>
+    {grievance.supporting_documents?.map((file) => <a className="document-link" key={file.path} href={file.url} target="_blank" rel="noreferrer">{file.name}</a>)}
+    {!isViewing && <form className="admin-dialog-form" onSubmit={(e) => { e.preventDefault(); onSubmit({ faculty, notes, dueDate, priority }); }}>
+      {isForwarding && <><label className="form-field"><span>Forward to eligible teaching staff or Examination Cell</span><input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by name, user ID, department"/><select value={faculty?.["User ID"] || ""} onChange={(e) => setFaculty(users.find((u) => u["User ID"] === e.target.value) || null)} required><option value="">Choose a person</option>{matches.map((u) => <option key={u["User ID"]} value={u["User ID"]}>{u["Full Name"]} · {u["Ex Factor"]} · {u["User ID"]}</option>)}</select></label><label className="form-field"><span>Due date (set by Examination Cell)</span><input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)}/></label><label className="form-field"><span>Priority</span><select value={priority} onChange={(e) => setPriority(e.target.value)}>{["low", "medium", "high", "urgent"].map((p) => <option key={p}>{p}</option>)}</select></label></>}
+      <label className="form-field"><span>{isForwarding ? "Instructions (optional)" : "Resolution remarks"}</span><textarea rows="4" required={!isForwarding} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={isForwarding ? "Explain what should be reviewed." : "Record the official resolution for the student."}/></label><div className="admin-dialog-footer"><button type="button" className="admin-cancel-button" onClick={onClose}>Cancel</button><button className={`admin-confirm-button ${isForwarding ? "is-forward" : "is-resolve"}`} type="submit">{isForwarding ? "Forward grievance" : "Mark resolved"}</button></div>
+    </form>}
+    {isViewing && <div className="admin-dialog-footer"><button type="button" className="admin-cancel-button" onClick={onClose}>Close</button>{grievance.status !== "Resolved" && <><button type="button" className="admin-confirm-button is-forward" onClick={() => onChooseAction("forward")}>{grievance.status === "New" ? "Forward to" : "Reassign"}</button><button type="button" className="admin-confirm-button is-resolve" onClick={() => onChooseAction("resolve")}>Resolve</button></>}</div>}
+    </section></div>;
 }
-
 export default CaseActionDialog;

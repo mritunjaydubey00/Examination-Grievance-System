@@ -342,6 +342,36 @@
   box-shadow: 0 18px 50px rgba(18, 35, 39, 0.2);
 }
 
+.admin-detail-dialog {
+  width: min(100%, 720px);
+  max-height: min(90vh, 900px);
+  overflow: auto;
+}
+.grievance-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 18px;
+}
+.grievance-detail-grid > div {
+  padding: 11px;
+  border-radius: 6px;
+  background: #f3f7f6;
+}
+.grievance-detail-grid dt { color: #718286; font-size: .72rem; font-weight: 700; }
+.grievance-detail-grid dd { margin: 4px 0 0; color: #172b35; font-size: .85rem; overflow-wrap: anywhere; }
+.grievance-detail-grid .detail-description { grid-column: 1 / -1; }
+.document-link { display: inline-block; margin: 0 8px 12px 0; color: #137f78; font-size: .82rem; }
+.grievance-message { margin: 14px; color: #315f4d; font-size: .85rem; }
+.student-history { max-width: 900px; }
+.student-grievance { padding: 16px 0; border-top: 1px solid #e6eceb; }
+.student-grievance-heading { display: flex; justify-content: space-between; gap: 12px; }
+.student-grievance h4 { margin: 5px 0; color: #172b35; font-size: 1rem; }
+.grievance-timeline { margin: 14px 0; padding-left: 22px; }
+.grievance-timeline li { padding: 0 0 13px 5px; color: #344d55; }
+.grievance-timeline small { display: block; color: #718286; }
+.grievance-timeline p { margin: 5px 0 0; font-size: .84rem; }
+
 .admin-dialog h3 {
   margin-bottom: 17px;
   font-size: 1.35rem;
@@ -426,6 +456,8 @@
 }
 
 @media (max-width: 640px) {
+  .grievance-detail-grid { grid-template-columns: 1fr; }
+  .grievance-detail-grid .detail-description { grid-column: auto; }
   .examination-cell-page {
     width: min(100% - 28px, 1120px);
   }

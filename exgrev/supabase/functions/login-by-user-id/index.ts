@@ -113,6 +113,8 @@ Deno.serve(async (request) => {
       department: row.Department,
       branch: row.Branch,
       role: row["Ex Factor"] ?? "",
+      must_change_password:
+        authData.user.user_metadata?.must_change_password === true,
     };
     const { error: metadataError } = await admin.auth.admin.updateUserById(
       authData.user.id,
@@ -126,10 +128,20 @@ Deno.serve(async (request) => {
         500,
       );
 
+    const { data: refreshedAuth, error: refreshError } =
+      await authClient.auth.refreshSession({
+        refresh_token: authData.session.refresh_token,
+      });
+    if (refreshError || !refreshedAuth.session)
+      return respond(
+        { error: "Unable to start your session. Please try again." },
+        500,
+      );
+
     return respond({
       session: {
-        access_token: authData.session.access_token,
-        refresh_token: authData.session.refresh_token,
+        access_token: refreshedAuth.session.access_token,
+        refresh_token: refreshedAuth.session.refresh_token,
       },
       profile: {
         userId: row["User ID"],
@@ -137,8 +149,7 @@ Deno.serve(async (request) => {
         department: row.Department,
         branch: row.Branch,
         role: row["Ex Factor"] ?? "",
-        mustChangePassword:
-          authData.user.user_metadata?.must_change_password === true,
+        mustChangePassword: profileMetadata.must_change_password === true,
       },
     });
   } catch {

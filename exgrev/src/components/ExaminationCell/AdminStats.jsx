@@ -8,8 +8,8 @@ const metrics = [
 function AdminStats({ grievances }) {
   const counts = {
     total: grievances.length,
-    pending: grievances.filter((item) => item.status === "Submitted").length,
-    forwarded: grievances.filter((item) => item.status === "Under Progress")
+    pending: grievances.filter((item) => item.status === "New").length,
+    forwarded: grievances.filter((item) => item.status === "In Progress")
       .length,
     resolved: grievances.filter((item) => item.status === "Resolved").length,
   };
