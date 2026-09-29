@@ -1,0 +1,47 @@
+const sampleGrievances = [
+  {
+    id: "GRV-2026-801",
+    studentId: "21BCE1042",
+    studentName: "Aarav Sharma",
+    branch: "B.Tech Computer Science",
+    category: "Re-evaluation",
+    subject: "CS302 - Database Systems",
+    title: "Marks discrepancy in Question 4 SQL Optimization",
+    status: "Under Progress",
+    assignedFaculty: "Prof. Rajesh Verma",
+    adminInstructions: "Please verify Q4 evaluation against the official key.",
+    facultyRemarks: "",
+    createdAt: "20 Sep 2026, 10:30 AM",
+  },
+  {
+    id: "GRV-2026-802",
+    studentId: "21BCE1042",
+    studentName: "Aarav Sharma",
+    branch: "B.Tech Computer Science",
+    category: "Marksheet Correction",
+    subject: "EC201 - Digital Logic Design",
+    title: "Spelling error in student name on grade card",
+    status: "Resolved",
+    assignedFaculty: "Dr. V. K. Malhotra",
+    adminInstructions: "Direct administrative correction.",
+    facultyRemarks:
+      "Corrected in the university portal. New grade card generated.",
+    createdAt: "15 Sep 2026, 11:00 AM",
+  },
+  {
+    id: "GRV-2026-803",
+    studentId: "21BCE2098",
+    studentName: "Riya Sen",
+    branch: "B.Tech Electronics & Communication",
+    category: "Admit Card Issue",
+    subject: "EC304 - Microprocessors",
+    title: "Exam center location missing on hall ticket",
+    status: "Submitted",
+    assignedFaculty: "",
+    adminInstructions: "",
+    facultyRemarks: "",
+    createdAt: "28 Sep 2026, 04:00 PM",
+  },
+];
+
+export default sampleGrievances;

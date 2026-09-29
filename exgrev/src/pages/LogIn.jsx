@@ -28,50 +28,61 @@ function LogIn({ onLogin }) {
   }
 
   return (
-    <>
-      <div className="bg bg-primary text-white p-3 m-3 rounded">
-        <h4>Login</h4>
-        <div className="d-flex flex-column gap-2">
-          <form className="row m-3" onSubmit={handleLogin}>
-            <label htmlFor="userId" className="col-sm-2 col-form-label ">
-              User ID
-            </label>
-            <div className="col-sm-10">
-              <input
-                type="text"
-                className="form-control"
-                id="userId"
-                name="username"
-                placeholder="Enter your user ID"
-                autoComplete="username"
-                required
-              />
-            </div>
-            <label htmlFor="password" className="col-sm-2 col-form-label">
-              Password
-            </label>
-            <div className="col-sm-10">
-              <input
-                type="password"
-                className="form-control"
-                id="password"
-                name="password"
-                placeholder="Enter your password"
-                autoComplete="current-password"
-                required
-              />
-            </div>
-            {error && <p className="text-warning mb-0">{error}</p>}
-            <button
-              type="submit"
-              className="btn btn-success w-25 m-3 align-self-center"
-            >
-              Login
-            </button>
-          </form>
+    <main className="login-page">
+      <header className="login-intro">
+        <p className="eyebrow">Examination grievance system</p>
+        <h2>Sign in to your portal</h2>
+        <p>Use your institutional account to continue.</p>
+      </header>
+
+      <section className="login-panel" aria-labelledby="login-title">
+        <div className="login-panel-heading">
+          <h3 id="login-title">Welcome back</h3>
+          <p>Enter the User ID and password assigned to your account.</p>
         </div>
-      </div>
-    </>
+
+        <form className="login-form" onSubmit={handleLogin}>
+          <div className="login-field">
+            <label htmlFor="userId">User ID</label>
+            <input
+              type="text"
+              id="userId"
+              name="username"
+              placeholder="Enter your User ID"
+              autoComplete="username"
+              required
+            />
+          </div>
+
+          <div className="login-field">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              required
+            />
+          </div>
+
+          {error && (
+            <p className="login-error" role="alert">
+              {error}
+            </p>
+          )}
+
+          <button type="submit" className="login-submit-button">
+            Sign in
+          </button>
+        </form>
+
+        <p className="login-account-types">
+          Student <span aria-hidden="true">·</span> Examination Cell{" "}
+          <span aria-hidden="true">·</span> Teaching staff
+        </p>
+      </section>
+    </main>
   );
 }
 

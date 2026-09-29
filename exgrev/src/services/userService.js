@@ -2,6 +2,25 @@ import { supabase } from "../lib/supabase.js";
 
 const PROFILE_KEY = "exgrev.profile";
 
+function normalizeUserRole(value) {
+  const role = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ");
+
+  if (role === "student") return "student";
+  if (
+    ["examination cell", "exam cell", "admin", "exam cell admin"].includes(role)
+  ) {
+    return "examination cell";
+  }
+  if (["teaching staff", "teaching", "faculty"].includes(role)) {
+    return "teaching staff";
+  }
+  return "";
+}
+
 export async function authenticateUser(userId, password) {
   const { data, error } = await supabase.functions.invoke("login-by-user-id", {
     body: { userId: userId.trim(), password },
@@ -11,7 +30,8 @@ export async function authenticateUser(userId, password) {
     if (error.context?.status === 404) {
       return {
         user: null,
-        error: "The login function is not deployed to this Supabase project yet.",
+        error:
+          "The login function is not deployed to this Supabase project yet.",
       };
     }
 
@@ -28,7 +48,8 @@ export async function authenticateUser(userId, password) {
     if (!error.context) {
       return {
         user: null,
-        error: "Could not reach the login function. Check your connection and Supabase project settings.",
+        error:
+          "Could not reach the login function. Check your connection and Supabase project settings.",
       };
     }
     return { user: null, error: "Invalid user ID or password." };
@@ -38,20 +59,41 @@ export async function authenticateUser(userId, password) {
     return { user: null, error: "Invalid user ID or password." };
   }
 
-  const { error: sessionError } = await supabase.auth.setSession(data.session);
-  if (sessionError) {
-    return { user: null, error: "Unable to start your session. Please try again." };
+  const role = normalizeUserRole(data.profile.role);
+  if (!role) {
+    return {
+      user: null,
+      error:
+        "This account has no valid Ex Factor. Contact the administrator to set it to Student, Examination Cell, or Teaching staff.",
+    };
   }
 
-  sessionStorage.setItem(PROFILE_KEY, JSON.stringify(data.profile));
-  return { user: data.profile, error: null };
+  const { error: sessionError } = await supabase.auth.setSession(data.session);
+  if (sessionError) {
+    return {
+      user: null,
+      error: "Unable to start your session. Please try again.",
+    };
+  }
+
+  const profile = { ...data.profile, role };
+  sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+  return { user: profile, error: null };
 }
 
 export async function getAuthenticatedProfile() {
   const { data: sessionData } = await supabase.auth.getSession();
   if (!sessionData.session) return null;
   const storedProfile = sessionStorage.getItem(PROFILE_KEY);
-  if (storedProfile) return JSON.parse(storedProfile);
+  if (storedProfile) {
+    const profile = JSON.parse(storedProfile);
+    const role = normalizeUserRole(
+      profile.role || sessionData.session.user?.user_metadata?.role,
+    );
+    const restoredProfile = { ...profile, role };
+    sessionStorage.setItem(PROFILE_KEY, JSON.stringify(restoredProfile));
+    return restoredProfile;
+  }
 
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user?.user_metadata?.user_id) return null;
@@ -61,6 +103,7 @@ export async function getAuthenticatedProfile() {
     name: metadata.full_name,
     department: metadata.department,
     branch: metadata.branch,
+    role: normalizeUserRole(metadata.role),
     mustChangePassword: metadata.must_change_password === true,
   };
   sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
