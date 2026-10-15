@@ -63,23 +63,65 @@ export async function createGrievance({ userId, subject, description, category, 
   return grievance;
 }
 
-export async function updateGrievance({ grievance, action, userId, faculty, notes, dueDate, priority }) {
-  const updates = action === "resolve"
-    ? { status: "Resolved", resolution_remark: notes.trim() }
-    : { status: "In Progress", assigned_faculty_user_id: faculty.account_identifier, assigned_faculty: faculty["Full Name"], due_date: dueDate || null, priority };
-  const { data, error } = await supabase.from("grievances").update(updates)
+export async function updateGrievance({
+  grievance,
+  action,
+  userId,
+  faculty,
+  notes,
+  dueDate,
+  priority,
+}) {
+  if (grievance.resolution_pending) {
+    throw new Error(
+      "This grievance is awaiting student confirmation of the proposed resolution.",
+    );
+  }
+
+  if (action === "remark" || action === "resolve") {
+    const { data, error } = await supabase.rpc(
+      "examination_cell_grievance_action",
+      {
+        target_grievance_id: grievance.id,
+        requested_action: action,
+        action_remark: notes.trim(),
+      },
+    );
+    if (error) throw error;
+    return data;
+  }
+
+  const { data, error } = await supabase
+    .from("grievances")
+    .update({
+      status: "In Progress",
+      assigned_faculty_user_id: faculty.account_identifier,
+      assigned_faculty: faculty["Full Name"],
+      due_date: dueDate || null,
+      priority,
+    })
     .eq("id", grievance.id).select().single();
   if (error) throw error;
-  const details = action === "resolve" ? { remark: notes.trim() } : {
-    assigned_user_id: faculty.account_identifier, assigned_name: faculty["Full Name"],
-    due_date: dueDate || null, priority, note: notes.trim() || null,
-  };
   const { error: eventError } = await supabase.from("grievance_events").insert({
     grievance_id: grievance.id, actor_user_id: userId,
-    event_type: action === "resolve" ? "resolved" : grievance.assigned_faculty_user_id ? "reassigned" : "forwarded", details,
+    event_type: grievance.assigned_faculty_user_id ? "reassigned" : "forwarded",
+    details: {
+      assigned_user_id: faculty.account_identifier,
+      assigned_name: faculty["Full Name"],
+      due_date: dueDate || null,
+      priority,
+      note: notes.trim() || null,
+    },
   });
   if (eventError) throw eventError;
   return data;
+}
+
+export async function confirmGrievanceResolution(grievanceId) {
+  const { error } = await supabase.rpc("confirm_grievance_resolution", {
+    target_grievance_id: grievanceId,
+  });
+  if (error) throw error;
 }
 
 export async function getDocumentUrl(path) {

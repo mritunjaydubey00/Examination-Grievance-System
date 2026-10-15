@@ -93,7 +93,13 @@ function ExaminationCell({ session, onLogout }) {
         priority,
       });
       setActiveAction(null);
-      setNotice("Grievance updated.");
+      setNotice(
+        activeAction.action === "remark"
+          ? "Remark sent. Grievance status is now In Progress."
+          : activeAction.action === "resolve"
+            ? "Resolution proposed. The grievance will be resolved after the student confirms."
+            : "Grievance updated.",
+      );
       await refresh();
     } catch (error) {
       setNotice(error.message || "Could not update grievance.");

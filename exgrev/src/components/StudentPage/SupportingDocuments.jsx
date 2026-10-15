@@ -14,7 +14,7 @@ function SupportingDocuments({ documents }) {
       const documentLinks = await Promise.all(
         documents.map(async (document) => ({
           ...document,
-          url: await getDocumentUrl(document.path),
+          url: document.url || (await getDocumentUrl(document.path)),
         })),
       );
       setLinks(documentLinks);

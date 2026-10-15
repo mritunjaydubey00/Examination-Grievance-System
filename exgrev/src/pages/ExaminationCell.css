@@ -363,6 +363,9 @@
 .grievance-detail-grid .detail-description { grid-column: 1 / -1; }
 .document-link { display: inline-block; margin: 0 8px 12px 0; color: #137f78; font-size: .82rem; }
 .grievance-message { margin: 14px; color: #315f4d; font-size: .85rem; }
+.resolution-pending-notice { flex-basis: 100%; margin: 0; color: #65777d; font-size: .84rem; }
+.student-resolution-confirmation { margin: 14px 0; padding: 14px; border: 1px solid #dfe5e4; border-radius: 8px; background: #f3f7f6; }
+.student-resolution-confirmation > p:first-child { margin: 0 0 12px; color: #344d55; font-size: .88rem; }
 .student-history { max-width: 900px; }
 .student-grievance { padding: 16px 0; border-top: 1px solid #e6eceb; }
 .student-grievance-heading { display: flex; justify-content: space-between; gap: 12px; }

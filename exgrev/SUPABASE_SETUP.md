@@ -30,6 +30,8 @@ The migration installs row-level security so students can create and read only t
 
 The case ID is the database-generated `grievance_number`, while `id` is the internal UUID. Creation time is one `timestamptz` value, displayed in the browser's local date/time. Supporting document metadata and Storage object paths are in `supporting_documents`. Staff set the due date and priority while forwarding. The assignment stores both `assigned_faculty_user_id` (foreign key to `users`) and the display name; it begins as `ExGrev Unforward`.
 
+Apply [supabase/migrations/202610150003_student_resolution_confirmation.sql](supabase/migrations/202610150003_student_resolution_confirmation.sql) after the grievance tables migration. It enables Examination Cell remarks that move a case to `In Progress`, plus a two-step resolution: Examination Cell proposes the resolution, then the student confirms it before the status becomes `Resolved`. A proposal remains pending until the student confirms.
+
 ### History thread on the student dashboard
 
 `grievance_events` is the append-only activity feed associated with each grievance. The app records submission, forwarding/reassignment, and resolution with remarks; the student dashboard orders and displays those events as a timeline. Realtime subscriptions refresh student and staff views when records change. To add another milestone later, insert a new event row with a clear `event_type` and a small JSON `details` object (for example, `{ "status": "In Progress" }`). For production, move the paired grievance update and event insert into one Postgres RPC/trigger transaction, and add a faculty work queue that only returns cases assigned to that faculty member.
