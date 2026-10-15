@@ -14,14 +14,16 @@ Deno.serve(async (request) => {
     return respond({ error: "Method not allowed" }, 405);
 
   try {
-    const { userId, password } = await request.json();
+    const { identifier: requestIdentifier, userId, password } =
+      await request.json();
+    const identifier = requestIdentifier ?? userId;
     if (
-      typeof userId !== "string" ||
+      typeof identifier !== "string" ||
       typeof password !== "string" ||
-      !userId.trim() ||
+      !identifier.trim() ||
       !password
     ) {
-      return respond({ error: "Invalid user ID or password." }, 400);
+      return respond({ error: "Invalid User ID/email or password." }, 400);
     }
 
     const url = Deno.env.get("SUPABASE_URL")!;
@@ -32,11 +34,19 @@ Deno.serve(async (request) => {
         auth: { persistSession: false },
       },
     );
-    const { data: row, error: lookupError } = await admin
-      .from("users")
-      .select("*")
-      .eq("User ID", userId.trim())
-      .maybeSingle();
+    const normalizedIdentifier = identifier.trim();
+    const lookup = normalizedIdentifier.includes("@")
+      ? admin
+          .from("users")
+          .select("*")
+          .ilike("email", normalizedIdentifier.replace(/[\\%_]/g, "\\$&"))
+          .maybeSingle()
+      : admin
+          .from("users")
+          .select("*")
+          .eq("User ID", normalizedIdentifier)
+          .maybeSingle();
+    const { data: row, error: lookupError } = await lookup;
 
     if (lookupError) {
       return respond(
@@ -48,7 +58,8 @@ Deno.serve(async (request) => {
         500,
       );
     }
-    if (!row) return respond({ error: "Invalid user ID or password." }, 401);
+    if (!row)
+      return respond({ error: "Invalid User ID/email or password." }, 401);
     if (!row["Phone Number"] || !row.email) {
       return respond(
         {
@@ -103,7 +114,7 @@ Deno.serve(async (request) => {
           503,
         );
       }
-      return respond({ error: "Invalid user ID or password." }, 401);
+      return respond({ error: "Invalid User ID/email or password." }, 401);
     }
 
     const profileMetadata = {
@@ -153,7 +164,7 @@ Deno.serve(async (request) => {
       },
     });
   } catch {
-    return respond({ error: "Invalid user ID or password." }, 400);
+    return respond({ error: "Invalid User ID/email or password." }, 400);
   }
 });
 

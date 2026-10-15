@@ -21,9 +21,10 @@ function normalizeUserRole(value) {
   return "";
 }
 
-export async function authenticateUser(userId, password) {
+export async function authenticateUser(identifier, password) {
+  const loginIdentifier = String(identifier ?? "").trim();
   const { data, error } = await supabase.functions.invoke("login-by-user-id", {
-    body: { userId: userId.trim(), password },
+    body: { identifier: loginIdentifier, password },
   });
 
   if (error) {
@@ -52,11 +53,11 @@ export async function authenticateUser(userId, password) {
           "Could not reach the login function. Check your connection and Supabase project settings.",
       };
     }
-    return { user: null, error: "Invalid user ID or password." };
+    return { user: null, error: "Invalid User ID/email or password." };
   }
 
   if (!data?.session || !data?.profile) {
-    return { user: null, error: "Invalid user ID or password." };
+    return { user: null, error: "Invalid User ID/email or password." };
   }
 
   const role = normalizeUserRole(data.profile.role);

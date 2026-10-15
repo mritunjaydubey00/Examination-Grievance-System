@@ -497,6 +497,79 @@
   font-size: 0.95rem;
 }
 
+.student-history .student-history-card {
+  position: relative;
+  margin: 0 0 16px;
+  padding: 20px 22px;
+  border: 1px solid rgba(11, 128, 122, 0.12);
+  border-radius: 18px 18px 18px 6px;
+  background: rgba(235, 247, 245, 0.34);
+}
+
+.student-history .student-history-card::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 160px;
+  height: 100px;
+  border-radius: 0 18px 0 100%;
+  background: rgba(11, 128, 122, 0.045);
+  content: "";
+  pointer-events: none;
+}
+
+.student-history .student-history-card > * {
+  position: relative;
+}
+
+.supporting-documents {
+  margin-top: 12px;
+  color: #344d55;
+}
+
+.supporting-documents summary {
+  width: fit-content;
+  color: #137f78;
+  cursor: pointer;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.document-dropdown-list {
+  display: grid;
+  gap: 7px;
+  margin: 10px 0 0;
+  padding: 12px 16px 12px 32px;
+  border: 1px solid rgba(11, 128, 122, 0.12);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  overflow-wrap: anywhere;
+}
+
+.document-dropdown-list a {
+  color: #137f78;
+  font-size: 0.84rem;
+}
+
+.document-dropdown-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 0;
+  color: #65777d;
+  font-size: 0.82rem;
+}
+
+.document-dropdown-message button {
+  border: 0;
+  background: none;
+  color: #137f78;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
 .grievance-form,
 .form-grid {
   display: grid;
