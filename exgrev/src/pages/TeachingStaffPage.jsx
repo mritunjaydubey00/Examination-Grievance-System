@@ -1,12 +1,128 @@
 import { useCallback, useEffect, useState } from "react";
+import TeachingStaffHeader from "../components/teachingStaff/TeachingStaffHeader.jsx";
+import TeachingStaffStats from "../components/teachingStaff/TeachingStaffStats.jsx";
+import TeachingStaffWorkspace from "../components/teachingStaff/TeachingStaffWorkspace.jsx";
+import TeachingStaffCaseDialog from "../components/teachingStaff/TeachingStaffCaseDialog.jsx";
+import {
+  addFacultyGrievanceRemark,
+  getDocumentUrl,
+  listAssignedGrievances,
+} from "../services/grievanceService.js";
 import { supabase } from "../lib/supabase.js";
-import { listAssignedGrievances, updateGrievance } from "../services/grievanceService.js";
 import "./ExaminationCell.css";
+
 function TeachingStaffPage({ session, onLogout }) {
-  const [rows, setRows] = useState([]); const [remarks, setRemarks] = useState({}); const [notice, setNotice] = useState("");
-  const refresh = useCallback(async () => { try { setRows(await listAssignedGrievances(session.userId)); } catch (error) { setNotice(error.message || "Could not load assigned cases."); } }, [session.userId]);
-  useEffect(() => { refresh(); const channel = supabase.channel(`faculty-${session.userId}`).on("postgres_changes", { event: "*", schema: "public", table: "grievances" }, refresh).subscribe(); return () => { supabase.removeChannel(channel); }; }, [refresh]);
-  async function resolve(row) { try { await updateGrievance({ grievance: row, action: "resolve", userId: session.userId, notes: remarks[row.id] || "" }); setNotice("Grievance resolved and the student has been notified."); await refresh(); } catch (error) { setNotice(error.message || "Could not resolve grievance."); } }
-  return <main className="student-page examination-cell-page"><header className="admin-header"><div><p className="eyebrow">Teaching staff portal</p><h2>Welcome, {session.name}</h2><p className="admin-header-description">{session.department || "Your assigned grievances"}</p></div><button type="button" className="logout-button" onClick={onLogout}>Log out</button></header><section className="admin-case-panel"><div className="admin-case-heading"><div><p className="eyebrow">Faculty review</p><h3>Assigned examination grievances</h3></div><span className="admin-case-count">{rows.length} cases</span></div>{notice && <p role="status" className="grievance-message">{notice}</p>}{rows.length ? rows.map((row) => <article className="student-grievance" key={row.id}><div className="student-grievance-heading"><div><strong>{row.grievance_code || "ID pending"} · {row.student_user_id}</strong><h4>{row.subject}</h4></div><span className="admin-status">{row.status}</span></div><p>{row.problem_category} · {row.problem_type} · {new Date(row.created_at).toLocaleString()}</p><p>{row.description}</p>{row.status !== "Resolved" && <><label className="form-field"><span>Resolution remarks for student</span><textarea rows="3" value={remarks[row.id] || ""} onChange={(e) => setRemarks((prev) => ({ ...prev, [row.id]: e.target.value }))}/></label><button className="admin-confirm-button is-resolve" type="button" disabled={!remarks[row.id]?.trim()} onClick={() => resolve(row)}>Resolve grievance</button></>}{row.resolution_remark && <p><strong>Resolution:</strong> {row.resolution_remark}</p>}</article>) : <p className="admin-empty-state">No assigned cases to display.</p>}</section></main>;
+  const [grievances, setGrievances] = useState([]);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [activeAction, setActiveAction] = useState(null);
+  const [notice, setNotice] = useState("");
+
+  const refresh = useCallback(async () => {
+    try {
+      const rows = await listAssignedGrievances(session.userId);
+      const enrichedRows = await Promise.all(
+        rows.map(async (row) => ({
+          ...row,
+          student_name: row.users?.["Full Name"] || row.student_user_id,
+          branch: row.users?.Branch || "",
+          student_department: row.users?.Department || "Not provided",
+          supporting_documents: await Promise.all(
+            (row.supporting_documents || []).map(async (file) => ({
+              ...file,
+              url: await getDocumentUrl(file.path),
+            })),
+          ),
+        })),
+      );
+      setGrievances(enrichedRows);
+    } catch (error) {
+      setNotice(error.message || "Could not load your assigned grievances.");
+    }
+  }, [session.userId]);
+
+  useEffect(() => {
+    refresh();
+    const channel = supabase
+      .channel(`teaching-staff-grievances-${session.userId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "grievances" },
+        refresh,
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "grievance_events" },
+        refresh,
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refresh, session.userId]);
+
+  const filteredGrievances = grievances.filter((grievance) => {
+    const searchMatches =
+      !search ||
+      [
+        grievance.grievance_code,
+        grievance.student_user_id,
+        grievance.student_name,
+        grievance.subject,
+      ].some((value) =>
+        String(value || "")
+          .toLowerCase()
+          .includes(search.toLowerCase()),
+      );
+    return (
+      searchMatches &&
+      (statusFilter === "ALL" || grievance.status === statusFilter)
+    );
+  });
+
+  async function handleSubmitRemark(notes) {
+    try {
+      await addFacultyGrievanceRemark({
+        grievanceId: activeAction.grievance.id,
+        notes,
+      });
+      setActiveAction(null);
+      setNotice("Remark sent to the student and Examination Cell.");
+      await refresh();
+    } catch (error) {
+      setNotice(error.message || "Could not send the remark.");
+    }
+  }
+
+  return (
+    <main className="student-page examination-cell-page">
+      <TeachingStaffHeader session={session} onLogout={onLogout} />
+      <TeachingStaffStats grievances={grievances} />
+      <TeachingStaffWorkspace
+        grievances={filteredGrievances}
+        search={search}
+        onSearchChange={setSearch}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        notice={notice}
+        onOpenGrievance={(grievance) =>
+          setActiveAction({ grievance, mode: "view" })
+        }
+      />
+      <TeachingStaffCaseDialog
+        key={`${activeAction?.grievance.id || "none"}-${activeAction?.mode || "closed"}`}
+        grievance={activeAction?.grievance}
+        mode={activeAction?.mode}
+        notice={notice}
+        onClose={() => setActiveAction(null)}
+        onAddRemark={() =>
+          setActiveAction((current) => ({ ...current, mode: "remark" }))
+        }
+        onSubmitRemark={handleSubmitRemark}
+      />
+    </main>
+  );
 }
+
 export default TeachingStaffPage;

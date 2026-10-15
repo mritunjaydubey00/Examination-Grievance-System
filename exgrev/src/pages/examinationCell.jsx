@@ -5,7 +5,6 @@ import AdminWorkspace from "../components/ExaminationCell/AdminWorkspace.jsx";
 import CaseActionDialog from "../components/ExaminationCell/CaseActionDialog.jsx";
 import {
   getDocumentUrl,
-  listAssignableUsers,
   listGrievances,
   updateGrievance,
 } from "../services/grievanceService.js";
@@ -14,7 +13,6 @@ import "./ExaminationCell.css";
 
 function ExaminationCell({ session, onLogout }) {
   const [grievances, setGrievances] = useState([]);
-  const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [activeAction, setActiveAction] = useState(null);
@@ -22,10 +20,7 @@ function ExaminationCell({ session, onLogout }) {
 
   const refresh = useCallback(async () => {
     try {
-      const [rows, people] = await Promise.all([
-        listGrievances(),
-        listAssignableUsers(),
-      ]);
+      const rows = await listGrievances();
       const enriched = await Promise.all(
         rows.map(async (row) => ({
           ...row,
@@ -41,7 +36,6 @@ function ExaminationCell({ session, onLogout }) {
         })),
       );
       setGrievances(enriched);
-      setUsers(people);
     } catch (error) {
       setNotice(
         error.message ||
@@ -124,7 +118,6 @@ function ExaminationCell({ session, onLogout }) {
       <CaseActionDialog
         grievance={activeAction?.grievance}
         action={activeAction?.action}
-        users={users}
         onClose={() => setActiveAction(null)}
         onChooseAction={(action) =>
           setActiveAction((current) => ({ ...current, action }))

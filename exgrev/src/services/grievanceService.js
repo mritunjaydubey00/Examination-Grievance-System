@@ -24,17 +24,51 @@ export async function listStudentGrievances(userId) {
 
 export async function listAssignedGrievances(userId) {
   const { data, error } = await supabase.from("grievances")
-    .select("*, grievance_events(*)").eq("assigned_faculty_user_id", userId)
+    .select('*, users!grievances_student_user_id_fkey("Full Name", Branch, Department), grievance_events(*)')
+    .eq("assigned_faculty_user_id", userId)
     .order("created_at", { ascending: false });
   return throwIfError({ data, error });
 }
 
-export async function listAssignableUsers() {
-  const { data, error } = await supabase.from("users")
-    .select('account_identifier, email, "Full Name", "Ex Factor", Department')
-    .in('"Ex Factor"', ["Teaching staff", "Examination Cell"])
-    .order("Full Name");
-  return throwIfError({ data, error });
+export async function listAssignableUsers(searchTerm = "") {
+  const columns = [
+    "account_identifier",
+    "email",
+    '"Full Name"',
+    '"Ex Factor"',
+    "Department",
+  ].join(", ");
+  const roles = ["Teaching Staff", "Teaching staff", "Examination Cell"];
+  const search = String(searchTerm || "").trim();
+
+  function buildQuery() {
+    return supabase
+      .from("users")
+      .select(columns)
+      .in('"Ex Factor"', roles)
+      .limit(50);
+  }
+
+  if (!search) {
+    const { data, error } = await buildQuery().order("Full Name");
+    return throwIfError({ data, error });
+  }
+
+  const pattern = `%${search.replace(/[\\%_*]/g, "\\$&")}%`;
+  const results = await Promise.all(
+    ['"Full Name"', "email", "Department"].map((column) =>
+      buildQuery().ilike(column, pattern),
+    ),
+  );
+  const users = new Map();
+  for (const result of results) {
+    for (const user of throwIfError(result) || []) {
+      users.set(user.account_identifier, user);
+    }
+  }
+  return [...users.values()].sort((left, right) =>
+    (left["Full Name"] || "").localeCompare(right["Full Name"] || ""),
+  );
 }
 
 export async function createGrievance({ userId, subject, description, category, problemType, files }) {
@@ -61,6 +95,18 @@ export async function createGrievance({ userId, subject, description, category, 
   });
   if (eventError) throw eventError;
   return grievance;
+}
+
+export async function addFacultyGrievanceRemark({ grievanceId, notes }) {
+  const { data, error } = await supabase.rpc(
+    "teaching_staff_add_grievance_remark",
+    {
+      target_grievance_id: grievanceId,
+      action_remark: notes.trim(),
+    },
+  );
+  if (error) throw error;
+  return data;
 }
 
 export async function updateGrievance({

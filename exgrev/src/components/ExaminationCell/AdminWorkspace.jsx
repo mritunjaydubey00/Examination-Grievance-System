@@ -10,6 +10,7 @@ function AdminWorkspace({
   onStatusFilterChange,
   notice,
   onAction,
+  audience = "examination-cell",
 }) {
   return (
     <section
@@ -46,7 +47,11 @@ function AdminWorkspace({
           {notice}
         </p>
       )}
-      <GrievanceTable grievances={grievances} onAction={onAction} />
+      <GrievanceTable
+        grievances={grievances}
+        onAction={onAction}
+        audience={audience}
+      />
     </section>
   );
 }
