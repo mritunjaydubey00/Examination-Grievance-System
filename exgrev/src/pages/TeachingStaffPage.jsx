@@ -5,7 +5,6 @@ import TeachingStaffWorkspace from "../components/teachingStaff/TeachingStaffWor
 import TeachingStaffCaseDialog from "../components/teachingStaff/TeachingStaffCaseDialog.jsx";
 import {
   addFacultyGrievanceRemark,
-  getDocumentUrl,
   listAssignedGrievances,
 } from "../services/grievanceService.js";
 import { supabase } from "../lib/supabase.js";
@@ -20,22 +19,22 @@ function TeachingStaffPage({ session, onLogout }) {
 
   const refresh = useCallback(async () => {
     try {
-      const rows = await listAssignedGrievances(session.userId);
-      const enrichedRows = await Promise.all(
-        rows.map(async (row) => ({
-          ...row,
-          student_name: row.users?.["Full Name"] || row.student_user_id,
-          branch: row.users?.Branch || "",
-          student_department: row.users?.Department || "Not provided",
-          supporting_documents: await Promise.all(
-            (row.supporting_documents || []).map(async (file) => ({
-              ...file,
-              url: await getDocumentUrl(file.path),
-            })),
-          ),
-        })),
-      );
+      const { data } = await supabase.auth.getSession();
+      const authUser = data.session?.user;
+      const identities = [
+        session.userId,
+        authUser?.email,
+        authUser?.user_metadata?.user_id,
+      ];
+      const rows = await listAssignedGrievances(identities);
+      const enrichedRows = rows.map((row) => ({
+        ...row,
+        student_name: row.users?.["Full Name"] || row.student_user_id,
+        branch: row.users?.Branch || "",
+        student_department: row.users?.Department || "Not provided",
+      }));
       setGrievances(enrichedRows);
+      setNotice("");
     } catch (error) {
       setNotice(error.message || "Could not load your assigned grievances.");
     }

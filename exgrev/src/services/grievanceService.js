@@ -22,10 +22,22 @@ export async function listStudentGrievances(userId) {
   return throwIfError({ data, error });
 }
 
-export async function listAssignedGrievances(userId) {
+export async function listAssignedGrievances(userIds) {
+  const identities = [...new Set(
+    (Array.isArray(userIds) ? userIds : [userIds])
+      .flatMap((userId) => {
+        const identity = String(userId || "").trim();
+        return identity ? [identity, identity.toLowerCase()] : [];
+      }),
+  )];
+
+  if (identities.length === 0) {
+    throw new Error("Could not determine your staff account identity.");
+  }
+
   const { data, error } = await supabase.from("grievances")
     .select('*, users!grievances_student_user_id_fkey("Full Name", Branch, Department), grievance_events(*)')
-    .eq("assigned_faculty_user_id", userId)
+    .in("assigned_faculty_user_id", identities)
     .order("created_at", { ascending: false });
   return throwIfError({ data, error });
 }
