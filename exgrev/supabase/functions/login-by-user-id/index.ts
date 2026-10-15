@@ -119,7 +119,7 @@ Deno.serve(async (request) => {
 
     const profileMetadata = {
       ...(authData.user.user_metadata ?? {}),
-      user_id: row["User ID"],
+      user_id: row["User ID"] || String(row.email).trim().toLowerCase(),
       full_name: row["Full Name"],
       department: row.Department,
       branch: row.Branch,
@@ -155,7 +155,7 @@ Deno.serve(async (request) => {
         refresh_token: refreshedAuth.session.refresh_token,
       },
       profile: {
-        userId: row["User ID"],
+        userId: row["User ID"] || String(row.email).trim().toLowerCase(),
         name: row["Full Name"],
         department: row.Department,
         branch: row.Branch,

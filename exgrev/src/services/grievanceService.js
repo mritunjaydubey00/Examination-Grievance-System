@@ -31,7 +31,7 @@ export async function listAssignedGrievances(userId) {
 
 export async function listAssignableUsers() {
   const { data, error } = await supabase.from("users")
-    .select('"User ID", "Full Name", "Ex Factor", Department')
+    .select('account_identifier, email, "Full Name", "Ex Factor", Department')
     .in('"Ex Factor"', ["Teaching staff", "Examination Cell"])
     .order("Full Name");
   return throwIfError({ data, error });
@@ -66,12 +66,12 @@ export async function createGrievance({ userId, subject, description, category, 
 export async function updateGrievance({ grievance, action, userId, faculty, notes, dueDate, priority }) {
   const updates = action === "resolve"
     ? { status: "Resolved", resolution_remark: notes.trim() }
-    : { status: "In Progress", assigned_faculty_user_id: faculty["User ID"], assigned_faculty: faculty["Full Name"], due_date: dueDate || null, priority };
+    : { status: "In Progress", assigned_faculty_user_id: faculty.account_identifier, assigned_faculty: faculty["Full Name"], due_date: dueDate || null, priority };
   const { data, error } = await supabase.from("grievances").update(updates)
     .eq("id", grievance.id).select().single();
   if (error) throw error;
   const details = action === "resolve" ? { remark: notes.trim() } : {
-    assigned_user_id: faculty["User ID"], assigned_name: faculty["Full Name"],
+    assigned_user_id: faculty.account_identifier, assigned_name: faculty["Full Name"],
     due_date: dueDate || null, priority, note: notes.trim() || null,
   };
   const { error: eventError } = await supabase.from("grievance_events").insert({
