@@ -124,6 +124,18 @@ export async function updateGrievance({
     );
   }
 
+  if (action === "forward" && dueDate) {
+    const now = new Date();
+    const today = [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, "0"),
+      String(now.getDate()).padStart(2, "0"),
+    ].join("-");
+    if (dueDate < today) {
+      throw new Error("Due date cannot be in the past.");
+    }
+  }
+
   if (action === "remark" || action === "resolve") {
     const { data, error } = await supabase.rpc(
       "examination_cell_grievance_action",

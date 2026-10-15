@@ -30,6 +30,8 @@ The migration installs row-level security so students can create and read only t
 
 Apply [supabase/migrations/202610160002_case_insensitive_staff_search.sql](supabase/migrations/202610160002_case_insensitive_staff_search.sql) after the grievance migration to let Examination Cell user lookups match role values case-insensitively, including `Teaching Staff`. The forward dialog now queries Supabase as the search text changes rather than only filtering a list loaded when the page opened.
 
+Apply [supabase/migrations/202610160003_prevent_past_grievance_due_dates.sql](supabase/migrations/202610160003_prevent_past_grievance_due_dates.sql) to enforce that newly set or changed grievance due dates are not earlier than the current date. The Examination Cell uses the browser calendar's minimum-date setting and validates the date again before saving.
+
 The case ID is the database-generated `grievance_number`, while `id` is the internal UUID. Creation time is one `timestamptz` value, displayed in the browser's local date/time. Supporting document metadata and Storage object paths are in `supporting_documents`. Staff set the due date and priority while forwarding. The assignment stores both `assigned_faculty_user_id` (foreign key to `users`) and the display name; it begins as `ExGrev Unforward`.
 
 Apply [supabase/migrations/202610150003_student_resolution_confirmation.sql](supabase/migrations/202610150003_student_resolution_confirmation.sql) after the grievance tables migration. It enables Examination Cell remarks that move a case to `In Progress`, plus a two-step resolution: Examination Cell proposes the resolution, then the student confirms it before the status becomes `Resolved`. A proposal remains pending until the student confirms.

@@ -615,6 +615,40 @@
   padding: 12px 13px;
 }
 
+.calendar-date-picker {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.calendar-date-picker input[type="date"] {
+  flex: 1;
+  min-width: 0;
+  color-scheme: light;
+}
+
+.calendar-picker-button {
+  display: grid;
+  width: 46px;
+  flex: 0 0 46px;
+  place-items: center;
+  border: 1px solid #cbd8d7;
+  border-radius: 7px;
+  background: #fbfdfc;
+  color: #137f78;
+  cursor: pointer;
+}
+
+.calendar-picker-button:hover {
+  border-color: #15958c;
+  background: #f0f8f6;
+}
+
+.calendar-picker-button:focus-visible {
+  outline: 2px solid #15958c;
+  outline-offset: 2px;
+}
+
 .form-field textarea {
   resize: vertical;
 }

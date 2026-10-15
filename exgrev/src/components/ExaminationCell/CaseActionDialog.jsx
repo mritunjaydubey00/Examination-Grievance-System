@@ -1,7 +1,16 @@
 import { useEffect, useState } from "react";
 import GrievanceTimeline from "../StudentPage/GrievanceTimeline.jsx";
 import SupportingDocuments from "../StudentPage/SupportingDocuments.jsx";
+import CalendarDatePicker from "../CalendarDatePicker.jsx";
 import { listAssignableUsers } from "../../services/grievanceService.js";
+
+function getTodayDateValue() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 function CaseActionDialog({
   grievance,
@@ -213,10 +222,10 @@ function CaseActionDialog({
                 </label>
                 <label className="form-field">
                   <span>Due date (set by Examination Cell)</span>
-                  <input
-                    type="date"
+                  <CalendarDatePicker
                     value={dueDate}
-                    onChange={(event) => setDueDate(event.target.value)}
+                    min={getTodayDateValue()}
+                    onChange={setDueDate}
                   />
                 </label>
                 <label className="form-field">
