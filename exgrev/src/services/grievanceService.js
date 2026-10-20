@@ -101,17 +101,55 @@ export async function createGrievance({ userId, subject, description, category, 
     await Promise.all(paths.map(({ path }) => supabase.storage.from(BUCKET).remove([path])));
     throw error;
   }
-  const { error: eventError } = await supabase.from("grievance_events").insert({
-    grievance_id: grievance.id, actor_user_id: userId, event_type: "submitted",
-    details: { status: "New" },
-  });
-  if (eventError) throw eventError;
   return grievance;
 }
 
-export async function addFacultyGrievanceRemark({ grievanceId, notes }) {
+export async function getGrievanceThread(grievanceId) {
+  const { data: grievance, error: grievanceError } = await supabase
+    .from("grievances")
+    .select("*")
+    .eq("id", grievanceId)
+    .maybeSingle();
+  if (grievanceError) throw grievanceError;
+  if (!grievance) throw new Error("This grievance is not available to your account.");
+
+  const { data: events, error: eventsError } = await supabase
+    .from("grievance_events")
+    .select("*")
+    .eq("grievance_id", grievanceId)
+    .order("created_at", { ascending: true });
+  if (eventsError) throw eventsError;
+
+  const eventIds = (events || []).map((event) => event.id);
+  let recipients = [];
+  if (eventIds.length) {
+    const { data, error } = await supabase
+      .from("grievance_event_recipients")
+      .select("event_id, recipient_display_name")
+      .in("event_id", eventIds);
+    if (error) throw error;
+    recipients = data || [];
+  }
+
+  const recipientsByEvent = new Map();
+  for (const recipient of recipients) {
+    const existing = recipientsByEvent.get(recipient.event_id) || [];
+    existing.push(recipient);
+    recipientsByEvent.set(recipient.event_id, existing);
+  }
+
+  return {
+    grievance,
+    events: (events || []).map((event) => ({
+      ...event,
+      recipients: recipientsByEvent.get(event.id) || [],
+    })),
+  };
+}
+
+export async function addGrievanceRemark({ grievanceId, notes }) {
   const { data, error } = await supabase.rpc(
-    "teaching_staff_add_grievance_remark",
+    "add_grievance_remark",
     {
       target_grievance_id: grievanceId,
       action_remark: notes.trim(),
@@ -124,7 +162,6 @@ export async function addFacultyGrievanceRemark({ grievanceId, notes }) {
 export async function updateGrievance({
   grievance,
   action,
-  userId,
   faculty,
   notes,
   dueDate,
@@ -148,7 +185,11 @@ export async function updateGrievance({
     }
   }
 
-  if (action === "remark" || action === "resolve") {
+  if (action === "remark") {
+    return addGrievanceRemark({ grievanceId: grievance.id, notes });
+  }
+
+  if (action === "resolve") {
     const { data, error } = await supabase.rpc(
       "examination_cell_grievance_action",
       {
@@ -161,29 +202,14 @@ export async function updateGrievance({
     return data;
   }
 
-  const { data, error } = await supabase
-    .from("grievances")
-    .update({
-      status: "In Progress",
-      assigned_faculty_user_id: faculty.account_identifier,
-      assigned_faculty: faculty["Full Name"],
-      due_date: dueDate || null,
-      priority,
-    })
-    .eq("id", grievance.id).select().single();
-  if (error) throw error;
-  const { error: eventError } = await supabase.from("grievance_events").insert({
-    grievance_id: grievance.id, actor_user_id: userId,
-    event_type: grievance.assigned_faculty_user_id ? "reassigned" : "forwarded",
-    details: {
-      assigned_user_id: faculty.account_identifier,
-      assigned_name: faculty["Full Name"],
-      due_date: dueDate || null,
-      priority,
-      note: notes.trim() || null,
-    },
+  const { data, error } = await supabase.rpc("assign_grievance", {
+    target_grievance_id: grievance.id,
+    target_faculty_user_id: faculty.account_identifier,
+    requested_due_date: dueDate || null,
+    requested_priority: priority,
+    action_remark: notes.trim(),
   });
-  if (eventError) throw eventError;
+  if (error) throw error;
   return data;
 }
 

@@ -1,4 +1,4 @@
-function TeachingStaffTable({ grievances, onOpenGrievance }) {
+function TeachingStaffTable({ grievances, onOpenGrievance, onOpenThread }) {
   return (
     <section className="admin-case-panel">
       <div className="admin-case-heading">
@@ -47,6 +47,13 @@ function TeachingStaffTable({ grievances, onOpenGrievance }) {
                     </span>
                   </td>
                   <td className="admin-actions-cell">
+                    <button
+                      type="button"
+                      className="admin-action-button admin-forward-button"
+                      onClick={() => onOpenThread(grievance)}
+                    >
+                      Thread
+                    </button>
                     <button
                       type="button"
                       className="admin-action-button admin-forward-button"

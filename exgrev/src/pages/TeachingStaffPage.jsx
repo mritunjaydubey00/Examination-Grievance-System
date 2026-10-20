@@ -3,10 +3,12 @@ import TeachingStaffHeader from "../components/teachingStaff/TeachingStaffHeader
 import TeachingStaffStats from "../components/teachingStaff/TeachingStaffStats.jsx";
 import TeachingStaffWorkspace from "../components/teachingStaff/TeachingStaffWorkspace.jsx";
 import TeachingStaffCaseDialog from "../components/teachingStaff/TeachingStaffCaseDialog.jsx";
+import ToastNotice from "../components/ToastNotice.jsx";
 import {
-  addFacultyGrievanceRemark,
+  addGrievanceRemark,
   listAssignedGrievances,
 } from "../services/grievanceService.js";
+import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 import { supabase } from "../lib/supabase.js";
 import "./ExaminationCell.css";
 
@@ -16,6 +18,8 @@ function TeachingStaffPage({ session, onLogout }) {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [activeAction, setActiveAction] = useState(null);
   const [notice, setNotice] = useState("");
+  const [noticeType, setNoticeType] = useState("success");
+  const [threadGrievanceId, setThreadGrievanceId] = useState(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -34,8 +38,8 @@ function TeachingStaffPage({ session, onLogout }) {
         student_department: row.users?.Department || "Not provided",
       }));
       setGrievances(enrichedRows);
-      setNotice("");
     } catch (error) {
+      setNoticeType("error");
       setNotice(error.message || "Could not load your assigned grievances.");
     }
   }, [session.userId]);
@@ -82,16 +86,29 @@ function TeachingStaffPage({ session, onLogout }) {
 
   async function handleSubmitRemark(notes) {
     try {
-      await addFacultyGrievanceRemark({
+      await addGrievanceRemark({
         grievanceId: activeAction.grievance.id,
         notes,
       });
       setActiveAction(null);
+      setNoticeType("success");
       setNotice("Remark sent to the student and Examination Cell.");
       await refresh();
     } catch (error) {
+      setNoticeType("error");
       setNotice(error.message || "Could not send the remark.");
     }
+  }
+
+  if (threadGrievanceId) {
+    return (
+      <GrievanceThreadPage
+        grievanceId={threadGrievanceId}
+        session={session}
+        onBack={() => setThreadGrievanceId(null)}
+        onLogout={onLogout}
+      />
+    );
   }
 
   return (
@@ -104,21 +121,25 @@ function TeachingStaffPage({ session, onLogout }) {
         onSearchChange={setSearch}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
-        notice={notice}
         onOpenGrievance={(grievance) =>
           setActiveAction({ grievance, mode: "view" })
         }
+        onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
       />
       <TeachingStaffCaseDialog
         key={`${activeAction?.grievance.id || "none"}-${activeAction?.mode || "closed"}`}
         grievance={activeAction?.grievance}
         mode={activeAction?.mode}
-        notice={notice}
         onClose={() => setActiveAction(null)}
         onAddRemark={() =>
           setActiveAction((current) => ({ ...current, mode: "remark" }))
         }
         onSubmitRemark={handleSubmitRemark}
+      />
+      <ToastNotice
+        message={notice}
+        type={noticeType}
+        onDismiss={() => setNotice("")}
       />
     </main>
   );

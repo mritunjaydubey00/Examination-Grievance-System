@@ -7,6 +7,7 @@ import { supabase } from "../lib/supabase.js";
 import StudentHeader from "../components/StudentPage/StudentHeader.jsx";
 import GrievanceForm from "../components/StudentPage/GrievanceForm.jsx";
 import GrievanceHistory from "../components/StudentPage/GrievanceHistory.jsx";
+import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 
 function StudentPage({ session, onLogout }) {
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -14,6 +15,7 @@ function StudentPage({ session, onLogout }) {
   const [grievances, setGrievances] = useState([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [threadGrievanceId, setThreadGrievanceId] = useState(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -75,6 +77,17 @@ function StudentPage({ session, onLogout }) {
     }
   }
 
+  if (threadGrievanceId) {
+    return (
+      <GrievanceThreadPage
+        grievanceId={threadGrievanceId}
+        session={session}
+        onBack={() => setThreadGrievanceId(null)}
+        onLogout={onLogout}
+      />
+    );
+  }
+
   return (
     <main className="student-page">
       <StudentHeader session={session} onLogout={onLogout} />
@@ -87,7 +100,10 @@ function StudentPage({ session, onLogout }) {
         message={message}
         onSubmit={handleSubmit}
       />
-      <GrievanceHistory grievances={grievances} />
+      <GrievanceHistory
+        grievances={grievances}
+        onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
+      />
     </main>
   );
 }

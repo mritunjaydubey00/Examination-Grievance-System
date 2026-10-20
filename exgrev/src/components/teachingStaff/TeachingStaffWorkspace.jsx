@@ -8,8 +8,8 @@ function TeachingStaffWorkspace({
   onSearchChange,
   statusFilter,
   onStatusFilterChange,
-  notice,
   onOpenGrievance,
+  onOpenThread,
 }) {
   return (
     <section className="admin-workspace" aria-label="Assigned grievances">
@@ -38,14 +38,10 @@ function TeachingStaffWorkspace({
           </select>
         </label>
       </div>
-      {notice && (
-        <p role="status" className="grievance-message">
-          {notice}
-        </p>
-      )}
       <TeachingStaffTable
         grievances={grievances}
         onOpenGrievance={onOpenGrievance}
+        onOpenThread={onOpenThread}
       />
     </section>
   );

@@ -1,6 +1,6 @@
 import StudentGrievance from "./StudentGrievance.jsx";
 
-function GrievanceHistory({ grievances }) {
+function GrievanceHistory({ grievances, onOpenThread }) {
   return (
     <section
       className="grievance-panel student-history"
@@ -15,7 +15,11 @@ function GrievanceHistory({ grievances }) {
       </div>
       {grievances.length ? (
         grievances.map((grievance) => (
-          <StudentGrievance key={grievance.id} grievance={grievance} />
+          <StudentGrievance
+            key={grievance.id}
+            grievance={grievance}
+            onOpenThread={onOpenThread}
+          />
         ))
       ) : (
         <p>No grievances submitted yet.</p>

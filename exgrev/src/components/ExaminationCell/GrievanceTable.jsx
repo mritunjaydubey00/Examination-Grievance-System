@@ -1,6 +1,7 @@
 function GrievanceTable({
   grievances,
   onAction,
+  onOpenThread,
   audience = "examination-cell",
 }) {
   const isTeachingStaff = audience === "teaching-staff";
@@ -62,6 +63,13 @@ function GrievanceTable({
                     </span>
                   </td>
                   <td className="admin-actions-cell">
+                    <button
+                      type="button"
+                      className="admin-action-button admin-forward-button"
+                      onClick={() => onOpenThread(grievance)}
+                    >
+                      Thread
+                    </button>
                     <button
                       type="button"
                       className="admin-action-button admin-forward-button"

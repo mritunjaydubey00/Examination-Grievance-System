@@ -3,7 +3,7 @@ import { confirmGrievanceResolution } from "../../services/grievanceService.js";
 import GrievanceTimeline from "./GrievanceTimeline.jsx";
 import SupportingDocuments from "./SupportingDocuments.jsx";
 
-function StudentGrievance({ grievance }) {
+function StudentGrievance({ grievance, onOpenThread }) {
   const [confirming, setConfirming] = useState(false);
   const [confirmationError, setConfirmationError] = useState("");
   const [confirmed, setConfirmed] = useState(false);
@@ -39,6 +39,13 @@ function StudentGrievance({ grievance }) {
       <p>
         {grievance.problem_category} · {grievance.problem_type}
       </p>
+      <button
+        type="button"
+        className="thread-open-button"
+        onClick={() => onOpenThread(grievance)}
+      >
+        Open grievance thread
+      </button>
       <GrievanceTimeline events={grievance.grievance_events || []} />
       {grievance.resolution_pending && !confirmed && (
         <div className="student-resolution-confirmation">

@@ -5,7 +5,6 @@ import SupportingDocuments from "../StudentPage/SupportingDocuments.jsx";
 function TeachingStaffCaseDialog({
   grievance,
   mode,
-  notice,
   onClose,
   onAddRemark,
   onSubmitRemark,
@@ -114,12 +113,6 @@ function TeachingStaffCaseDialog({
 
         <GrievanceTimeline events={grievance.grievance_events || []} />
         <SupportingDocuments documents={grievance.supporting_documents || []} />
-
-        {notice && (
-          <p role="status" className="grievance-message">
-            {notice}
-          </p>
-        )}
 
         {mode === "remark" ? (
           <form className="admin-dialog-form" onSubmit={handleSubmit}>

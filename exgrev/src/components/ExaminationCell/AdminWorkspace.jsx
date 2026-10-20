@@ -8,8 +8,8 @@ function AdminWorkspace({
   onSearchChange,
   statusFilter,
   onStatusFilterChange,
-  notice,
   onAction,
+  onOpenThread,
   audience = "examination-cell",
 }) {
   return (
@@ -42,14 +42,10 @@ function AdminWorkspace({
           </select>
         </label>
       </div>
-      {notice && (
-        <p role="status" className="grievance-message">
-          {notice}
-        </p>
-      )}
       <GrievanceTable
         grievances={grievances}
         onAction={onAction}
+        onOpenThread={onOpenThread}
         audience={audience}
       />
     </section>

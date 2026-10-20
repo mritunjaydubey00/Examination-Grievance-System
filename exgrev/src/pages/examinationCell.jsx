@@ -3,6 +3,8 @@ import AdminHeader from "../components/ExaminationCell/AdminHeader.jsx";
 import AdminStats from "../components/ExaminationCell/AdminStats.jsx";
 import AdminWorkspace from "../components/ExaminationCell/AdminWorkspace.jsx";
 import CaseActionDialog from "../components/ExaminationCell/CaseActionDialog.jsx";
+import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
+import ToastNotice from "../components/ToastNotice.jsx";
 import {
   getDocumentUrl,
   listGrievances,
@@ -17,6 +19,8 @@ function ExaminationCell({ session, onLogout }) {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [activeAction, setActiveAction] = useState(null);
   const [notice, setNotice] = useState("");
+  const [noticeType, setNoticeType] = useState("success");
+  const [threadGrievanceId, setThreadGrievanceId] = useState(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -37,6 +41,7 @@ function ExaminationCell({ session, onLogout }) {
       );
       setGrievances(enriched);
     } catch (error) {
+      setNoticeType("error");
       setNotice(
         error.message ||
           "Could not load grievances. Apply the Supabase setup SQL and check table policies.",
@@ -80,13 +85,13 @@ function ExaminationCell({ session, onLogout }) {
       await updateGrievance({
         grievance: activeAction.grievance,
         action: activeAction.action,
-        userId: session.userId,
         faculty,
         notes,
         dueDate,
         priority,
       });
       setActiveAction(null);
+      setNoticeType("success");
       setNotice(
         activeAction.action === "remark"
           ? "Remark sent. Grievance status is now In Progress."
@@ -96,8 +101,20 @@ function ExaminationCell({ session, onLogout }) {
       );
       await refresh();
     } catch (error) {
+      setNoticeType("error");
       setNotice(error.message || "Could not update grievance.");
     }
+  }
+
+  if (threadGrievanceId) {
+    return (
+      <GrievanceThreadPage
+        grievanceId={threadGrievanceId}
+        session={session}
+        onBack={() => setThreadGrievanceId(null)}
+        onLogout={onLogout}
+      />
+    );
   }
 
   return (
@@ -110,10 +127,10 @@ function ExaminationCell({ session, onLogout }) {
         onSearchChange={setSearch}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
-        notice={notice}
         onAction={(grievance, action) =>
           setActiveAction({ grievance, action })
         }
+        onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
       />
       <CaseActionDialog
         grievance={activeAction?.grievance}
@@ -123,6 +140,11 @@ function ExaminationCell({ session, onLogout }) {
           setActiveAction((current) => ({ ...current, action }))
         }
         onSubmit={submitAction}
+      />
+      <ToastNotice
+        message={notice}
+        type={noticeType}
+        onDismiss={() => setNotice("")}
       />
     </main>
   );
