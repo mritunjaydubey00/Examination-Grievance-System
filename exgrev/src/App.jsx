@@ -12,6 +12,7 @@ import { getAuthenticatedProfile, signOut } from "./services/userService.js";
 function App() {
   const [profile, setProfile] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const [authError, setAuthError] = useState("");
   const [loggedInAt, setLoggedInAt] = useState(null);
   const [uptimeSeconds, setUptimeSeconds] = useState(0);
   const normalizedRole = String(profile?.role || "")
@@ -22,16 +23,38 @@ function App() {
 
   useEffect(() => {
     let active = true;
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (data.session) {
-        const userProfile = await getAuthenticatedProfile();
-        if (active) {
-          setProfile(userProfile);
-          setLoggedInAt(Date.now());
+    async function restoreSession() {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        if (data.session) {
+          const userProfile = await getAuthenticatedProfile();
+          if (active) {
+            setProfile(userProfile);
+            setLoggedInAt(Date.now());
+          }
         }
+      } catch (error) {
+        let signOutFailed = false;
+        try {
+          await signOut();
+        } catch {
+          signOutFailed = true;
+        }
+        if (active) {
+          setAuthError(
+            signOutFailed
+              ? "Could not verify your ExGrev account or clear the session. Please try again."
+              : error instanceof Error
+                ? error.message
+                : "Unable to verify your ExGrev account. Please try again.",
+          );
+        }
+      } finally {
+        if (active) setAuthChecked(true);
       }
-      if (active) setAuthChecked(true);
-    });
+    }
+    restoreSession();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -60,6 +83,7 @@ function App() {
   }, [loggedInAt]);
 
   function handleLogin(userProfile) {
+    setAuthError("");
     sessionStorage.setItem("exgrev.profile", JSON.stringify(userProfile));
     setProfile(userProfile);
     setLoggedInAt(Date.now());
@@ -75,7 +99,7 @@ function App() {
       {!authChecked ? (
         <p className="auth-loading">Checking your session…</p>
       ) : !profile ? (
-        <LogIn onLogin={handleLogin} />
+        <LogIn onLogin={handleLogin} authError={authError} />
       ) : profile.mustChangePassword ? (
         <ChangePassword
           onComplete={(updatedProfile) => setProfile(updatedProfile)}

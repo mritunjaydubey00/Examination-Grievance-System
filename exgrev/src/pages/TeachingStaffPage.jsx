@@ -28,7 +28,7 @@ function TeachingStaffPage({ session, onLogout }) {
       const identities = [
         session.userId,
         authUser?.email,
-        authUser?.user_metadata?.user_id,
+        authUser?.app_metadata?.user_id,
       ];
       const rows = await listAssignedGrievances(identities);
       const enrichedRows = rows.map((row) => ({

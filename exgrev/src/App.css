@@ -231,6 +231,70 @@
   background: #0f6e68;
 }
 
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0;
+  color: #89999b;
+  font-size: 0.75rem;
+}
+
+.login-divider::before,
+.login-divider::after {
+  flex: 1;
+  height: 1px;
+  background: #e6eceb;
+  content: "";
+}
+
+.google-login-button {
+  display: flex;
+  width: 100%;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  border: 1px solid #cbd8d7;
+  border-radius: 7px;
+  background: #fff;
+  color: #344d55;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 650;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.google-login-button:hover:not(:disabled) {
+  border-color: #9badaa;
+  background: #fbfdfc;
+  box-shadow: 0 3px 10px rgba(28, 61, 65, 0.08);
+}
+
+.google-login-button:focus-visible {
+  outline: 3px solid rgba(21, 149, 140, 0.25);
+  outline-offset: 2px;
+}
+
+.google-login-button:disabled {
+  border-color: #dce3e2;
+  background: #f5f7f7;
+  box-shadow: none;
+  color: #879493;
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.google-login-icon {
+  width: 19px;
+  height: 19px;
+  flex: none;
+}
+
 .login-account-types {
   margin-top: 21px;
   padding-top: 17px;

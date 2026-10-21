@@ -127,10 +127,20 @@ Deno.serve(async (request) => {
       must_change_password:
         authData.user.user_metadata?.must_change_password === true,
     };
+    const appMetadata = {
+      ...(authData.user.app_metadata ?? {}),
+      exgrev_profile_version: 1,
+      user_id: profileMetadata.user_id,
+      full_name: profileMetadata.full_name,
+      department: profileMetadata.department,
+      branch: profileMetadata.branch,
+      role: profileMetadata.role,
+    };
     const { error: metadataError } = await admin.auth.admin.updateUserById(
       authData.user.id,
       {
         user_metadata: profileMetadata,
+        app_metadata: appMetadata,
       },
     );
     if (metadataError)

@@ -9,18 +9,25 @@ The `email` and `Phone Number` fields must be present for each account. Emails m
 ## One-time setup
 
 1. In Supabase, make sure **Authentication → Sign In / Providers → Email** is enabled. This is normally enabled by default.
-2. In **Project Settings → Edge Functions → Secrets**, add `SUPABASE_SERVICE_ROLE_KEY` with your project's secret/service-role key. Keep this key in Supabase only.
-3. In PowerShell, go to the project folder, sign in to the Supabase CLI, then deploy the current login function:
+2. To enable Google login, create an OAuth client in Google Cloud Console and add the Supabase callback URL (`https://<project-ref>.supabase.co/auth/v1/callback`) as an authorized redirect URI. In **Authentication → Sign In / Providers → Google**, enable the provider and enter the Google client ID and secret. Add the deployed app URL and local development URL (for example `http://localhost:5173`) to Supabase's allowed redirect URLs.
+3. Apply [supabase/migrations/202610210002_approved_auth_users.sql](supabase/migrations/202610210002_approved_auth_users.sql) in **SQL Editor** after the existing login/grievance migrations. It restricts new Supabase Auth users to email addresses and valid roles already present in `public.users`, and switches database authorization claims to server-managed `app_metadata`. It never creates application users. Supabase may create an Auth identity for an approved user on their first Google sign-in; people not already listed in `public.users` are rejected before an Auth user is created. Existing sessions should sign out and back in after applying this migration.
+4. In **Project Settings → Edge Functions → Secrets**, add `SUPABASE_SERVICE_ROLE_KEY` with your project's secret/service-role key. Keep this key in Supabase only.
+5. In PowerShell, go to the project folder, sign in to the Supabase CLI, then deploy both login functions:
 
    ```powershell
    cd "D:\GitHub\Examination Grievance System\exgrev"
    npx supabase login
    npx supabase functions deploy login-by-user-id --project-ref hkdonpsbywfegfvzvqik
+   npx supabase functions deploy resolve-authenticated-profile --project-ref hkdonpsbywfegfvzvqik
    ```
 
    The first `npx` command may ask to install the Supabase CLI; type `y` to continue. `npx supabase login` asks for a Supabase access token. Create one in the Supabase dashboard under **Account → Access Tokens** and paste it into the terminal prompt. Do not share that token.
 
-The app's Supabase URL and publishable key are already in the ignored `.env.local` file. The development table policies can remain as they are for now.
+The app's Supabase URL and publishable key are already in the ignored `.env.local` file. There is no sign-up form: approved users sign in with their existing Google account or the credentials provisioned for them. The server checks the verified email against `public.users` and gets the role/profile from that table; Google profile fields are not used to assign access.
+
+### Google sign-in troubleshooting
+
+If sign-in returns `Unsupported provider: provider is not enabled`, Supabase Auth has not enabled Google for the project receiving the request. In this app, confirm the Supabase dashboard project ref is `hkdonpsbywfegfvzvqik`, then open **Authentication → Sign In / Providers → Google**, enable Google, save the provider settings, and confirm the Google client ID and secret are present. The `VITE_SUPABASE_URL` configured for this app points to `hkdonpsbywfegfvzvqik.supabase.co`. If you changed `.env.local`, restart the Vite development server before retrying.
 
 ## Grievance flow setup
 

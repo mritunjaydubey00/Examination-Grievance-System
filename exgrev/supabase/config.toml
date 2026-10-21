@@ -1,2 +1,5 @@
 [functions.login-by-user-id]
 verify_jwt = false
+
+[functions.resolve-authenticated-profile]
+verify_jwt = true

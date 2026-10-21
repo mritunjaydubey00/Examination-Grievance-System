@@ -1,6 +1,7 @@
 import { supabase } from "../lib/supabase.js";
 
 const PROFILE_KEY = "exgrev.profile";
+const PROFILE_VERSION = 1;
 
 function normalizeUserRole(value) {
   const role = String(value || "")
@@ -85,30 +86,63 @@ export async function authenticateUser(identifier, password) {
 export async function getAuthenticatedProfile() {
   const { data: sessionData } = await supabase.auth.getSession();
   if (!sessionData.session) return null;
-  const storedProfile = sessionStorage.getItem(PROFILE_KEY);
-  if (storedProfile) {
-    const profile = JSON.parse(storedProfile);
-    const role = normalizeUserRole(
-      profile.role || sessionData.session.user?.user_metadata?.role,
+
+  let appMetadata = sessionData.session.user.app_metadata ?? {};
+  if (appMetadata.exgrev_profile_version !== PROFILE_VERSION) {
+    const { data, error } = await supabase.functions.invoke(
+      "resolve-authenticated-profile",
     );
-    const restoredProfile = { ...profile, role };
-    sessionStorage.setItem(PROFILE_KEY, JSON.stringify(restoredProfile));
-    return restoredProfile;
+    if (error) {
+      let responseBody;
+      try {
+        responseBody = await error.context?.clone?.().json();
+      } catch {
+        responseBody = null;
+      }
+      throw new Error(
+        responseBody?.error ||
+          "Unable to verify your ExGrev account. Please try again.",
+      );
+    }
+    if (!data?.profile) {
+      throw new Error(
+        "This Google account is not approved for ExGrev. Contact your administrator.",
+      );
+    }
+
+    const { data: refreshedSession, error: refreshError } =
+      await supabase.auth.refreshSession();
+    if (refreshError || !refreshedSession.session) {
+      throw new Error("Unable to start your session. Please try again.");
+    }
+    appMetadata = refreshedSession.session.user.app_metadata ?? {};
   }
 
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user?.user_metadata?.user_id) return null;
-  const metadata = data.user.user_metadata;
+  if (!appMetadata.user_id) {
+    throw new Error("Unable to load your ExGrev account profile.");
+  }
   const profile = {
-    userId: metadata.user_id,
-    name: metadata.full_name,
-    department: metadata.department,
-    branch: metadata.branch,
-    role: normalizeUserRole(metadata.role),
-    mustChangePassword: metadata.must_change_password === true,
+    userId: appMetadata.user_id,
+    name: appMetadata.full_name,
+    department: appMetadata.department,
+    branch: appMetadata.branch,
+    role: normalizeUserRole(appMetadata.role),
+    mustChangePassword:
+      sessionData.session.user.user_metadata?.must_change_password === true,
   };
   sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
   return profile;
+}
+
+export async function signInWithGoogle() {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${window.location.origin}${window.location.pathname}`,
+      queryParams: { prompt: "select_account" },
+    },
+  });
+  return { error: error?.message ?? null };
 }
 
 export async function changePassword(password) {
