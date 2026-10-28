@@ -1,6 +1,23 @@
 import { supabase } from "../lib/supabase.js";
 
 const BUCKET = "grievance-documents";
+const THREAD_ATTACHMENT_BUCKET = "grievance-thread-attachments";
+const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
+const ALLOWED_ATTACHMENT_TYPES = new Set([
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+]);
+const ATTACHMENT_TYPE_BY_EXTENSION = {
+  pdf: "application/pdf",
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  doc: "application/msword",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+};
 
 function throwIfError({ data, error }) {
   if (error) throw error;
@@ -148,15 +165,80 @@ export async function getGrievanceThread(grievanceId) {
 }
 
 export async function addGrievanceRemark({ grievanceId, notes }) {
-  const { data, error } = await supabase.rpc(
-    "add_grievance_remark",
-    {
-      target_grievance_id: grievanceId,
-      action_remark: notes.trim(),
-    },
-  );
+  const { data, error } = await supabase.rpc("add_grievance_remark", {
+    target_grievance_id: grievanceId,
+    action_remark: notes.trim(),
+  });
   if (error) throw error;
   return data;
+}
+
+export async function addGrievanceRemarkWithAttachments({
+  grievanceId,
+  userId,
+  notes,
+  files = [],
+}) {
+  const uploaded = [];
+  try {
+    for (const file of files) {
+      const extension = file.name.split(".").pop()?.toLowerCase() || "";
+      const contentType =
+        (ALLOWED_ATTACHMENT_TYPES.has(file.type) && file.type) ||
+        ATTACHMENT_TYPE_BY_EXTENSION[extension] ||
+        "";
+      if (!ALLOWED_ATTACHMENT_TYPES.has(contentType)) {
+        throw new Error(`“${file.name}” is not a supported document type.`);
+      }
+      if (file.size > MAX_ATTACHMENT_SIZE) {
+        throw new Error(`“${file.name}” exceeds the 10 MB per-file limit.`);
+      }
+
+      const safeName = file.name.replace(/[^\w.-]/g, "_");
+      const path = `${grievanceId}/${userId}/${crypto.randomUUID()}-${safeName}`;
+      const { error: uploadError } = await supabase.storage
+        .from(THREAD_ATTACHMENT_BUCKET)
+        .upload(path, file, { contentType });
+      if (uploadError) throw uploadError;
+      uploaded.push({
+        path,
+        name: file.name,
+        type: contentType,
+        size: file.size,
+      });
+    }
+
+    const { data, error } = await supabase.rpc(
+      "add_grievance_remark_with_attachments",
+      {
+        target_grievance_id: grievanceId,
+        action_remark: notes.trim(),
+        target_attachments: uploaded,
+      },
+    );
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    if (uploaded.length) {
+      const { error: cleanupError } = await supabase.storage
+        .from(THREAD_ATTACHMENT_BUCKET)
+        .remove(uploaded.map(({ path }) => path));
+      if (cleanupError) {
+        throw new Error(
+          `${error.message || "Could not post your remark."} Uploaded files could not be removed: ${cleanupError.message}`,
+        );
+      }
+    }
+    throw error;
+  }
+}
+
+export async function getThreadAttachmentUrl(path) {
+  const { data, error } = await supabase.storage
+    .from(THREAD_ATTACHMENT_BUCKET)
+    .createSignedUrl(path, 60);
+  if (error) throw error;
+  return data.signedUrl;
 }
 
 export async function updateGrievance({

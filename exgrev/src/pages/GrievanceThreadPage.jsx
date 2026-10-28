@@ -1,11 +1,86 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-  addGrievanceRemark,
+  addGrievanceRemarkWithAttachments,
+  getThreadAttachmentUrl,
   getGrievanceThread,
 } from "../services/grievanceService.js";
 import { supabase } from "../lib/supabase.js";
 import ToastNotice from "../components/ToastNotice.jsx";
 import "./GrievanceThread.css";
+
+const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
+const ALLOWED_ATTACHMENT_TYPES = new Set([
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+]);
+const ATTACHMENT_TYPE_BY_EXTENSION = {
+  pdf: "application/pdf",
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  doc: "application/msword",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+};
+
+function ThreadEventAttachments({ attachments }) {
+  const [links, setLinks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function loadLinks() {
+    setLoading(true);
+    setError("");
+    try {
+      const signedLinks = await Promise.all(
+        attachments.map(async (attachment) => ({
+          ...attachment,
+          url: await getThreadAttachmentUrl(attachment.path),
+        })),
+      );
+      setLinks(signedLinks);
+    } catch (loadError) {
+      setError(loadError.message || "Could not load remark attachments.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <details
+      className="thread-attachments"
+      onToggle={(event) => {
+        if (event.currentTarget.open && links.length === 0 && !loading) {
+          loadLinks();
+        }
+      }}
+    >
+      <summary>
+        Attachments ({attachments.length})
+      </summary>
+      {loading && <p className="thread-attachment-message">Loading files…</p>}
+      {error && (
+        <div className="thread-attachment-message thread-error" role="status">
+          <span>{error}</span>
+          <button type="button" onClick={loadLinks}>Try again</button>
+        </div>
+      )}
+      {links.length > 0 && (
+        <ul className="thread-attachment-list">
+          {links.map((attachment) => (
+            <li key={attachment.path}>
+              <a href={attachment.url} target="_blank" rel="noreferrer">
+                {attachment.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </details>
+  );
+}
 
 function getEventCategory(eventType) {
   if (eventType === "forwarded" || eventType === "reassigned") {
@@ -40,6 +115,7 @@ function GrievanceThreadPage({ grievanceId, session, onBack, onLogout }) {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [remark, setRemark] = useState("");
+  const [attachments, setAttachments] = useState([]);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
   const [noticeType, setNoticeType] = useState("success");
@@ -106,18 +182,60 @@ function GrievanceThreadPage({ grievanceId, session, onBack, onLogout }) {
 
   async function handleSubmitRemark(event) {
     event.preventDefault();
+    const formElement = event.currentTarget;
     setSaving(true);
     try {
-      await addGrievanceRemark({ grievanceId, notes: remark });
+      await addGrievanceRemarkWithAttachments({
+        grievanceId,
+        userId: session.userId,
+        notes: remark,
+        files: attachments,
+      });
       setRemark("");
+      setAttachments([]);
+      formElement.reset();
       setNoticeType("success");
-      setNotice("Remark posted to the other grievance participants.");
+      setNotice(
+        attachments.length
+          ? "Remark and attachments posted to the other grievance participants."
+          : "Remark posted to the other grievance participants.",
+      );
       await refresh();
     } catch (error) {
       setNoticeType("error");
       setNotice(error.message || "Could not post your remark.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  function handleAttachmentSelection(event) {
+    const selected = Array.from(event.currentTarget.files || []);
+    event.currentTarget.value = "";
+    const accepted = [];
+    const rejected = [];
+
+    for (const file of selected) {
+      const extension = file.name.split(".").pop()?.toLowerCase() || "";
+      const contentType =
+        (ALLOWED_ATTACHMENT_TYPES.has(file.type) && file.type) ||
+        ATTACHMENT_TYPE_BY_EXTENSION[extension] ||
+        "";
+      if (!ALLOWED_ATTACHMENT_TYPES.has(contentType)) {
+        rejected.push(`${file.name}: unsupported file type`);
+      } else if (file.size > MAX_ATTACHMENT_SIZE) {
+        rejected.push(`${file.name}: exceeds 10 MB`);
+      } else {
+        accepted.push(file);
+      }
+    }
+
+    if (accepted.length) {
+      setAttachments((current) => [...current, ...accepted]);
+    }
+    if (rejected.length) {
+      setNoticeType("error");
+      setNotice(`Some files were not added: ${rejected.join("; ")}.`);
     }
   }
 
@@ -230,6 +348,11 @@ function GrievanceThreadPage({ grievanceId, session, onBack, onLogout }) {
                       {message && (
                         <p className="thread-event-message">{message}</p>
                       )}
+                      {event.details?.attachments?.length > 0 && (
+                        <ThreadEventAttachments
+                          attachments={event.details.attachments}
+                        />
+                      )}
                       {recipients.length ? (
                         <p className="thread-event-recipients">
                           <strong>Sent to</strong>{" "}
@@ -261,10 +384,48 @@ function GrievanceThreadPage({ grievanceId, session, onBack, onLogout }) {
                 rows="4"
                 maxLength="5000"
                 required
+                disabled={saving}
                 value={remark}
                 onChange={(event) => setRemark(event.target.value)}
                 placeholder="Write an update for the other case participants."
               />
+              <label htmlFor="thread-attachments">
+                Attach files <span className="thread-muted">(optional)</span>
+              </label>
+              <input
+                id="thread-attachments"
+                type="file"
+                multiple
+                accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+                onChange={handleAttachmentSelection}
+                disabled={saving}
+              />
+              <p className="thread-muted">
+                PDF, PNG, JPG, DOC, or DOCX; up to 10 MB per file.
+              </p>
+              {attachments.length > 0 && (
+                <ul className="thread-selected-attachments">
+                  {attachments.map((file, index) => (
+                    <li key={`${file.name}-${file.lastModified}-${index}`}>
+                      <span>
+                        {file.name} ({(file.size / (1024 * 1024)).toFixed(2)} MB)
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setAttachments((current) =>
+                            current.filter((_, fileIndex) => fileIndex !== index),
+                          )
+                        }
+                        disabled={saving}
+                        aria-label={`Remove ${file.name}`}
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
               <button
                 type="submit"
                 className="admin-confirm-button is-forward"

@@ -180,6 +180,75 @@
   outline: 2px solid rgb(19 127 120 / 15%);
 }
 
+.thread-reply-form input[type="file"] {
+  width: 100%;
+  color: #344d55;
+  font: inherit;
+}
+
+.thread-reply-form > .thread-muted {
+  margin: -7px 0 0;
+}
+
+.thread-selected-attachments,
+.thread-attachment-list {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding-left: 20px;
+  color: #344d55;
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+
+.thread-selected-attachments li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.thread-selected-attachments button,
+.thread-attachment-message button {
+  padding: 4px 8px;
+  border: 1px solid #b8d5d1;
+  border-radius: 5px;
+  background: #f4faf9;
+  color: #137f78;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.thread-attachments {
+  margin-top: 10px;
+  color: #137f78;
+  font-size: 0.85rem;
+}
+
+.thread-attachments summary {
+  width: fit-content;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.thread-attachment-list {
+  margin-top: 8px;
+}
+
+.thread-attachment-list a {
+  color: #137f78;
+}
+
+.thread-attachment-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 0;
+  font-size: 0.82rem;
+}
+
 .thread-reply-form .admin-confirm-button {
   justify-self: end;
 }
