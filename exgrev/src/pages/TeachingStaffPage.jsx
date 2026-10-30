@@ -12,7 +12,12 @@ import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 import { supabase } from "../lib/supabase.js";
 import "./ExaminationCell.css";
 
-function TeachingStaffPage({ session, onLogout }) {
+function TeachingStaffPage({
+  session,
+  onLogout,
+  embedded = false,
+  view = "all",
+}) {
   const [grievances, setGrievances] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -80,6 +85,8 @@ function TeachingStaffPage({ session, onLogout }) {
       );
     return (
       searchMatches &&
+      (view !== "resolved" || grievance.status === "Resolved") &&
+      (view !== "active" || grievance.status !== "Resolved") &&
       (statusFilter === "ALL" || grievance.status === statusFilter)
     );
   });
@@ -112,8 +119,10 @@ function TeachingStaffPage({ session, onLogout }) {
   }
 
   return (
-    <main className="student-page examination-cell-page">
-      <TeachingStaffHeader session={session} onLogout={onLogout} />
+    <main
+      className={`student-page examination-cell-page${embedded ? " embedded" : ""}`}
+    >
+      {!embedded && <TeachingStaffHeader session={session} onLogout={onLogout} />}
       <TeachingStaffStats grievances={grievances} />
       <TeachingStaffWorkspace
         grievances={filteredGrievances}

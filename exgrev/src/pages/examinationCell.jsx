@@ -13,7 +13,12 @@ import {
 import { supabase } from "../lib/supabase.js";
 import "./ExaminationCell.css";
 
-function ExaminationCell({ session, onLogout }) {
+function ExaminationCell({
+  session,
+  onLogout,
+  embedded = false,
+  view = "all",
+}) {
   const [grievances, setGrievances] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -102,6 +107,8 @@ function ExaminationCell({ session, onLogout }) {
             .toLowerCase()
             .includes(search.toLowerCase()),
         )) &&
+      (view !== "resolved" || grievance.status === "Resolved") &&
+      (view !== "active" || grievance.status !== "Resolved") &&
       (statusFilter === "ALL" || grievance.status === statusFilter),
   );
 
@@ -143,8 +150,10 @@ function ExaminationCell({ session, onLogout }) {
   }
 
   return (
-    <main className="student-page examination-cell-page">
-      <AdminHeader session={session} onLogout={onLogout} />
+    <main
+      className={`student-page examination-cell-page${embedded ? " embedded" : ""}`}
+    >
+      {!embedded && <AdminHeader session={session} onLogout={onLogout} />}
       <AdminStats grievances={grievances} />
       <AdminWorkspace
         grievances={filteredGrievances}

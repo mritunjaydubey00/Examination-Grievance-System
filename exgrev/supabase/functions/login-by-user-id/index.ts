@@ -129,7 +129,7 @@ Deno.serve(async (request) => {
     };
     const appMetadata = {
       ...(authData.user.app_metadata ?? {}),
-      exgrev_profile_version: 2,
+      exgrev_profile_version: 3,
       user_id: profileMetadata.user_id,
       full_name: profileMetadata.full_name,
       department: profileMetadata.department,

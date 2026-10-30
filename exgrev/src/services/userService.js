@@ -1,7 +1,7 @@
 import { supabase } from "../lib/supabase.js";
 
 const PROFILE_KEY = "exgrev.profile";
-const PROFILE_VERSION = 2;
+const PROFILE_VERSION = 3;
 
 function normalizeUserRole(value) {
   const role = String(value || "")
@@ -93,6 +93,11 @@ export async function getAuthenticatedProfile() {
       "resolve-authenticated-profile",
     );
     if (error) {
+      if (error.context?.status === 404) {
+        throw new Error(
+          "The resolve-authenticated-profile Edge Function is not deployed. Deploy it to the Supabase project used by this app, then sign in again.",
+        );
+      }
       let responseBody;
       try {
         responseBody = await error.context?.clone?.().json();

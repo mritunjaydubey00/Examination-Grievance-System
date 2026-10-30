@@ -1,13 +1,23 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
 import { useEffect, useState } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
 import LogIn from "./pages/LogIn.jsx";
 import ChangePassword from "./pages/ChangePassword.jsx";
 import ExaminationCell from "./pages/examinationCell.jsx";
 import StudentPage from "./pages/StudentPage.jsx";
 import TeachingStaffPage from "./pages/TeachingStaffPage.jsx";
+import DashboardLayout from "./components/DashboardLayout.jsx";
+import { examCellMenu, facultyMenu, studentMenu } from "./config/menuConfig.js";
+import { ComingSoonPage, DashboardPage } from "./pages/PortalPages.jsx";
 import { supabase } from "./lib/supabase.js";
 import { getAuthenticatedProfile, signOut } from "./services/userService.js";
+
+const roleDetails = {
+  student: { basePath: "/student", label: "Student", menu: studentMenu },
+  faculty: { basePath: "/faculty", label: "Faculty", menu: facultyMenu },
+  examcell: { basePath: "/examcell", label: "Exam Cell", menu: examCellMenu },
+};
 
 function App() {
   const [profile, setProfile] = useState(null);
@@ -93,9 +103,25 @@ function App() {
     await signOut();
   }
 
+  const roleKey = [
+    "examination cell",
+    "exam cell",
+    "admin",
+    "exam cell admin",
+  ].includes(normalizedRole)
+    ? "examcell"
+    : ["teaching staff", "teaching", "faculty"].includes(normalizedRole)
+      ? "faculty"
+      : normalizedRole === "student"
+        ? "student"
+        : null;
+  const role = roleKey ? roleDetails[roleKey] : null;
+
   return (
     <>
-      <h1 className="app-wordmark">ExGrev</h1>
+      {(!authChecked || !profile || profile.mustChangePassword) && (
+        <h1 className="app-wordmark">ExGrev</h1>
+      )}
       {!authChecked ? (
         <p className="auth-loading">Checking your session…</p>
       ) : !profile ? (
@@ -104,23 +130,124 @@ function App() {
         <ChangePassword
           onComplete={(updatedProfile) => setProfile(updatedProfile)}
         />
-      ) : [
-          "examination cell",
-          "exam cell",
-          "admin",
-          "exam cell admin",
-        ].includes(normalizedRole) ? (
-        <ExaminationCell
-          session={{ ...profile, uptimeSeconds }}
-          onLogout={handleLogout}
-        />
-      ) : ["teaching staff", "teaching", "faculty"].includes(normalizedRole) ? (
-        <TeachingStaffPage session={profile} onLogout={handleLogout} />
-      ) : normalizedRole === "student" ? (
-        <StudentPage
-          session={{ ...profile, uptimeSeconds }}
-          onLogout={handleLogout}
-        />
+      ) : role ? (
+        <Routes>
+          <Route
+            element={
+              <DashboardLayout
+                menuItems={role.menu}
+                profile={profile}
+                roleLabel={role.label}
+                onLogout={handleLogout}
+              />
+            }
+          >
+            <Route
+              path={role.basePath}
+              element={
+                <Navigate to={`${role.basePath}/dashboard`} replace />
+              }
+            />
+            <Route
+              path={`${role.basePath}/dashboard`}
+              element={<DashboardPage roleLabel={role.label} />}
+            />
+            <Route
+              path={`${role.basePath}/guidelines`}
+              element={<ComingSoonPage role={roleKey} title="Guidelines" />}
+            />
+            <Route
+              path={`${role.basePath}/profile`}
+              element={<ComingSoonPage role={roleKey} title="Profile" />}
+            />
+            <Route
+              path={`${role.basePath}/notices`}
+              element={<ComingSoonPage role={roleKey} title="Notice Board" />}
+            />
+            {roleKey === "student" ? (
+              <>
+                <Route
+                  path="/student/grievances/new"
+                  element={
+                    <StudentPage
+                      session={{ ...profile, uptimeSeconds }}
+                      onLogout={handleLogout}
+                      embedded
+                      view="new"
+                    />
+                  }
+                />
+                <Route
+                  path="/student/grievances/mine"
+                  element={
+                    <StudentPage
+                      session={{ ...profile, uptimeSeconds }}
+                      onLogout={handleLogout}
+                      embedded
+                      view="mine"
+                    />
+                  }
+                />
+              </>
+            ) : roleKey === "faculty" ? (
+              <>
+                <Route
+                  path="/faculty/grievances/active"
+                  element={
+                    <TeachingStaffPage
+                      session={profile}
+                      onLogout={handleLogout}
+                      embedded
+                      view="active"
+                    />
+                  }
+                />
+                <Route
+                  path="/faculty/grievances/resolved"
+                  element={
+                    <TeachingStaffPage
+                      session={profile}
+                      onLogout={handleLogout}
+                      embedded
+                      view="resolved"
+                    />
+                  }
+                />
+              </>
+            ) : (
+              <>
+                <Route
+                  path="/examcell/grievances/active"
+                  element={
+                    <ExaminationCell
+                      session={{ ...profile, uptimeSeconds }}
+                      onLogout={handleLogout}
+                      embedded
+                      view="active"
+                    />
+                  }
+                />
+                <Route
+                  path="/examcell/grievances/resolved"
+                  element={
+                    <ExaminationCell
+                      session={{ ...profile, uptimeSeconds }}
+                      onLogout={handleLogout}
+                      embedded
+                      view="resolved"
+                    />
+                  }
+                />
+              </>
+            )}
+            <Route
+              path="*"
+              element={
+                <Navigate to={`${role.basePath}/dashboard`} replace />
+              }
+            />
+          </Route>
+        </Routes>
       ) : (
         <main className="auth-panel" role="alert">
           <h2>Account type not recognized</h2>

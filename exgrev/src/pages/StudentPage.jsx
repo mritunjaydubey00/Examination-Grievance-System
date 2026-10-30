@@ -9,7 +9,7 @@ import GrievanceForm from "../components/StudentPage/GrievanceForm.jsx";
 import GrievanceHistory from "../components/StudentPage/GrievanceHistory.jsx";
 import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 
-function StudentPage({ session, onLogout }) {
+function StudentPage({ session, onLogout, embedded = false, view = "all" }) {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedProblem, setSelectedProblem] = useState("");
   const [grievances, setGrievances] = useState([]);
@@ -89,21 +89,25 @@ function StudentPage({ session, onLogout }) {
   }
 
   return (
-    <main className="student-page">
-      <StudentHeader session={session} onLogout={onLogout} />
-      <GrievanceForm
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-        selectedProblem={selectedProblem}
-        onProblemChange={setSelectedProblem}
-        busy={busy}
-        message={message}
-        onSubmit={handleSubmit}
-      />
-      <GrievanceHistory
-        grievances={grievances}
-        onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
-      />
+    <main className={`student-page${embedded ? " embedded" : ""}`}>
+      {!embedded && <StudentHeader session={session} onLogout={onLogout} />}
+      {view !== "mine" && (
+        <GrievanceForm
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          selectedProblem={selectedProblem}
+          onProblemChange={setSelectedProblem}
+          busy={busy}
+          message={message}
+          onSubmit={handleSubmit}
+        />
+      )}
+      {view !== "new" && (
+        <GrievanceHistory
+          grievances={grievances}
+          onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
+        />
+      )}
     </main>
   );
 }

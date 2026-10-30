@@ -14,17 +14,32 @@ function getOAuthError() {
   if (!error) return "";
 
   const description = parameters.get("error_description")?.toLowerCase() ?? "";
+  const errorCode = parameters.get("error_code")?.toLowerCase() ?? "";
+  if (
+    errorCode.includes("provider") ||
+    description.includes("unsupported provider") ||
+    description.includes("provider is not enabled")
+  ) {
+    return "Google sign-in is not enabled for this Supabase project. Enable the Google provider and configure its client ID and secret in Supabase Auth.";
+  }
   if (
     description.includes("approved") ||
     description.includes("signups not allowed") ||
-    parameters.get("error_code") === "signup_disabled"
+    description.includes("database error saving new user") ||
+    errorCode === "signup_disabled"
   ) {
-    return "This Google account is not approved for ExGrev. Contact your administrator.";
+    return "Supabase rejected this Google account. Check that the signed-in Google email exactly matches a row in public.users and that its Ex Factor is valid; confirm the approved-users migration is applied.";
   }
   if (error === "access_denied") {
-    return "Google sign-in was cancelled or this account is not approved for ExGrev.";
+    return "Google sign-in was cancelled or rejected. If you did not cancel, check that the signed-in Google email is listed in public.users with a valid Ex Factor.";
   }
-  return "Google sign-in could not be completed. Please try again.";
+  if (
+    description.includes("redirect_uri_mismatch") ||
+    description.includes("redirect uri")
+  ) {
+    return "Google rejected the redirect URL. Add the Supabase callback URL to the Google OAuth client's authorized redirect URIs and add this app URL to Supabase's allowed redirect URLs.";
+  }
+  return "Google sign-in could not be completed. Check the Google provider credentials and redirect URL settings in Supabase, then try again.";
 }
 
 function LogIn({ onLogin, authError = "" }) {

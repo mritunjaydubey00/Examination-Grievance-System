@@ -1,14 +1,15 @@
 import LoginAccountTypes from "./LoginAccountTypes.jsx";
 import GoogleLoginButton from "./GoogleLoginButton.jsx";
 
-const GOOGLE_LOGIN_DISABLED = true;
-
 function LoginForm({ onSubmit, onGoogleSignIn, error, busy }) {
   return (
     <section className="login-panel" aria-labelledby="login-title">
       <div className="login-panel-heading">
         <h3 id="login-title">Welcome back</h3>
-        <p>Enter the User ID or email address and password assigned to your account.</p>
+        <p>
+          Sign in with the Google account whose email is saved for your account,
+          or use your assigned User ID/email and password.
+        </p>
       </div>
 
       <form className="login-form" onSubmit={onSubmit}>
@@ -51,7 +52,7 @@ function LoginForm({ onSubmit, onGoogleSignIn, error, busy }) {
       </div>
       <GoogleLoginButton
         onClick={onGoogleSignIn}
-        disabled={GOOGLE_LOGIN_DISABLED || busy}
+        disabled={busy}
       />
       <LoginAccountTypes />
     </section>

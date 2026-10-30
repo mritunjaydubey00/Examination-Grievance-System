@@ -6,7 +6,7 @@ const student = {
 const examCell = {
   name: "Exam Man",
   id: "examman@mitsgwl.ac.in",
-  password: " ",
+  password: "Examcell@07",
 };
 
 const teachingStaff = {
