@@ -60,6 +60,17 @@ Deno.serve(async (request) => {
     }
     if (!row)
       return respond({ error: "Invalid User ID/email or password." }, 401);
+    const role = normalizeUserRole(row["Ex Factor"]);
+    if (!role) {
+      return respond(
+        {
+          code: "INVALID_ACCOUNT_ROLE",
+          error:
+            "This account has no valid Ex Factor. Contact the administrator to set it to Student, Examination Cell, or Teaching staff.",
+        },
+        403,
+      );
+    }
     if (!row["Phone Number"] || !row.email) {
       return respond(
         {
@@ -129,7 +140,7 @@ Deno.serve(async (request) => {
     };
     const appMetadata = {
       ...(authData.user.app_metadata ?? {}),
-      exgrev_profile_version: 2,
+      exgrev_profile_version: 3,
       user_id: profileMetadata.user_id,
       full_name: profileMetadata.full_name,
       department: profileMetadata.department,
@@ -177,6 +188,25 @@ Deno.serve(async (request) => {
     return respond({ error: "Invalid User ID/email or password." }, 400);
   }
 });
+
+function normalizeUserRole(value: unknown) {
+  const role = String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ");
+
+  if (role === "student") return "student";
+  if (
+    ["examination cell", "exam cell", "admin", "exam cell admin"].includes(role)
+  ) {
+    return "examination cell";
+  }
+  if (["teaching staff", "teaching", "faculty"].includes(role)) {
+    return "teaching staff";
+  }
+  return "";
+}
 
 function respond(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {

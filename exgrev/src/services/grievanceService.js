@@ -27,7 +27,7 @@ function throwIfError({ data, error }) {
 export async function listGrievances() {
   const { data, error } = await supabase
     .from("grievances")
-    .select("*, users!grievances_student_user_id_fkey(\"Full Name\", Branch), grievance_events(*)")
+    .select("*, users!grievances_student_user_id_fkey(\"Full Name\", Branch)")
     .order("created_at", { ascending: false });
   return throwIfError({ data, error });
 }
