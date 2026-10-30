@@ -1,14 +1,22 @@
 .examination-cell-page {
-  width: min(100% - 48px, 1120px);
+  width: min(100% - 64px, 1440px);
 }
 
 .admin-header {
+  position: relative;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 28px;
-  padding: 32px 0 26px;
-  border-bottom: 1px solid #dfe5e4;
+  margin: 22px 0 28px;
+  padding: 24px 28px;
+  border: 1px solid #d5e7e2;
+  border-top: 3px solid #137f78;
+  border-radius: 13px;
+  background:
+    radial-gradient(circle at 90% 0, rgba(19, 127, 120, 0.09), transparent 32%),
+    linear-gradient(110deg, #f0f8f6, #fff 72%);
+  box-shadow: 0 9px 26px rgba(28, 61, 65, 0.075);
 }
 
 .admin-header h2,
@@ -462,10 +470,12 @@
   .grievance-detail-grid { grid-template-columns: 1fr; }
   .grievance-detail-grid .detail-description { grid-column: auto; }
   .examination-cell-page {
-    width: min(100% - 28px, 1120px);
+    width: min(100% - 28px, 1440px);
   }
   .admin-header {
-    padding-top: 22px;
+    gap: 18px;
+    margin: 16px 0 22px;
+    padding: 20px 18px;
   }
   .admin-header-actions {
     justify-content: space-between;

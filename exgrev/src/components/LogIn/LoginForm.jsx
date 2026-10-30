@@ -73,6 +73,8 @@ function LoginForm({
       <GoogleLoginButton
         onClick={onGoogleSignIn}
         disabled={GOOGLE_LOGIN_DISABLED || busy}
+        available={!GOOGLE_LOGIN_DISABLED}
+        busy={busy && !GOOGLE_LOGIN_DISABLED}
       />
       <LoginAccountTypes />
     </section>

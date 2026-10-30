@@ -87,24 +87,31 @@ function LogIn({ onLogin, authError = "", notice = "" }) {
   }
 
   return (
-    <main className="login-page">
-      <LoginIntro />
-      {showForgotPassword ? (
-        <ForgotPassword onBack={() => setShowForgotPassword(false)} />
-      ) : (
-        <LoginForm
-          onSubmit={handleLogin}
-          onGoogleSignIn={handleGoogleSignIn}
-          onForgotPassword={() => {
-            setError("");
-            setShowForgotPassword(true);
-          }}
-          error={error}
-          notice={notice}
-          busy={busy}
-        />
-      )}
-    </main>
+    <>
+      <header className="auth-page-header">
+        <span className="auth-page-brand">ExGrev</span>
+      </header>
+      <main className="login-page">
+        <LoginIntro />
+        <div className="login-content">
+          {showForgotPassword ? (
+            <ForgotPassword onBack={() => setShowForgotPassword(false)} />
+          ) : (
+            <LoginForm
+              onSubmit={handleLogin}
+              onGoogleSignIn={handleGoogleSignIn}
+              onForgotPassword={() => {
+                setError("");
+                setShowForgotPassword(true);
+              }}
+              error={error}
+              notice={notice}
+              busy={busy}
+            />
+          )}
+        </div>
+      </main>
+    </>
   );
 }
 

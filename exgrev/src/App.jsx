@@ -152,8 +152,8 @@ function App() {
   }
 
   return (
-    <>
-      <h1 className="app-wordmark">ExGrev</h1>
+    <div className={`app-shell${profile ? "" : " app-shell-auth"}`}>
+      {profile && <h1 className="app-wordmark">ExGrev</h1>}
       {!authChecked ? (
         <p className="auth-loading">Checking your session…</p>
       ) : passwordRecovery ? (
@@ -220,7 +220,17 @@ function App() {
           </button>
         </main>
       )}
-    </>
+      <footer className="app-footer">
+        <div className="app-footer-brand">
+          <strong>ExGrev: Examination Grievance Portal</strong>
+          <span>Madhav Institute of Technology and Science, Gwalior</span>
+        </div>
+        <p className="app-footer-credit">
+          Developed by <strong>Mritunjay Dubey</strong> and{" "}
+          <strong>Satwik Singhal</strong>
+        </p>
+      </footer>
+    </div>
   );
 }
 

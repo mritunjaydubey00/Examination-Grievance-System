@@ -1,4 +1,4 @@
-function GoogleLoginButton({ onClick, disabled }) {
+function GoogleLoginButton({ onClick, disabled, available, busy }) {
   return (
     <button
       type="button"
@@ -29,7 +29,11 @@ function GoogleLoginButton({ onClick, disabled }) {
           d="M24 11.1c3.1 0 5.9 1.1 8.1 3.2l6-6A20 20 0 0 0 24 4 20.8 20.8 0 0 0 5.3 13.8l6.8 5.3c1.7-5 6.4-8 11.9-8Z"
         />
       </svg>
-      {disabled ? "Redirecting to Google…" : "Continue with Google"}
+      {busy
+        ? "Redirecting to Google…"
+        : available
+          ? "Continue with Google"
+          : "Google sign-in unavailable"}
     </button>
   );
 }

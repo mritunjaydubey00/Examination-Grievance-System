@@ -13,8 +13,16 @@
 }
 
 .thread-page-header {
-  padding: 28px 0 22px;
-  border-bottom: 1px solid #dfe5e4;
+  position: relative;
+  margin: 22px 0 26px;
+  padding: 24px 28px;
+  border: 1px solid #d5e7e2;
+  border-top: 3px solid #137f78;
+  border-radius: 13px;
+  background:
+    radial-gradient(circle at 90% 0, rgba(19, 127, 120, 0.09), transparent 32%),
+    linear-gradient(110deg, #f0f8f6, #fff 72%);
+  box-shadow: 0 9px 26px rgba(28, 61, 65, 0.075);
 }
 
 .thread-header-actions {
@@ -276,6 +284,8 @@
 
   .thread-page-header {
     flex-direction: column;
+    margin: 16px 0 20px;
+    padding: 20px 18px;
   }
 
   .thread-header-actions {
