@@ -27,11 +27,99 @@ The app's Supabase URL and publishable key are already in the ignored `.env.loca
 
 ## Password recovery and changes
 
+For the step-by-step custom SMTP setup, including Resend SMTP values and recovery email testing, see the developer guide [Dev/forgotPassword.md](../Dev/forgotPassword.md).
+
 The sign-in screen accepts the account email for password recovery. Supabase sends a one-time recovery link to that address; the app displays the same confirmation whether or not an account exists, so the interface does not disclose registered accounts. A valid link opens a dedicated password-reset screen, and the recovery session is signed out after the password changes. Signed-in users can change their password from any role's dashboard or grievance thread; they must enter their current password first. First sign-in still requires creating a personal password.
 
 In Supabase **Authentication → URL Configuration**, add the exact deployed app and local development redirect URLs to **Redirect URLs** (the app uses the current origin and path). Avoid broad wildcards unless the deployment requires them. In **Authentication → Email Templates**, ensure the password recovery template uses Supabase's recovery URL (`{{ .ConfirmationURL }}`) and an appropriate expiry. Configure a production SMTP provider and review Auth email rate limits before launch; the app's neutral confirmation is not a substitute for provider-side rate limiting. Recovery links are single-use and time-limited by Supabase. Users should request a new link if one expires.
 
 New and changed passwords must be at least 12 characters in the app. Review **Authentication → Settings** for the project's minimum password length and leaked-password protection, and set compatible policies there as well. Keep the Supabase service-role key server-side; password recovery and updates use the signed-in Supabase Auth client and do not require a new Edge Function or database migration.
+
+## Grievance event email notifications
+
+For the complete Resend domain verification, secret management, worker deployment, migration, test, and troubleshooting walkthrough, see the developer guide [Dev/docs/emailNotifications.md](../Dev/docs/emailNotifications.md).
+
+The notification worker uses a private database outbox and the `grievance-email-notifications` Supabase Edge Function. It sends one email per recorded event recipient through Resend. New submissions notify every account whose Ex Factor is `Examination Cell`, `Exam Cell`, `Admin`, or `Exam Cell Admin`; assignments notify the selected faculty; other event notifications follow the recipient snapshots already written to `grievance_event_recipients`. Messages contain the case reference and a link to ExGrev, not the grievance description, remarks, or attachments. Delivery is asynchronous and does not block grievance actions. Transient errors are retried up to five attempts; permanent failures are marked failed.
+
+### Configure the sender and function secrets
+
+1. In Resend, create an account, verify a domain you control, and create an API key with permission to send from that domain. Do not use a personal or unverified sender address. See [Resend domain setup](https://resend.com/docs/dashboard/domains/introduction).
+2. In the Supabase Dashboard, open **Edge Functions → Secrets** for the ExGrev project and add:
+   - `RESEND_API_KEY`: the API key from Resend.
+   - `EXGREV_EMAIL_FROM`: a verified sender, for example `ExGrev <notifications@your-domain.example>`.
+   - `EXGREV_APP_URL`: the app origin, such as `https://your-real-app-domain/`. For local testing, use `http://localhost:5173/`.
+   - `NOTIFICATION_WEBHOOK_SECRET`: a new random secret shared only with Vault in the next step.
+   - `SUPABASE_SERVICE_ROLE_KEY`: the existing server-side service-role key, if it is not already configured for Edge Functions.
+3. Generate a dedicated webhook secret locally in PowerShell. Do not use a password, the Supabase service-role key, or a Resend API key:
+
+   ```powershell
+   $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+   $bytes = New-Object byte[] 32
+   $rng.GetBytes($bytes)
+   $notificationSecret = [Convert]::ToBase64String($bytes)
+   $rng.Dispose()
+   $notificationSecret
+   ```
+
+   Enter that value as `NOTIFICATION_WEBHOOK_SECRET` in Edge Function Secrets. Keep the value private; you will enter the same value into Vault in the next section.
+
+### Store the dispatcher values in Supabase Vault
+
+In the ExGrev project, open **SQL Editor → New query**. Get the project's **publishable key** from **Project Settings → API Keys** (this is not the service-role/secret key). Run the following statements after replacing the two placeholders. Enter the exact same random webhook secret you saved as the Edge Function secret:
+
+```sql
+select vault.create_secret(
+  'https://hkdonpsbywfegfvzvqik.supabase.co',
+  'grievance_email_function_url'
+);
+select vault.create_secret(
+  'sb_publishable_REPLACE_WITH_EXGREV_PUBLISHABLE_KEY',
+  'grievance_email_publishable_key'
+);
+select vault.create_secret(
+  'PASTE_THE_SAME_RANDOM_NOTIFICATION_WEBHOOK_SECRET',
+  'grievance_email_webhook_secret'
+);
+```
+
+Do not save or share a SQL query containing the webhook secret. The publishable key is intended for client identification; the separate random header secret authorizes the worker call. `pg_net` queues HTTP headers briefly while a request is pending, so treat direct database access and the `net` schema as privileged; do not grant queue access to browser roles. Never place the service-role key in the SQL webhook headers, frontend, or migration files.
+
+### Deploy and apply the migration
+
+From the `exgrev` directory, deploy the worker:
+
+```powershell
+npx supabase functions deploy grievance-email-notifications --project-ref hkdonpsbywfegfvzvqik
+```
+
+Then apply [supabase/migrations/202610310001_grievance_email_notifications.sql](supabase/migrations/202610310001_grievance_email_notifications.sql) in the Supabase SQL Editor. It enables `pg_cron`, `pg_net`, and Vault; creates the locked-down outbox and service-role-only RPCs; and schedules a worker call every minute. The worker uses `verify_jwt = false` because the database scheduler sends a dedicated `x-notification-secret`; the function rejects calls without that secret. The dispatcher reads the function URL, publishable key, and webhook secret from Vault. If Vault values are absent or mistyped, the job will not dispatch successfully.
+
+The migration does not send emails for old thread events. Only events created after it is applied are queued. For local app testing, make sure `EXGREV_APP_URL` matches the local URL and Vite port. For production, configure the deployed HTTPS origin and a verified sender domain before enabling the migration.
+
+### Verify and monitor
+
+1. Submit a test grievance as a student. Every matching Examination Cell account with a valid email should receive an email after the scheduled worker runs (normally within about a minute).
+2. Assign a test grievance to a faculty account and verify that the assigned account receives the assignment notification.
+3. In the SQL Editor, check delivery statuses:
+
+   ```sql
+   select status, count(*)
+   from public.grievance_email_outbox
+   group by status
+   order by status;
+   ```
+
+   To inspect a failed message without exposing its contents:
+
+   ```sql
+   select event_id, recipient_email, attempt_count, last_error, updated_at
+   from public.grievance_email_outbox
+   where status = 'failed'
+   order by updated_at desc
+   limit 25;
+   ```
+
+   This table is not readable by browser users; inspect it only in the trusted Supabase SQL Editor. Review Edge Function logs for worker errors and Resend logs for provider delivery/bounces. Failed messages are not automatically retried after the fifth attempt; resolve the provider/configuration issue before any manual retry.
 
 ### Google sign-in troubleshooting
 

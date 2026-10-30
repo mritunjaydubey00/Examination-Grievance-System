@@ -3,3 +3,6 @@ verify_jwt = false
 
 [functions.resolve-authenticated-profile]
 verify_jwt = true
+
+[functions.grievance-email-notifications]
+verify_jwt = false
