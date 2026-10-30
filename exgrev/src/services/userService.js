@@ -1,7 +1,7 @@
 import { supabase } from "../lib/supabase.js";
 
 const PROFILE_KEY = "exgrev.profile";
-const PROFILE_VERSION = 1;
+const PROFILE_VERSION = 2;
 
 function normalizeUserRole(value) {
   const role = String(value || "")

@@ -23,7 +23,7 @@ The `email` and `Phone Number` fields must be present for each account. Emails m
 
    The first `npx` command may ask to install the Supabase CLI; type `y` to continue. `npx supabase login` asks for a Supabase access token. Create one in the Supabase dashboard under **Account → Access Tokens** and paste it into the terminal prompt. Do not share that token.
 
-The app's Supabase URL and publishable key are already in the ignored `.env.local` file. There is no sign-up form: approved users sign in with their existing Google account or the credentials provisioned for them. The server checks the verified email against `public.users` and gets the role/profile from that table; Google profile fields are not used to assign access.
+The app's Supabase URL and publishable key are already in the ignored `.env.local` file. There is no sign-up form: approved users sign in with their existing Google account or the credentials provisioned for them. The server checks the verified email against `public.users` and gets the role/profile from that table; Google profile fields are not used to assign access. Deploy both functions after profile-claim changes; the app revalidates older sessions when the profile version changes.
 
 ### Google sign-in troubleshooting
 

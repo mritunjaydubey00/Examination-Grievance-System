@@ -1,5 +1,7 @@
 function GrievanceTable({
   grievances,
+  loading = false,
+  error = "",
   onAction,
   onOpenThread,
   audience = "examination-cell",
@@ -37,7 +39,19 @@ function GrievanceTable({
             </tr>
           </thead>
           <tbody>
-            {grievances.length ? (
+            {loading ? (
+              <tr>
+                <td className="admin-empty-state" colSpan="8">
+                  <strong>Loading grievances…</strong>
+                </td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td className="admin-empty-state" colSpan="8">
+                  <strong>Grievances could not be loaded: {error}</strong>
+                </td>
+              </tr>
+            ) : grievances.length ? (
               grievances.map((grievance) => (
                 <tr key={grievance.id}>
                   <td>
@@ -86,7 +100,7 @@ function GrievanceTable({
                   <strong>
                     {isTeachingStaff
                       ? "No assigned cases to display."
-                      : "No matching grievances"}
+                      : "No grievances are visible to this account. If cases have been submitted, refresh the examination-cell session and verify its database access."}
                   </strong>
                 </td>
               </tr>

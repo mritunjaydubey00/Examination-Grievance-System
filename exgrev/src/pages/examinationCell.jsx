@@ -20,32 +20,57 @@ function ExaminationCell({ session, onLogout }) {
   const [activeAction, setActiveAction] = useState(null);
   const [notice, setNotice] = useState("");
   const [noticeType, setNoticeType] = useState("success");
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [threadGrievanceId, setThreadGrievanceId] = useState(null);
 
   const refresh = useCallback(async () => {
+    setLoading(true);
+    setLoadError("");
     try {
       const rows = await listGrievances();
-      const enriched = await Promise.all(
-        rows.map(async (row) => ({
+      const enriched = rows.map((row) => ({
+        ...row,
+        student_name: row.users?.["Full Name"] || row.student_user_id,
+        branch: row.users?.Branch || "",
+        assigned_faculty_name: row.assigned_faculty || "ExGrev Unforward",
+        supporting_documents: row.supporting_documents || [],
+      }));
+      setGrievances(enriched);
+
+      const documentErrors = [];
+      const rowsWithDocumentUrls = await Promise.all(
+        enriched.map(async (row) => ({
           ...row,
-          student_name: row.users?.["Full Name"] || row.student_user_id,
-          branch: row.users?.Branch || "",
-          assigned_faculty_name: row.assigned_faculty || "ExGrev Unforward",
           supporting_documents: await Promise.all(
-            (row.supporting_documents || []).map(async (file) => ({
-              ...file,
-              url: await getDocumentUrl(file.path),
-            })),
+            row.supporting_documents.map(async (file) => {
+              try {
+                return { ...file, url: await getDocumentUrl(file.path) };
+              } catch (error) {
+                documentErrors.push(error);
+                return file;
+              }
+            }),
           ),
         })),
       );
-      setGrievances(enriched);
+      setGrievances(rowsWithDocumentUrls);
+      if (documentErrors.length) {
+        setNoticeType("error");
+        setNotice(
+          documentErrors[0].message ||
+            "Some supporting documents could not be loaded.",
+        );
+      }
     } catch (error) {
-      setNoticeType("error");
-      setNotice(
+      const message =
         error.message ||
-          "Could not load grievances. Apply the Supabase setup SQL and check table policies.",
-      );
+        "Could not load grievances. Apply the Supabase setup SQL and check table policies.";
+      setLoadError(message);
+      setNoticeType("error");
+      setNotice(message);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -123,6 +148,8 @@ function ExaminationCell({ session, onLogout }) {
       <AdminStats grievances={grievances} />
       <AdminWorkspace
         grievances={filteredGrievances}
+        loading={loading}
+        error={loadError}
         search={search}
         onSearchChange={setSearch}
         statusFilter={statusFilter}

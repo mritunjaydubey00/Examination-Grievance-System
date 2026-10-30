@@ -1,0 +1,1745 @@
+<!--exam cell ke liye page banana h (exgrev examination cell) all ps{ forward(id of faculty and forwarding message ), in progress, completed, }
+student page mei multiple file attach krni h  
+footer add hona h saare pages mei  -->
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-900 text-slate-100 font-sans">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MITS GWALIOR - ExGrev Portal</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    /* Glassmorphism background effect */
+    .glass-panel {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .glass-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Active Tab Glow */
+    .role-btn-active {
+      background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.39);
+    }
+
+    /* Modal Animation */
+    .modal-backdrop {
+      background-color: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(4px);
+    }
+
+    /* Step Timeline line connector */
+    .timeline-connector::before {
+      content: '';
+      position: absolute;
+      top: 24px;
+      left: 15px;
+      height: calc(100% - 24px);
+      width: 2px;
+      background-color: #334155;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col min-h-screen bg-slate-950 text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- TOP HEADER & ROLE SWITCHER NAVBAR -->
+  <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+      
+      <!-- Brand Logo & Identity -->
+      <div class="flex items-center space-x-3">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <i class="fa-solid fa-graduation-cap text-white text-xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-bold text-white tracking-wide">MADAHAV INSTITUTE OF TECHNOLOGY AND SCIENCE, DEEMED UNIVERSITY</h1>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-900/60 text-indigo-300 border border-indigo-700/50 font-medium">Exam Cell</span>
+          </div>
+          <p class="text-xs text-slate-400 font-medium">Examination Grievance System</p>
+        </div>
+      </div>
+
+      <!-- Dynamic Role Switcher (Crucial for Live Testing Workflow) -->
+      <div class="hidden md:flex items-center bg-slate-950/80 p-1.5 rounded-xl border border-slate-800 shadow-inner">
+        <button onclick="switchRole('student')" id="btn-role-student" class="role-btn px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all duration-200 text-slate-400 hover:text-white">
+          <i class="fa-solid fa-user-graduate"></i> 🎓 Student Portal
+        </button>
+        <button onclick="switchRole('admin')" id="btn-role-admin" class="role-btn px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all duration-200 text-slate-400 hover:text-white">
+          <i class="fa-solid fa-building-columns"></i> 🏛️ Exam Cell Admin
+        </button>
+        <button onclick="switchRole('faculty')" id="btn-role-faculty" class="role-btn px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all duration-200 text-slate-400 hover:text-white">
+          <i class="fa-solid fa-chalkboard-user"></i> 👨‍🏫 Faculty View
+        </button>
+      </div>
+
+      <!-- Right Utility Actions -->
+      <div class="flex items-center space-x-3">
+        <!-- Notifications Bell Toggle -->
+        <button onclick="toggleNotificationDrawer()" class="relative p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition border border-slate-700/60">
+          <i class="fa-regular fa-bell text-lg"></i>
+          <span id="notif-badge" class="hidden absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-slate-900 animate-pulse">0</span>
+        </button>
+
+        <!-- Reset Demo Data Button -->
+        <button onclick="resetDataToDefault()" title="Reset mock state to fresh baseline" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-amber-400 transition border border-slate-700/60">
+          <i class="fa-solid fa-rotate-right text-base"></i>
+        </button>
+
+        <!-- Mobile Role Switcher Select Dropdown -->
+        <div class="md:hidden">
+          <select id="mobile-role-select" onchange="switchRole(this.value)" class="bg-slate-800 text-xs font-medium text-white px-3 py-2 rounded-lg border border-slate-700 focus:outline-none">
+            <option value="student">🎓 Student</option>
+            <option value="admin">🏛️ Exam Admin</option>
+            <option value="faculty">👨‍🏫 Faculty</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT WRAPPER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ========================================================================= -->
+    <!-- 1. STUDENT PORTAL VIEW -->
+    <!-- ========================================================================= -->
+    <section id="portal-student" class="space-y-6">
+      
+      <!-- Student Profile Card Banner -->
+      <div class="glass-panel rounded-2xl p-6 border border-indigo-500/20 relative overflow-hidden">
+        <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+          <div class="flex items-start sm:items-center space-x-4">
+            <div class="relative">
+              <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl sm:text-3xl font-bold shadow-xl">
+                SS
+              </div>
+              <span class="absolute bottom-0 right-0 w-5 h-5 bg-emerald-500 border-2 border-slate-900 rounded-full" title="Active Academic Session"></span>
+            </div>
+            
+            <div class="space-y-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 id="stu-card-name" class="text-xl sm:text-2xl font-bold text-white">SATWIK SINGHAL</h2>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Regular Degree</span>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-xs text-slate-300">
+                <p><span class="text-slate-500">Roll No:</span> <strong id="stu-card-roll" class="text-slate-200">BTCB25O1116</strong></p>
+                <p><span class="text-slate-500">Dept:</span> <strong id="stu-card-dept" class="text-slate-200">Computer Science and Business System </strong></p>
+                <p><span class="text-slate-500">Semester:</span> <strong id="stu-card-sem" class="text-slate-200">3rd Sem (B.Tech)</strong></p>
+                <p><span class="text-slate-500">Academic Year:</span> <strong class="text-slate-200">2026-2027</strong></p>
+                <p><span class="text-slate-500">Email:</span> <strong class="text-slate-200">25cb1sa116@mitsgwl.ac.in</strong></p>
+                <p><span class="text-slate-500">Contact:</span> <strong class="text-slate-200">+91 89894 59992</strong></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Metrics inside Profile -->
+          <div class="flex items-center gap-3 bg-slate-900/80 p-4 rounded-xl border border-slate-800 self-start lg:self-center">
+            <div class="p-3 bg-indigo-500/10 rounded-lg border border-indigo-500/20 text-indigo-400">
+              <i class="fa-solid fa-file-signature text-xl"></i>
+            </div>
+            <div>
+              <p class="text-2xl font-bold text-white" id="stu-active-count">0</p>
+              <p class="text-xs text-slate-400">Active Grievances</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Sub-Tabs for Student -->
+      <div class="flex border-b border-slate-800 space-x-6 text-sm font-medium">
+        <button onclick="switchStudentTab('submit')" id="tab-stu-submit" class="pb-3 border-b-2 border-indigo-500 text-indigo-400 flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle"></i> Submit New Grievance
+        </button>
+        <button onclick="switchStudentTab('tracker')" id="tab-stu-tracker" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2">
+          <i class="fa-solid fa-list-check"></i> Track My Grievances (<span id="stu-total-badge">0</span>)
+        </button>
+        <button onclick="switchStudentTab('faq')" id="tab-stu-faq" class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2">
+          <i class="fa-circle-question"></i> Exam Guidelines & FAQ
+        </button>
+      </div>
+
+      <!-- SUBTAB 1: SUBMIT NEW GRIEVANCE FORM -->
+      <div id="stu-subtab-submit" class="glass-panel p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-6">
+        <div class="border-b border-slate-800 pb-4">
+          <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-pen-to-square text-indigo-400"></i> File Examination Cell Grievance
+          </h3>
+          <p class="text-xs text-slate-400 mt-1">Please ensure accurate subject details and upload scanned copies or official grade slips for prompt resolution.</p>
+        </div>
+
+        <form id="grievance-form" onsubmit="handleFormSubmit(event)" class="space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <!-- Category Selector -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                Grievance Category <span class="text-rose-400">*</span>
+              </label>
+              <select id="form-category" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                <option value="" disabled selected>-- Select Category --</option>
+                <option value="Result Discrepancy">Result Discrepancy / Missing Marks</option>
+                <option value="Re-evaluation">Answer Booklet Re-evaluation</option>
+                <option value="Admit Card Issue">Admit Card / Hall Ticket Error</option>
+                <option value="Marksheet Correction">Marksheet Name/Detail Correction</option>
+                <option value="Attendance for Exam">Exam Attendance Marking Issue</option>
+                <option value="Paper Scrutiny">End-Sem Paper Scrutiny Request</option>
+              </select>
+            </div>
+
+            <!-- Semester -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                Semester / Examination <span class="text-rose-400">*</span>
+              </label>
+              <select id="form-semester" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                <option value="Semester 1">Semester 1</option>
+                <option value="Semester 2">Semester 2</option>
+                <option value="Semester 3"selected>Semester 3</option>
+                <option value="Semester 4">Semester 4</option>
+                <option value="Semester 5">Semester 5</option>
+                <option value="Semester 6" >Semester 6</option>
+                <option value="Semester 7">Semester 7</option>
+                <option value="Semester 8">Semester 8</option>
+              </select>
+            </div>
+
+            <!-- Priority -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                Urgency Level <span class="text-rose-400">*</span>
+              </label>
+              <select id="form-priority" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                <option value="Low">Low (Standard Request)</option>
+                <option value="Medium" selected>Medium (Moderate Priority)</option>
+                <option value="High">High (Graduation/Degree Clearance)</option>
+                <option value="Urgent">Urgent (Exam within 48 Hours)</option>
+              </select>
+            </div>
+
+            <!-- Subject Code / Name -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                Subject Code & Title <span class="text-rose-400">*</span>
+              </label>
+              <input type="text" id="form-subject-code" required placeholder="e.g. CSBS601 - Software Engineering" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+            </div>
+
+            <!-- Exam Date / Session -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                Exam Date / Session <span class="text-rose-400">*</span>
+              </label>
+              <input type="date" id="form-exam-date" required class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+            </div>
+
+            <!-- Grievance Subject Summary -->
+            <div class="sm:col-span-2 lg:col-span-1">
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                Subject / Summary <span class="text-rose-400">*</span>
+              </label>
+              <input type="text" id="form-subject-title" required placeholder="Brief title of the issue" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+            </div>
+          </div>
+
+          <!-- Detailed Description -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              Detailed Description <span class="text-rose-400">*</span>
+            </label>
+            <textarea id="form-description" rows="4" required placeholder="Provide clear details including roll number, hall ticket number, room number, or specific question discrepancies..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-4 text-sm text-white focus:outline-none focus:border-indigo-500 transition"></textarea>
+          </div>
+
+          <!-- Multi-File Attachment Drag-Drop Uploader -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              Attach Supporting Documents <span class="text-slate-400 text-[11px] font-normal">(PDF, PNG, JPG - Max 5MB per file)</span>
+            </label>
+            
+            <div class="border-2 border-dashed border-slate-700 hover:border-indigo-500/70 rounded-2xl p-6 text-center bg-slate-900/50 hover:bg-slate-900/80 transition cursor-pointer relative" id="drop-zone">
+              <input type="file" id="file-input" multiple accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" onchange="handleFileSelect(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+              <div class="space-y-2 pointer-events-none">
+                <i class="fa-solid fa-cloud-arrow-up text-3xl text-indigo-400"></i>
+                <p class="text-sm font-medium text-slate-200">Click to upload or drag & drop files here</p>
+                <p class="text-xs text-slate-400">Supporting answer slips, fee receipts, or hall tickets (Max 5MB each)</p>
+              </div>
+            </div>
+
+            <!-- Uploaded Files Preview List -->
+            <div id="file-list" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+          </div>
+
+          <!-- Submit Controls -->
+          <div class="flex items-center justify-end space-x-4 pt-4 border-t border-slate-800">
+            <button type="reset" onclick="clearAttachments()" class="px-5 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800 text-xs font-semibold transition">
+              Reset Form
+            </button>
+            <button type="submit" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition flex items-center gap-2 shadow-lg shadow-indigo-600/30">
+              <i class="fa-solid fa-paper-plane"></i> Submit Grievance
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- SUBTAB 2: TRACK MY GRIEVANCES -->
+      <div id="stu-subtab-tracker" class="hidden space-y-4">
+        <!-- Tracker Filters & Search -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 glass-panel p-4 rounded-xl">
+          <div class="relative w-full sm:w-80">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-500 text-xs"></i>
+            <input type="text" id="stu-search" oninput="renderStudentTracker()" placeholder="Search by ID, subject, code..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <select id="stu-filter-status" onchange="renderStudentTracker()" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-300 focus:outline-none">
+              <option value="ALL">All Statuses</option>
+              <option value="Pending">Pending Review</option>
+              <option value="Under Progress">Under Progress / Forwarded</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Student Grievances Container -->
+        <div id="student-grievance-cards" class="space-y-4">
+          <!-- Rendered dynamically via JavaScript -->
+        </div>
+      </div>
+
+      <!-- SUBTAB 3: EXAM GUIDELINES & FAQ -->
+      <div id="stu-subtab-faq" class="hidden glass-panel p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-6">
+        <div class="border-b border-slate-800 pb-3">
+          <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-book-bookmark text-indigo-400"></i> Examination Cell Rules & Grievance SLA Guidelines
+          </h3>
+          <p class="text-xs text-slate-400">Standard operating procedures for marks re-evaluation, scrutiny, and hall ticket modifications.</p>
+        </div>
+
+        <div class="space-y-3">
+          <!-- FAQ Item 1 -->
+          <details class="bg-slate-900/70 border border-slate-800 rounded-xl p-4 group cursor-pointer">
+            <summary class="font-semibold text-sm text-slate-200 flex items-center justify-between">
+              <span><i class="fa-solid fa-circle-info text-indigo-400 mr-2"></i> What is the official resolution timeline for Re-evaluation?</span>
+              <i class="fa-solid fa-chevron-down text-slate-500 group-open:rotate-180 transition-transform"></i>
+            </summary>
+            <p class="text-xs text-slate-400 mt-3 leading-relaxed pl-6">
+              Re-evaluation requests submitted through this portal are forwarded directly to the respective Department Head (HOD) within 24 hours. The entire process, including digital booklet re-checking and grade updates, is strictly completed within <strong>7 working days</strong>.
+            </p>
+          </details>
+
+          <!-- FAQ Item 2 -->
+          <details class="bg-slate-900/70 border border-slate-800 rounded-xl p-4 group cursor-pointer">
+            <summary class="font-semibold text-sm text-slate-200 flex items-center justify-between">
+              <span><i class="fa-solid fa-circle-info text-indigo-400 mr-2"></i> What proof is required for missing practical/viva marks?</span>
+              <i class="fa-solid fa-chevron-down text-slate-500 group-open:rotate-180 transition-transform"></i>
+            </summary>
+            <p class="text-xs text-slate-400 mt-3 leading-relaxed pl-6">
+              Please attach a PDF or image copy of your signed laboratory attendance log sheet or copy of the hall ticket signed by the external/internal supervisor. Max file size limit is <strong>5MB per file</strong>.
+            </p>
+          </details>
+
+          <!-- FAQ Item 3 -->
+          <details class="bg-slate-900/70 border border-slate-800 rounded-xl p-4 group cursor-pointer">
+            <summary class="font-semibold text-sm text-slate-200 flex items-center justify-between">
+              <span><i class="fa-solid fa-circle-info text-indigo-400 mr-2"></i> How will I know when my issue is forwarded to a Professor?</span>
+              <i class="fa-solid fa-chevron-down text-slate-500 group-open:rotate-180 transition-transform"></i>
+            </summary>
+            <p class="text-xs text-slate-400 mt-3 leading-relaxed pl-6">
+              When the Examination Cell Admin forwards your grievance to a faculty member, your grievance status will automatically update to <span class="text-amber-400 font-semibold">'Under Progress / Forwarded to Faculty'</span> and you will receive a real-time notification alert detailing the faculty's name and forwarding message.
+            </p>
+          </details>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- 2. EXAMINATION CELL ADMIN PORTAL VIEW -->
+    <!-- ========================================================================= -->
+    <section id="portal-admin" class="hidden space-y-6">
+      
+      <!-- Command Center Metric Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        
+        <div class="glass-panel p-5 rounded-2xl border border-slate-800 relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Received</span>
+            <span class="p-2 bg-indigo-500/10 text-indigo-400 rounded-lg text-xs"><i class="fa-solid fa-inbox"></i></span>
+          </div>
+          <p id="admin-stat-total" class="text-2xl sm:text-3xl font-extrabold text-white mt-2">0</p>
+          <span class="text-[11px] text-slate-500">All lifetime submissions</span>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-amber-500/20 relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-amber-400 uppercase tracking-wider">Pending Review</span>
+            <span class="p-2 bg-amber-500/10 text-amber-400 rounded-lg text-xs"><i class="fa-solid fa-clock"></i></span>
+          </div>
+          <p id="admin-stat-pending" class="text-2xl sm:text-3xl font-extrabold text-amber-400 mt-2">0</p>
+          <span class="text-[11px] text-slate-500">Needs admin dispatch</span>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-blue-500/20 relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-blue-400 uppercase tracking-wider">Forwarded to Faculty</span>
+            <span class="p-2 bg-blue-500/10 text-blue-400 rounded-lg text-xs"><i class="fa-solid fa-share"></i></span>
+          </div>
+          <p id="admin-stat-forwarded" class="text-2xl sm:text-3xl font-extrabold text-blue-400 mt-2">0</p>
+          <span class="text-[11px] text-slate-500">Under progress with HOD</span>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-emerald-500/20 relative overflow-hidden">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Resolved</span>
+            <span class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg text-xs"><i class="fa-solid fa-circle-check"></i></span>
+          </div>
+          <p id="admin-stat-resolved" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 mt-2">0</p>
+          <span class="text-[11px] text-slate-500">Official closure complete</span>
+        </div>
+
+        <div class="glass-panel p-5 rounded-2xl border border-rose-500/20 relative overflow-hidden col-span-2 sm:col-span-1">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-rose-400 uppercase tracking-wider">Urgent / High</span>
+            <span class="p-2 bg-rose-500/10 text-rose-400 rounded-lg text-xs"><i class="fa-solid fa-triangle-exclamation"></i></span>
+          </div>
+          <p id="admin-stat-urgent" class="text-2xl sm:text-3xl font-extrabold text-rose-400 mt-2">0</p>
+          <span class="text-[11px] text-slate-500">High priority SLA</span>
+        </div>
+
+      </div>
+
+      <!-- Admin Search & Filter Control Desk -->
+      <div class="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3 w-full md:w-auto flex-1">
+          <div class="relative w-full md:w-72">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-500 text-xs"></i>
+            <input type="text" id="admin-search-input" oninput="renderAdminTable()" placeholder="Search Roll, Name, ID, Subject..." class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          
+          <select id="admin-filter-status" onchange="renderAdminTable()" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none">
+            <option value="ALL">All Statuses</option>
+            <option value="Pending">Pending Review</option>
+            <option value="Under Progress">Under Progress / Forwarded</option>
+            <option value="Resolved">Resolved</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+          <select id="admin-filter-priority" onchange="renderAdminTable()" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none">
+            <option value="ALL">All Priorities</option>
+            <option value="Urgent">Urgent</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+
+          <span class="text-xs text-slate-400 px-2 font-mono" id="admin-record-count">0 items</span>
+        </div>
+      </div>
+
+      <!-- Admin Main Grievances Table -->
+      <div class="glass-panel rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-900/90 text-slate-400 font-semibold uppercase tracking-wider border-b border-slate-800">
+              <tr>
+                <th class="px-4 py-3.5">Grievance ID</th>
+                <th class="px-4 py-3.5">Student Details</th>
+                <th class="px-4 py-3.5">Category & Subject</th>
+                <th class="px-4 py-3.5">Priority</th>
+                <th class="px-4 py-3.5">Submitted On</th>
+                <th class="px-4 py-3.5">Status</th>
+                <th class="px-4 py-3.5 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-table-body" class="divide-y divide-slate-800/60 font-normal">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Audit Trail & Log Monitor -->
+      <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i> Exam Cell Official Audit Trail
+          </h3>
+          <span class="text-[11px] text-slate-400">Recorded System Dispatch Events</span>
+        </div>
+
+        <div id="admin-audit-logs" class="space-y-2 max-h-48 overflow-y-auto pr-2">
+          <!-- Dynamically populated system logs -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- 3. FACULTY REVIEW PORTAL VIEW -->
+    <!-- ========================================================================= -->
+    <section id="portal-faculty" class="hidden space-y-6">
+      
+      <!-- Active Faculty Context Selector Header -->
+      <div class="glass-panel p-6 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center space-x-4">
+          <div class="w-12 h-12 rounded-xl bg-purple-600/20 text-purple-400 flex items-center justify-center border border-purple-500/30 text-xl font-bold">
+            <i class="fa-solid fa-chalkboard-user"></i>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-white">Faculty Evaluation & Verification Desk</h2>
+            <p class="text-xs text-slate-400">Review assigned exam grievances, inspect marksheets, and submit official corrections.</p>
+          </div>
+        </div>
+
+        <!-- Faculty Member Selector (Simulating logged-in faculty) -->
+        <div class="flex items-center gap-3">
+          <label class="text-xs text-slate-400 whitespace-nowrap">Logged in as:</label>
+          <select id="faculty-person-select" onchange="renderFacultyPortal()" class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-xs font-semibold text-white focus:outline-none focus:border-indigo-500">
+            <!-- Dynamically populated faculty dropdown -->
+          </select>
+        </div>
+      </div>
+
+      <!-- Forwarded Cases List Container -->
+      <div id="faculty-cases-container" class="space-y-4">
+        <!-- Dynamically rendered assigned grievance cards -->
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 1: STUDENT DETAILED VIEW & TIMELINE VISUALIZER MODAL -->
+  <!-- ========================================================================= -->
+  <div id="modal-student-detail" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="glass-panel border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-fade-in">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span id="modal-stu-id" class="text-sm font-extrabold text-indigo-400 font-mono">#GRV-1001</span>
+          <span id="modal-stu-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300">Under Progress</span>
+        </div>
+        <button onclick="closeModal('modal-student-detail')" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+        
+        <!-- Case Details Summary -->
+        <div class="bg-slate-900/80 rounded-xl p-4 border border-slate-800 space-y-3">
+          <h4 id="modal-stu-subject" class="text-base font-bold text-white">Marks missing in Practical Viva Voce</h4>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-slate-300">
+            <p><span class="text-slate-500">Category:</span> <strong id="modal-stu-category">Result Discrepancy</strong></p>
+            <p><span class="text-slate-500">Subject Code:</span> <strong id="modal-stu-code">CS502</strong></p>
+            <p><span class="text-slate-500">Submitted:</span> <strong id="modal-stu-date">2026-09-20</strong></p>
+            <p><span class="text-slate-500">Urgency:</span> <strong id="modal-stu-priority">High</strong></p>
+          </div>
+          <div class="pt-2 border-t border-slate-800">
+            <p class="text-slate-400 mb-1 font-semibold">Description:</p>
+            <p id="modal-stu-desc" class="text-slate-200 leading-relaxed bg-slate-950 p-3 rounded-lg border border-slate-800/50">Details text...</p>
+          </div>
+        </div>
+
+        <!-- Attached Documents -->
+        <div>
+          <h5 class="font-bold text-slate-300 uppercase tracking-wider mb-2">Attached Documents</h5>
+          <div id="modal-stu-attachments" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <!-- Rendered attachments -->
+          </div>
+        </div>
+
+        <!-- Live Visual Progress Timeline Visualizer -->
+        <div>
+          <h5 class="font-bold text-slate-300 uppercase tracking-wider mb-3">Resolution Progress Timeline</h5>
+          <div id="modal-stu-timeline" class="space-y-4 pl-2 relative">
+            <!-- Dynamically populated step nodes -->
+          </div>
+        </div>
+
+        <!-- Official Remarks Display -->
+        <div id="modal-stu-remarks-box" class="hidden bg-emerald-950/40 border border-emerald-500/30 rounded-xl p-4 text-emerald-200 space-y-1">
+          <p class="font-bold text-xs uppercase tracking-wide flex items-center gap-2">
+            <i class="fa-solid fa-circle-check text-emerald-400"></i> Final Resolution Note:
+          </p>
+          <p id="modal-stu-remarks-text" class="text-xs text-emerald-300 font-medium"></p>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-3 bg-slate-900 border-t border-slate-800 flex justify-end">
+        <button onclick="closeModal('modal-student-detail')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200">
+          Close Window
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 2: ADMIN MANAGEMENT & FACULTY FORWARDING ACTION DESK MODAL -->
+  <!-- ========================================================================= -->
+  <div id="modal-admin-action" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="glass-panel border border-slate-700 rounded-2xl w-full max-w-3xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span id="admin-action-id" class="text-base font-extrabold text-indigo-400 font-mono">#GRV-1001</span>
+          <span class="text-xs text-slate-400">| Exam Cell Redressal Processing Desk</span>
+        </div>
+        <button onclick="closeModal('modal-admin-action')" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+        
+        <!-- Student Info Header -->
+        <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div>
+            <span class="text-slate-500 block">Student Name:</span>
+            <strong id="admin-action-student" class="text-white text-sm">Aarav Sharma</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Roll Number:</span>
+            <strong id="admin-action-roll" class="text-white text-sm">2021CS1042</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Department:</span>
+            <strong id="admin-action-dept" class="text-white text-sm">Computer Science</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Semester & Exam:</span>
+            <strong id="admin-action-sem" class="text-white text-sm">6th Sem</strong>
+          </div>
+        </div>
+
+        <!-- Grievance Full Description -->
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+          <div class="flex items-center justify-between">
+            <h5 id="admin-action-subject" class="font-bold text-slate-200 text-sm">Marks missing in Viva Voce</h5>
+            <span id="admin-action-category" class="px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 text-[10px] border border-indigo-800">Category</span>
+          </div>
+          <p id="admin-action-desc" class="text-slate-300 leading-relaxed">Description goes here...</p>
+          
+          <!-- Attachments List -->
+          <div class="pt-2">
+            <span class="text-slate-500 text-[11px] font-semibold block mb-1">Attached Files:</span>
+            <div id="admin-action-files" class="flex flex-wrap gap-2"></div>
+          </div>
+        </div>
+
+        <!-- Action Selection Tabs -->
+        <div class="border-t border-slate-800 pt-4 space-y-4">
+          <div class="flex space-x-3 border-b border-slate-800 pb-2">
+            <button onclick="switchAdminActionTab('forward')" id="btn-tab-forward" class="px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold text-xs flex items-center gap-2">
+              <i class="fa-solid fa-share font-normal"></i> Forward to Faculty / HOD
+            </button>
+            <button onclick="switchAdminActionTab('resolve')" id="btn-tab-resolve" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs flex items-center gap-2">
+              <i class="fa-solid fa-circle-check text-emerald-400"></i> Direct Resolution
+            </button>
+          </div>
+
+          <!-- TAB 1: FORWARD TO FACULTY FORM -->
+          <div id="admin-panel-forward" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Select Target Faculty / Officer <span class="text-rose-400">*</span></label>
+              <select id="admin-faculty-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500">
+                <!-- Faculty options rendered via JS -->
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Forwarding Instructions / Notes <span class="text-rose-400">*</span></label>
+              <textarea id="admin-forward-note" rows="3" placeholder="e.g. Please re-verify answer booklet section 3 or cross-check practical viva log sheet..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500"></textarea>
+            </div>
+
+            <div class="bg-indigo-950/40 border border-indigo-500/20 rounded-xl p-3 text-[11px] text-indigo-300 flex items-start gap-2">
+              <i class="fa-solid fa-bell text-indigo-400 mt-0.5"></i>
+              <span>Note: Submitting this action will automatically set the student status to <strong>'Under Progress / Forwarded to Faculty'</strong> and dispatch an instant notification to the student.</span>
+            </div>
+
+            <div class="flex justify-end pt-2">
+              <button onclick="submitAdminForward()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center gap-2">
+                <i class="fa-solid fa-paper-plane"></i> Dispatch to Faculty
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB 2: DIRECT RESOLUTION FORM -->
+          <div id="admin-panel-resolve" class="hidden space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Official Resolution Summary & Notes <span class="text-rose-400">*</span></label>
+              <textarea id="admin-resolve-note" rows="3" placeholder="e.g. Discrepancy verified. 5 marks added to final result sheet. Corrected grade sheet issued." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-emerald-500"></textarea>
+            </div>
+
+            <div class="flex justify-end pt-2">
+              <button onclick="submitAdminResolve()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 flex items-center gap-2">
+                <i class="fa-solid fa-check-double"></i> Mark as Officially Resolved
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 3: FACULTY REMARK & RESOLUTION MODAL -->
+  <!-- ========================================================================= -->
+  <div id="modal-faculty-action" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+    <div class="glass-panel border border-slate-700 rounded-2xl w-full max-w-xl flex flex-col shadow-2xl overflow-hidden">
+      
+      <div class="px-6 py-4 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
+        <h4 class="font-bold text-sm text-white">Faculty Review Remarks & Actions</h4>
+        <button onclick="closeModal('modal-faculty-action')" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4 text-xs">
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+          <span class="text-slate-500 block mb-1">Admin's Forwarding Note:</span>
+          <p id="fac-modal-instruction" class="text-indigo-300 font-medium"></p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Faculty Evaluation Remarks / Solution Notes <span class="text-rose-400">*</span></label>
+          <textarea id="fac-modal-remarks" rows="4" placeholder="Enter findings, verification outcome, or re-calculated marks..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500"></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-2">
+          <button onclick="closeModal('modal-faculty-action')" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold">
+            Cancel
+          </button>
+          <button onclick="submitFacultyResolution()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-2">
+            <i class="fa-solid fa-circle-check"></i> Submit & Mark Resolved
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- SLIDE-OUT DRAWER: REAL-TIME NOTIFICATIONS HUB -->
+  <!-- ========================================================================= -->
+  <div id="drawer-notif" class="hidden fixed inset-0 z-50 overflow-hidden modal-backdrop">
+    <div class="absolute inset-y-0 right-0 max-w-full flex pl-10">
+      <div class="w-screen max-w-md bg-slate-900 border-l border-slate-800 shadow-2xl flex flex-col">
+        
+        <!-- Drawer Header -->
+        <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
+          <div class="flex items-center gap-2">
+            <i class="fa-regular fa-bell text-indigo-400"></i>
+            <h3 class="font-bold text-sm text-white">Notifications Center</h3>
+          </div>
+          <button onclick="toggleNotificationDrawer()" class="p-1 rounded-lg text-slate-400 hover:text-white">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+
+        <!-- Notification List -->
+        <div id="notif-list-container" class="flex-1 p-4 overflow-y-auto space-y-3">
+          <!-- Dynamically inserted notification alerts -->
+        </div>
+
+        <!-- Drawer Footer -->
+        <div class="p-3 border-t border-slate-800 bg-slate-950 text-center">
+          <button onclick="clearAllNotifications()" class="text-xs text-slate-400 hover:text-indigo-400 font-medium">
+            Clear All Notifications
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION POPUP CONTAINER -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT LOGIC & STATE PERSISTENCE ENGINE -->
+  <!-- ========================================================================= -->
+  <script>
+    // Default initial mock state data
+    const DEFAULT_DATA = {
+      currentUserRole: 'student',
+      activeStudent: {
+        id: 'STU-1024',
+        name: 'Aarav Sharma',
+        rollNo: '2021CS1042',
+        dept: 'Computer Science & Engineering',
+        semester: '6th Sem (B.Tech)',
+        email: 'aarav.sharma@apex.edu.in'
+      },
+      faculties: [
+        { id: 'FAC-101', name: 'Dr. Rajesh Kumar', title: 'HOD, Computer Science Dept' },
+        { id: 'FAC-102', name: 'Prof. Meena Verma', title: 'Senior Controller of Evaluation' },
+        { id: 'FAC-103', name: 'Dr. S. K. Gupta', title: 'Dean of Academic Examinations' },
+        { id: 'FAC-104', name: 'Dr. Ananya Roy', title: 'HOD, Mathematics Dept' }
+      ],
+      grievances: [
+        {
+          id: 'GRV-1024',
+          studentId: 'STU-1024',
+          studentName: 'Aarav Sharma',
+          rollNo: '2021CS1042',
+          dept: 'Computer Science',
+          category: 'Result Discrepancy',
+          semester: 'Semester 5',
+          subjectCode: 'CS502 - Database Systems',
+          examDate: '2026-04-15',
+          priority: 'High',
+          subject: 'Marks missing in Practical Viva Voce',
+          description: 'In the published result sheet for DB Systems (CS502), my viva voce marks (20 marks) seem to be omitted. Attendance sheet confirms my presence.',
+          files: [{ name: 'viva_attendance_slip.pdf', size: 1240000, type: 'application/pdf' }],
+          status: 'Under Progress',
+          assignedFacultyId: 'FAC-101',
+          assignedFacultyName: 'Dr. Rajesh Kumar',
+          forwardNote: 'Please verify the viva score sheet submitted by internal examiner and re-evaluate score.',
+          facultyRemarks: '',
+          resolutionNote: '',
+          createdAt: '2026-09-20 10:30 AM',
+          updatedAt: '2026-09-22 02:15 PM',
+          timeline: [
+            { stage: 'Submitted', time: '2026-09-20 10:30 AM', note: 'Grievance submitted by student.' },
+            { stage: 'Under Review', time: '2026-09-21 09:15 AM', note: 'Verified initial documents in Exam Cell.' },
+            { stage: 'Forwarded to Faculty', time: '2026-09-22 02:15 PM', note: 'Forwarded to Dr. Rajesh Kumar (HOD CS) with instruction.' }
+          ]
+        },
+        {
+          id: 'GRV-1018',
+          studentId: 'STU-1024',
+          studentName: 'Aarav Sharma',
+          rollNo: '2021CS1042',
+          dept: 'Computer Science',
+          category: 'Admit Card Issue',
+          semester: 'Semester 6',
+          subjectCode: 'CS601 - Software Engineering',
+          examDate: '2026-05-10',
+          priority: 'Urgent',
+          subject: 'Incorrect photo on Admit Card',
+          description: 'The photograph printed on my Semester 6 Admit Card is corrupted. Need official correction before hall entry.',
+          files: [{ name: 'admit_card_copy.pdf', size: 850000, type: 'application/pdf' }],
+          status: 'Resolved',
+          assignedFacultyId: '',
+          assignedFacultyName: '',
+          forwardNote: '',
+          facultyRemarks: '',
+          resolutionNote: 'Fresh admit card generated and updated photo printed. Student collected updated copy.',
+          createdAt: '2026-09-10 11:00 AM',
+          updatedAt: '2026-09-11 04:30 PM',
+          timeline: [
+            { stage: 'Submitted', time: '2026-09-10 11:00 AM', note: 'Grievance submitted by student.' },
+            { stage: 'Resolved', time: '2026-09-11 04:30 PM', note: 'Resolved directly by Exam Cell Admin.' }
+          ]
+        }
+      ],
+      notifications: [
+        {
+          id: 'NT-1',
+          title: 'Grievance Forwarded',
+          message: 'Your Grievance #GRV-1024 status updated to "Under Progress / Forwarded to Dr. Rajesh Kumar".',
+          timestamp: '2026-09-22 02:15 PM',
+          read: false
+        }
+      ],
+      logs: [
+        { timestamp: '2026-09-22 02:15 PM', action: 'Grievance #GRV-1024 forwarded to Dr. Rajesh Kumar by Exam Cell Admin.' },
+        { timestamp: '2026-09-20 10:30 AM', action: 'Grievance #GRV-1024 submitted by student Aarav Sharma.' }
+      ]
+    };
+
+    // Application state holder
+    let AppState = JSON.parse(localStorage.getItem('apex_grievance_data')) || DEFAULT_DATA;
+    let selectedFiles = []; // Temporary storage for current submission form
+    let activeActionGrievanceId = null;
+
+    // Synchronize current state to LocalStorage
+    function saveState() {
+      localStorage.setItem('apex_grievance_data', JSON.stringify(AppState));
+      renderApp();
+    }
+
+    // Toast notification engine
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      const colors = {
+        success: 'bg-emerald-600 text-white border-emerald-500',
+        error: 'bg-rose-600 text-white border-rose-500',
+        warning: 'bg-amber-600 text-white border-amber-500',
+        info: 'bg-indigo-600 text-white border-indigo-500'
+      };
+
+      const icons = {
+        success: 'fa-circle-check',
+        error: 'fa-circle-xmark',
+        warning: 'fa-triangle-exclamation',
+        info: 'fa-circle-info'
+      };
+
+      toast.className = `pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl text-xs font-semibold transition-all duration-300 transform translate-y-2 opacity-0 ${colors[type]}`;
+      toast.innerHTML = `<i class="fa-solid ${icons[type]} text-base"></i> <span>${message}</span>`;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 50);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    // Reset baseline demo data
+    function resetDataToDefault() {
+      AppState = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      saveState();
+      showToast('Mock data reset to fresh initial baseline state.', 'info');
+    }
+
+    // Role Switching Logic
+    function switchRole(role) {
+      AppState.currentUserRole = role;
+      
+      // Update UI Role Tabs
+      document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('role-btn-active'));
+      const activeBtn = document.getElementById(`btn-role-${role}`);
+      if (activeBtn) activeBtn.classList.add('role-btn-active');
+      
+      document.getElementById('mobile-role-select').value = role;
+
+      // Hide all portals
+      document.getElementById('portal-student').classList.add('hidden');
+      document.getElementById('portal-admin').classList.add('hidden');
+      document.getElementById('portal-faculty').classList.add('hidden');
+
+      // Show selected portal
+      document.getElementById(`portal-${role}`).classList.remove('hidden');
+
+      renderApp();
+    }
+
+    // Student Sub-tabs
+    function switchStudentTab(tab) {
+      document.getElementById('stu-subtab-submit').classList.add('hidden');
+      document.getElementById('stu-subtab-tracker').classList.add('hidden');
+      document.getElementById('stu-subtab-faq').classList.add('hidden');
+
+      document.getElementById('tab-stu-submit').className = 'pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2';
+      document.getElementById('tab-stu-tracker').className = 'pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2';
+      document.getElementById('tab-stu-faq').className = 'pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2';
+
+      document.getElementById(`stu-subtab-${tab}`).classList.remove('hidden');
+      document.getElementById(`tab-stu-${tab}`).className = 'pb-3 border-b-2 border-indigo-500 text-indigo-400 font-semibold flex items-center gap-2';
+    }
+
+    // File Upload Handler with strictly enforced 5MB limit
+    function handleFileSelect(event) {
+      const files = Array.from(event.target.files);
+      processFiles(files);
+    }
+
+    function processFiles(files) {
+      const maxSizeBytes = 5 * 1024 * 1024; // 5 MB Limit
+
+      files.forEach(file => {
+        if (file.size > maxSizeBytes) {
+          showToast(`File "${file.name}" exceeds maximum allowed limit of 5MB!`, 'error');
+          return;
+        }
+
+        // Avoid duplicates
+        if (selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+          showToast(`File "${file.name}" is already attached.`, 'warning');
+          return;
+        }
+
+        selectedFiles.push({
+          name: file.name,
+          size: file.size,
+          type: file.type
+        });
+      });
+
+      renderFileList();
+    }
+
+    function removeFile(index) {
+      selectedFiles.splice(index, 1);
+      renderFileList();
+    }
+
+    function clearAttachments() {
+      selectedFiles = [];
+      renderFileList();
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function renderFileList() {
+      const container = document.getElementById('file-list');
+      container.innerHTML = '';
+
+      selectedFiles.forEach((file, idx) => {
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between p-2.5 bg-slate-900 rounded-xl border border-slate-800 text-xs';
+        item.innerHTML = `
+          <div class="flex items-center space-x-2 truncate">
+            <i class="fa-solid fa-file-pdf text-rose-400 text-sm"></i>
+            <span class="text-slate-200 truncate max-w-[150px] sm:max-w-[200px]">${file.name}</span>
+            <span class="text-[10px] text-slate-500 font-mono">(${formatFileSize(file.size)})</span>
+          </div>
+          <button type="button" onclick="removeFile(${idx})" class="text-slate-500 hover:text-rose-400 transition p-1">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // Handle Student Grievance Submission
+    function handleFormSubmit(event) {
+      event.preventDefault();
+
+      const category = document.getElementById('form-category').value;
+      const semester = document.getElementById('form-semester').value;
+      const priority = document.getElementById('form-priority').value;
+      const subjectCode = document.getElementById('form-subject-code').value;
+      const examDate = document.getElementById('form-exam-date').value;
+      const subjectTitle = document.getElementById('form-subject-title').value;
+      const description = document.getElementById('form-description').value;
+
+      if (!category || !subjectCode || !description) {
+        showToast('Please fill all mandatory fields.', 'warning');
+        return;
+      }
+
+      const newId = 'GRV-' + Math.floor(1000 + Math.random() * 9000);
+      const now = new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' });
+
+      const newGrievance = {
+        id: newId,
+        studentId: AppState.activeStudent.id,
+        studentName: AppState.activeStudent.name,
+        rollNo: AppState.activeStudent.rollNo,
+        dept: AppState.activeStudent.dept,
+        category: category,
+        semester: semester,
+        subjectCode: subjectCode,
+        examDate: examDate,
+        priority: priority,
+        subject: subjectTitle,
+        description: description,
+        files: [...selectedFiles],
+        status: 'Pending',
+        assignedFacultyId: '',
+        assignedFacultyName: '',
+        forwardNote: '',
+        facultyRemarks: '',
+        resolutionNote: '',
+        createdAt: now,
+        updatedAt: now,
+        timeline: [
+          { stage: 'Submitted', time: now, note: 'Grievance submitted by student.' }
+        ]
+      };
+
+      AppState.grievances.unshift(newGrievance);
+      
+      // Log event
+      AppState.logs.unshift({
+        timestamp: now,
+        action: `Grievance #${newId} submitted by ${AppState.activeStudent.name}`
+      });
+
+      // Notification
+      AppState.notifications.unshift({
+        id: 'NT-' + Date.now(),
+        title: 'Grievance Submitted',
+        message: `Your grievance #${newId} has been filed successfully.`,
+        timestamp: now,
+        read: false
+      });
+
+      selectedFiles = [];
+      document.getElementById('grievance-form').reset();
+      renderFileList();
+
+      saveState();
+      showToast(`Grievance #${newId} submitted successfully!`, 'success');
+      switchStudentTab('tracker');
+    }
+
+    // Render Student Tracker View
+    function renderStudentTracker() {
+      const container = document.getElementById('student-grievance-cards');
+      const search = document.getElementById('stu-search').value.toLowerCase();
+      const statusFilter = document.getElementById('stu-filter-status').value;
+
+      let list = AppState.grievances.filter(g => g.studentId === AppState.activeStudent.id);
+
+      if (statusFilter !== 'ALL') {
+        list = list.filter(g => g.status === statusFilter);
+      }
+
+      if (search) {
+        list = list.filter(g => 
+          g.id.toLowerCase().includes(search) || 
+          g.subjectCode.toLowerCase().includes(search) || 
+          g.subject.toLowerCase().includes(search)
+        );
+      }
+
+      document.getElementById('stu-total-badge').textContent = list.length;
+
+      if (list.length === 0) {
+        container.innerHTML = `
+          <div class="glass-panel p-8 rounded-2xl text-center space-y-3 border border-slate-800">
+            <i class="fa-solid fa-folder-open text-4xl text-slate-600"></i>
+            <p class="text-sm font-medium text-slate-400">No grievances match your search criteria.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+      list.forEach(g => {
+        const statusBadge = getStatusBadgeHTML(g.status);
+        const priorityBadge = getPriorityBadgeHTML(g.priority);
+
+        const card = document.createElement('div');
+        card.className = 'glass-panel p-5 rounded-2xl border border-slate-800 hover:border-slate-700 transition space-y-3';
+        card.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-3">
+              <span class="font-mono text-sm font-bold text-indigo-400">${g.id}</span>
+              ${statusBadge}
+              ${priorityBadge}
+            </div>
+            <span class="text-xs text-slate-500 font-medium"><i class="fa-regular fa-clock mr-1"></i>${g.createdAt}</span>
+          </div>
+
+          <div class="space-y-1">
+            <h4 class="text-sm font-bold text-white">${g.subject}</h4>
+            <div class="flex items-center gap-4 text-xs text-slate-400 flex-wrap">
+              <span><i class="fa-solid fa-book-bookmark text-slate-500 mr-1"></i>${g.subjectCode}</span>
+              <span><i class="fa-solid fa-layer-group text-slate-500 mr-1"></i>${g.category}</span>
+              <span><i class="fa-solid fa-paperclip text-slate-500 mr-1"></i>${g.files.length} attachment(s)</span>
+            </div>
+          </div>
+
+          ${g.assignedFacultyName ? `
+            <div class="bg-indigo-950/30 border border-indigo-500/20 rounded-xl p-2.5 text-xs text-indigo-300 flex items-center gap-2">
+              <i class="fa-solid fa-arrow-right-to-city text-indigo-400"></i>
+              <span>Assigned to: <strong>${g.assignedFacultyName}</strong></span>
+            </div>
+          ` : ''}
+
+          <div class="flex items-center justify-between pt-2">
+            <span class="text-[11px] text-slate-500">Last updated: ${g.updatedAt}</span>
+            <button onclick="openStudentDetailModal('${g.id}')" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-eye text-indigo-400"></i> View Status & Timeline
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // Modal view for Student Detailed Status
+    function openStudentDetailModal(id) {
+      const g = AppState.grievances.find(item => item.id === id);
+      if (!g) return;
+
+      document.getElementById('modal-stu-id').textContent = g.id;
+      document.getElementById('modal-stu-badge').innerHTML = getStatusBadgeHTML(g.status);
+      document.getElementById('modal-stu-subject').textContent = g.subject;
+      document.getElementById('modal-stu-category').textContent = g.category;
+      document.getElementById('modal-stu-code').textContent = g.subjectCode;
+      document.getElementById('modal-stu-date').textContent = g.createdAt;
+      document.getElementById('modal-stu-priority').textContent = g.priority;
+      document.getElementById('modal-stu-desc').textContent = g.description;
+
+      // Attachments
+      const attachBox = document.getElementById('modal-stu-attachments');
+      attachBox.innerHTML = '';
+      if (g.files.length === 0) {
+        attachBox.innerHTML = '<span class="text-slate-500 text-xs">No documents attached.</span>';
+      } else {
+        g.files.forEach(f => {
+          const fileEl = document.createElement('div');
+          fileEl.className = 'p-2 bg-slate-900 border border-slate-800 rounded-lg flex items-center justify-between text-xs';
+          fileEl.innerHTML = `
+            <span class="truncate text-slate-300"><i class="fa-solid fa-file-pdf text-rose-400 mr-2"></i>${f.name}</span>
+            <span class="text-[10px] text-slate-500 font-mono">${formatFileSize(f.size)}</span>
+          `;
+          attachBox.appendChild(fileEl);
+        });
+      }
+
+      // Visual Timeline Nodes
+      const timelineBox = document.getElementById('modal-stu-timeline');
+      timelineBox.innerHTML = '';
+      
+      g.timeline.forEach((step, idx) => {
+        const node = document.createElement('div');
+        node.className = 'relative flex items-start gap-3 text-xs';
+        node.innerHTML = `
+          <div class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold z-10 shrink-0 text-[11px] shadow">
+            ${idx + 1}
+          </div>
+          <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 flex-1 space-y-0.5">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-slate-200">${step.stage}</span>
+              <span class="text-[10px] text-slate-500">${step.time}</span>
+            </div>
+            <p class="text-slate-400">${step.note}</p>
+          </div>
+        `;
+        timelineBox.appendChild(node);
+      });
+
+      // Resolution Note Box
+      const remarksBox = document.getElementById('modal-stu-remarks-box');
+      if (g.status === 'Resolved' && g.resolutionNote) {
+        document.getElementById('modal-stu-remarks-text').textContent = g.resolutionNote;
+        remarksBox.classList.remove('hidden');
+      } else {
+        remarksBox.classList.add('hidden');
+      }
+
+      openModal('modal-student-detail');
+    }
+
+    // Render Admin Table & Command Center
+    function renderAdminTable() {
+      const tbody = document.getElementById('admin-table-body');
+      const search = document.getElementById('admin-search-input').value.toLowerCase();
+      const statusFilter = document.getElementById('admin-filter-status').value;
+      const priorityFilter = document.getElementById('admin-filter-priority').value;
+
+      let list = [...AppState.grievances];
+
+      // Update Command Center Metric Cards
+      document.getElementById('admin-stat-total').textContent = list.length;
+      document.getElementById('admin-stat-pending').textContent = list.filter(g => g.status === 'Pending').length;
+      document.getElementById('admin-stat-forwarded').textContent = list.filter(g => g.status === 'Under Progress').length;
+      document.getElementById('admin-stat-resolved').textContent = list.filter(g => g.status === 'Resolved').length;
+      document.getElementById('admin-stat-urgent').textContent = list.filter(g => g.priority === 'Urgent' || g.priority === 'High').length;
+
+      if (statusFilter !== 'ALL') list = list.filter(g => g.status === statusFilter);
+      if (priorityFilter !== 'ALL') list = list.filter(g => g.priority === priorityFilter);
+
+      if (search) {
+        list = list.filter(g => 
+          g.id.toLowerCase().includes(search) || 
+          g.studentName.toLowerCase().includes(search) || 
+          g.rollNo.toLowerCase().includes(search) || 
+          g.subjectCode.toLowerCase().includes(search)
+        );
+      }
+
+      document.getElementById('admin-record-count').textContent = `${list.length} cases`;
+
+      tbody.innerHTML = '';
+      if (list.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="px-4 py-8 text-center text-slate-500">No grievance records found.</td>
+          </tr>
+        `;
+        return;
+      }
+
+      list.forEach(g => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-900/60 transition';
+        tr.innerHTML = `
+          <td class="px-4 py-3.5 font-mono font-bold text-indigo-400">${g.id}</td>
+          <td class="px-4 py-3.5">
+            <div class="font-bold text-white">${g.studentName}</div>
+            <div class="text-[10px] text-slate-400 font-mono">${g.rollNo} • ${g.dept}</div>
+          </td>
+          <td class="px-4 py-3.5">
+            <div class="font-medium text-slate-200">${g.category}</div>
+            <div class="text-[10px] text-slate-400">${g.subjectCode}</div>
+          </td>
+          <td class="px-4 py-3.5">${getPriorityBadgeHTML(g.priority)}</td>
+          <td class="px-4 py-3.5 text-slate-400 text-[11px]">${g.createdAt}</td>
+          <td class="px-4 py-3.5">${getStatusBadgeHTML(g.status)}</td>
+          <td class="px-4 py-3.5 text-right">
+            <button onclick="openAdminActionModal('${g.id}')" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold transition shadow">
+              Process & Forward
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Render System Logs
+      const logBox = document.getElementById('admin-audit-logs');
+      logBox.innerHTML = '';
+      AppState.logs.forEach(log => {
+        const item = document.createElement('div');
+        item.className = 'text-[11px] text-slate-300 flex items-start gap-2 bg-slate-950/60 p-2 rounded-lg border border-slate-800/60';
+        item.innerHTML = `
+          <i class="fa-solid fa-angle-right text-indigo-400 mt-0.5"></i>
+          <div>
+            <span class="text-slate-500 font-mono mr-2">[${log.timestamp}]</span>
+            <span>${log.action}</span>
+          </div>
+        `;
+        logBox.appendChild(item);
+      });
+    }
+
+    // Open Admin Action Modal Desk
+    function openAdminActionModal(id) {
+      activeActionGrievanceId = id;
+      const g = AppState.grievances.find(item => item.id === id);
+      if (!g) return;
+
+      document.getElementById('admin-action-id').textContent = g.id;
+      document.getElementById('admin-action-student').textContent = g.studentName;
+      document.getElementById('admin-action-roll').textContent = g.rollNo;
+      document.getElementById('admin-action-dept').textContent = g.dept;
+      document.getElementById('admin-action-sem').textContent = g.semester;
+      document.getElementById('admin-action-subject').textContent = g.subject;
+      document.getElementById('admin-action-category').textContent = g.category;
+      document.getElementById('admin-action-desc').textContent = g.description;
+
+      // Render Attached files list
+      const filesContainer = document.getElementById('admin-action-files');
+      filesContainer.innerHTML = '';
+      if (g.files.length === 0) {
+        filesContainer.innerHTML = '<span class="text-slate-500 text-[10px]">No files attached</span>';
+      } else {
+        g.files.forEach(f => {
+          filesContainer.innerHTML += `
+            <span class="px-2 py-1 rounded bg-slate-900 border border-slate-800 text-[11px] text-slate-300">
+              <i class="fa-solid fa-file-pdf text-rose-400 mr-1"></i> ${f.name} (${formatFileSize(f.size)})
+            </span>
+          `;
+        });
+      }
+
+      // Populate Faculty Dropdown
+      const facSelect = document.getElementById('admin-faculty-select');
+      facSelect.innerHTML = '';
+      AppState.faculties.forEach(fac => {
+        facSelect.innerHTML += `<option value="${fac.id}">${fac.name} (${fac.title})</option>`;
+      });
+
+      switchAdminActionTab('forward');
+      openModal('modal-admin-action');
+    }
+
+    function switchAdminActionTab(tab) {
+      if (tab === 'forward') {
+        document.getElementById('admin-panel-forward').classList.remove('hidden');
+        document.getElementById('admin-panel-resolve').classList.add('hidden');
+        document.getElementById('btn-tab-forward').className = 'px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold text-xs flex items-center gap-2';
+        document.getElementById('btn-tab-resolve').className = 'px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs flex items-center gap-2';
+      } else {
+        document.getElementById('admin-panel-forward').classList.add('hidden');
+        document.getElementById('admin-panel-resolve').classList.remove('hidden');
+        document.getElementById('btn-tab-forward').className = 'px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs flex items-center gap-2';
+        document.getElementById('btn-tab-resolve').className = 'px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold text-xs flex items-center gap-2';
+      }
+    }
+
+    // Submit Admin Forwarding Action
+    function submitAdminForward() {
+      const facId = document.getElementById('admin-faculty-select').value;
+      const note = document.getElementById('admin-forward-note').value.trim();
+
+      if (!note) {
+        showToast('Please add forwarding instructions for the faculty member.', 'warning');
+        return;
+      }
+
+      const g = AppState.grievances.find(item => item.id === activeActionGrievanceId);
+      const faculty = AppState.faculties.find(f => f.id === facId);
+      if (!g || !faculty) return;
+
+      const now = new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' });
+
+      g.status = 'Under Progress';
+      g.assignedFacultyId = faculty.id;
+      g.assignedFacultyName = faculty.name;
+      g.forwardNote = note;
+      g.updatedAt = now;
+
+      g.timeline.push({
+        stage: 'Forwarded to Faculty',
+        time: now,
+        note: `Forwarded to ${faculty.name} (${faculty.title}) with instruction: "${note}"`
+      });
+
+      // Notification to Student
+      AppState.notifications.unshift({
+        id: 'NT-' + Date.now(),
+        title: 'Status Updated: Under Progress',
+        message: `Your Grievance #${g.id} has been forwarded to ${faculty.name} for official evaluation.`,
+        timestamp: now,
+        read: false
+      });
+
+      // Audit Log
+      AppState.logs.unshift({
+        timestamp: now,
+        action: `Grievance #${g.id} forwarded to ${faculty.name} by Exam Cell Admin.`
+      });
+
+      closeModal('modal-admin-action');
+      saveState();
+      showToast(`Grievance #${g.id} successfully forwarded to ${faculty.name}!`, 'success');
+    }
+
+    // Direct Resolution Action by Admin
+    function submitAdminResolve() {
+      const note = document.getElementById('admin-resolve-note').value.trim();
+      if (!note) {
+        showToast('Please provide official resolution summary notes.', 'warning');
+        return;
+      }
+
+      const g = AppState.grievances.find(item => item.id === activeActionGrievanceId);
+      if (!g) return;
+
+      const now = new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' });
+
+      g.status = 'Resolved';
+      g.resolutionNote = note;
+      g.updatedAt = now;
+
+      g.timeline.push({
+        stage: 'Resolved',
+        time: now,
+        note: `Directly resolved by Exam Cell Admin. Note: ${note}`
+      });
+
+      // Student Notification
+      AppState.notifications.unshift({
+        id: 'NT-' + Date.now(),
+        title: 'Grievance Resolved',
+        message: `Your Grievance #${g.id} has been resolved. Note: ${note}`,
+        timestamp: now,
+        read: false
+      });
+
+      // Audit Log
+      AppState.logs.unshift({
+        timestamp: now,
+        action: `Grievance #${g.id} resolved directly by Exam Cell Admin.`
+      });
+
+      closeModal('modal-admin-action');
+      saveState();
+      showToast(`Grievance #${g.id} marked as officially resolved!`, 'success');
+    }
+
+    // Render Faculty View
+    function renderFacultyPortal() {
+      const select = document.getElementById('faculty-person-select');
+      if (select.children.length === 0) {
+        AppState.faculties.forEach(fac => {
+          select.innerHTML += `<option value="${fac.id}">${fac.name} (${fac.title})</option>`;
+        });
+      }
+
+      const activeFacId = select.value || AppState.faculties[0].id;
+      const container = document.getElementById('faculty-cases-container');
+
+      const assignedList = AppState.grievances.filter(g => g.assignedFacultyId === activeFacId);
+
+      if (assignedList.length === 0) {
+        container.innerHTML = `
+          <div class="glass-panel p-8 rounded-2xl text-center space-y-2 border border-slate-800">
+            <i class="fa-solid fa-square-check text-4xl text-slate-600"></i>
+            <p class="text-sm font-medium text-slate-400">No pending cases currently forwarded to your inbox.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = '';
+      assignedList.forEach(g => {
+        const card = document.createElement('div');
+        card.className = 'glass-panel p-5 rounded-2xl border border-slate-800 space-y-4';
+        card.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-3">
+              <span class="font-mono text-sm font-bold text-indigo-400">${g.id}</span>
+              ${getStatusBadgeHTML(g.status)}
+              ${getPriorityBadgeHTML(g.priority)}
+            </div>
+            <span class="text-xs text-slate-400">Student: <strong>${g.studentName}</strong> (${g.rollNo})</span>
+          </div>
+
+          <div class="space-y-2 text-xs">
+            <div class="flex items-center gap-3 text-slate-300 font-semibold">
+              <span>Category: ${g.category}</span>
+              <span>• Code: ${g.subjectCode}</span>
+            </div>
+            <p class="text-slate-300 bg-slate-950 p-3 rounded-xl border border-slate-800">${g.description}</p>
+            
+            <div class="bg-indigo-950/40 p-3 rounded-xl border border-indigo-500/20 text-indigo-300">
+              <span class="font-bold block text-[11px] uppercase tracking-wide">Exam Cell Instruction:</span>
+              <p class="mt-0.5">${g.forwardNote}</p>
+            </div>
+          </div>
+
+          <div class="flex justify-end pt-2">
+            ${g.status !== 'Resolved' ? `
+              <button onclick="openFacultyActionModal('${g.id}')" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow flex items-center gap-2">
+                <i class="fa-solid fa-pen"></i> Submit Review & Resolve
+              </button>
+            ` : `
+              <span class="text-xs font-semibold text-emerald-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-circle-check"></i> Resolved with remarks
+              </span>
+            `}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function openFacultyActionModal(id) {
+      activeActionGrievanceId = id;
+      const g = AppState.grievances.find(item => item.id === id);
+      if (!g) return;
+
+      document.getElementById('fac-modal-instruction').textContent = g.forwardNote;
+      document.getElementById('fac-modal-remarks').value = '';
+      openModal('modal-faculty-action');
+    }
+
+    function submitFacultyResolution() {
+      const remarks = document.getElementById('fac-modal-remarks').value.trim();
+      if (!remarks) {
+        showToast('Please add evaluation remarks.', 'warning');
+        return;
+      }
+
+      const g = AppState.grievances.find(item => item.id === activeActionGrievanceId);
+      if (!g) return;
+
+      const now = new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' });
+
+      g.status = 'Resolved';
+      g.facultyRemarks = remarks;
+      g.resolutionNote = `Faculty Recommendation (${g.assignedFacultyName}): ${remarks}`;
+      g.updatedAt = now;
+
+      g.timeline.push({
+        stage: 'Resolved',
+        time: now,
+        note: `Marked resolved by ${g.assignedFacultyName}. Remarks: "${remarks}"`
+      });
+
+      // Notification
+      AppState.notifications.unshift({
+        id: 'NT-' + Date.now(),
+        title: 'Grievance Resolved by Faculty',
+        message: `Your Grievance #${g.id} has been resolved by ${g.assignedFacultyName}. Note: ${remarks}`,
+        timestamp: now,
+        read: false
+      });
+
+      // Log
+      AppState.logs.unshift({
+        timestamp: now,
+        action: `Grievance #${g.id} reviewed and resolved by faculty ${g.assignedFacultyName}.`
+      });
+
+      closeModal('modal-faculty-action');
+      saveState();
+      showToast(`Grievance #${g.id} resolution saved!`, 'success');
+    }
+
+    // Render Notifications Drawer
+    function toggleNotificationDrawer() {
+      const drawer = document.getElementById('drawer-notif');
+      drawer.classList.toggle('hidden');
+      if (!drawer.classList.contains('hidden')) {
+        renderNotifications();
+      }
+    }
+
+    function renderNotifications() {
+      const container = document.getElementById('notif-list-container');
+      const badge = document.getElementById('notif-badge');
+
+      const unreadCount = AppState.notifications.filter(n => !n.read).length;
+      if (unreadCount > 0) {
+        badge.textContent = unreadCount;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      container.innerHTML = '';
+      if (AppState.notifications.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-500 text-center py-8">No notifications available.</p>';
+        return;
+      }
+
+      AppState.notifications.forEach(n => {
+        const item = document.createElement('div');
+        item.className = `p-3 rounded-xl border text-xs space-y-1 ${n.read ? 'bg-slate-900 border-slate-800 text-slate-400' : 'bg-indigo-950/40 border-indigo-500/30 text-slate-200'}`;
+        item.innerHTML = `
+          <div class="flex items-center justify-between font-bold">
+            <span class="text-indigo-400">${n.title}</span>
+            <span class="text-[10px] text-slate-500 font-mono">${n.timestamp}</span>
+          </div>
+          <p class="leading-relaxed">${n.message}</p>
+        `;
+        container.appendChild(item);
+      });
+
+      // Mark all read on view
+      AppState.notifications.forEach(n => n.read = true);
+      localStorage.setItem('apex_grievance_data', JSON.stringify(AppState));
+    }
+
+    function clearAllNotifications() {
+      AppState.notifications = [];
+      saveState();
+      toggleNotificationDrawer();
+    }
+
+    // Status Badge Component
+    function getStatusBadgeHTML(status) {
+      switch(status) {
+        case 'Pending':
+          return `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">Pending Review</span>`;
+        case 'Under Progress':
+          return `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">Under Progress</span>`;
+        case 'Resolved':
+          return `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Resolved</span>`;
+        default:
+          return `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-800 text-slate-300">${status}</span>`;
+      }
+    }
+
+    // Priority Badge Component
+    function getPriorityBadgeHTML(priority) {
+      switch(priority) {
+        case 'Urgent':
+          return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 uppercase">Urgent</span>`;
+        case 'High':
+          return `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 uppercase">High</span>`;
+        default:
+          return `<span class="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-slate-400 uppercase">${priority}</span>`;
+      }
+    }
+
+    // Modal Helpers
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    // Render Master App State
+    function renderApp() {
+      const activeRole = AppState.currentUserRole || 'student';
+
+      // Update student profile summary counts
+      const activeCount = AppState.grievances.filter(g => g.studentId === AppState.activeStudent.id && g.status !== 'Resolved').length;
+      const countEl = document.getElementById('stu-active-count');
+      if (countEl) countEl.textContent = activeCount;
+
+      if (activeRole === 'student') renderStudentTracker();
+      if (activeRole === 'admin') renderAdminTable();
+      if (activeRole === 'faculty') renderFacultyPortal();
+
+      // Update notification badge
+      const unread = AppState.notifications.filter(n => !n.read).length;
+      const badge = document.getElementById('notif-badge');
+      if (unread > 0) {
+        badge.textContent = unread;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    // Initialize Application on Window Load
+    window.onload = function() {
+      switchRole(AppState.currentUserRole || 'student');
+      renderApp();
+    };
+  </script>
+</body>
+</html>

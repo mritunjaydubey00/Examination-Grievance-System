@@ -1,0 +1,336 @@
+EXGREV PROJECT HANDOFF GUIDE FOR AI AGENTS
+==========================================
+
+Purpose
+-------
+This guide is a durable orientation for an AI agent with no prior conversation
+history. It describes the product, repository, architecture, development style,
+backend contract, and safe way to change behavior. It is a map, not a substitute
+for reading current source code. Before editing, inspect the current worktree and
+the files directly related to the task; source code and deployed Supabase state
+may have changed since this guide was written.
+
+
+1. PRODUCT AT A GLANCE
+----------------------
+ExGrev is an examination grievance web application. Students submit cases and
+supporting documents; Examination Cell (EC) staff review, assign, and coordinate
+them; teaching staff review assigned cases and add remarks. A case has a current
+state in the grievances table and an event history ("grievance thread") in the
+grievance_events table.
+
+The three application roles are:
+
+  Student
+    - Submit a grievance with category, problem type, subject, description,
+      optional supporting documents.
+    - Read their own grievances and case threads.
+    - Post participant remarks.
+    - Confirm a resolution proposed by the Examination Cell.
+
+  Examination Cell
+    - Read and manage all grievances.
+    - Assign or reassign cases, set due date and priority, and add instructions.
+    - Post remarks and propose resolutions.
+    - Search eligible staff when assigning a grievance.
+
+  Teaching staff
+    - Read grievances assigned to their account.
+    - Add remarks to those cases.
+    - They do not directly resolve cases or control due dates/assignments.
+
+Frontend visibility is not authorization. Supabase Auth claims, Postgres row-level
+security (RLS), database functions, grants, and Storage policies are the security
+boundary. Never "fix" access by disabling RLS or making private files public.
+
+
+2. REPOSITORY MAP
+-----------------
+The browser application is in exgrev/. Dev/ contains older/manual utilities and
+test data; it is not imported into the React/Vite application. Dev/docs/ is for
+project handoff documentation. The root README is the contributor overview;
+exgrev/SUPABASE_SETUP.md contains more detailed backend provisioning notes.
+
+Important application paths:
+
+  exgrev/src/main.jsx
+    React entry point.
+
+  exgrev/src/App.jsx
+    Restores Auth/profile state and selects the role workspace. If adding a new
+    role or top-level route, examine this role dispatch and the profile
+    normalization together.
+
+  exgrev/src/pages/LogIn.jsx
+    Login screen.
+  exgrev/src/pages/ChangePassword.jsx
+    First-login password change.
+  exgrev/src/pages/StudentPage.jsx
+    Student grievance submission, history, and entry into a case thread.
+  exgrev/src/pages/examinationCell.jsx
+    Examination Cell list, overview, case actions, notifications, and thread.
+  exgrev/src/pages/TeachingStaffPage.jsx
+    Assigned-case list, remarks, notifications, and thread.
+  exgrev/src/pages/GrievanceThreadPage.jsx
+    Participant event timeline and remark form for one case.
+
+  exgrev/src/components/StudentPage/
+    Student form, history, event timeline, header, document links.
+  exgrev/src/components/ExaminationCell/
+    EC dashboard, case table/workspace, action dialog, and stats.
+  exgrev/src/components/teachingStaff/
+    Teaching staff dashboard, table/workspace, case dialog, and stats.
+  exgrev/src/components/ToastNotice.jsx
+    Shared popup notice UI.
+  exgrev/src/data/tagOptions.js
+    Grievance category and problem-type options.
+
+  exgrev/src/services/userService.js
+    Login Edge Function call, role normalization, session/profile restoration,
+    password change, sign-out.
+  exgrev/src/services/grievanceService.js
+    Supabase data access for grievances, thread events, assignment/remark/
+    resolution RPCs, document uploads, and signed document URLs.
+  exgrev/src/lib/supabase.js
+    Browser Supabase client. Reads VITE_SUPABASE_URL and
+    VITE_SUPABASE_PUBLISHABLE_KEY from the frontend environment.
+
+  exgrev/supabase/functions/login-by-user-id/index.ts
+    Edge Function resolving the supplied login identifier against public.users
+    and creating an Auth session.
+  exgrev/supabase/migrations/
+    Ordered SQL schema, data, RLS, trigger, RPC, and policy changes.
+  exgrev/SUPABASE_SETUP.md
+    Setup requirements and migration/deployment guidance.
+
+The root README explains local startup and contributor commands. package.json in
+exgrev/ is authoritative for scripts/dependencies. Current scripts include
+"dev", "build", "lint", and "preview"; there is no package test script.
+
+
+3. ARCHITECTURE AND DATA FLOW
+-----------------------------
+Authentication:
+  1. The login UI calls authenticateUser() in userService.js.
+  2. It invokes the login-by-user-id Edge Function with a Student User ID or
+     account email and password.
+  3. The function looks up public.users, signs into Supabase Auth using the
+     account email, refreshes claims, and returns session plus profile.
+  4. The browser installs the session and stores a non-secret profile in
+     sessionStorage under "exgrev.profile".
+  5. App.jsx routes by normalized role. Do not trust a client-stored profile for
+     database authorization; RLS must independently enforce permissions.
+
+Identity contract:
+  - public.users contains legacy quoted columns including "User ID",
+    "Full Name", "Ex Factor", "Branch", "Department", "Phone Number", and
+    email. Confirm the deployed schema before changing queries.
+  - After the staff identity migration, account_identifier is the stable
+    reference for staff accounts; staff normally use normalized email as their
+    account identity. Student accounts retain their User ID.
+  - grievances.student_user_id identifies the student.
+  - grievances.assigned_faculty_user_id identifies the assignee and references
+    users.account_identifier in the current schema.
+  - grievance_events.actor_user_id identifies the event actor.
+  - Current JWT metadata includes role and is expected to include user_id.
+    Migration 202610210001_staff_identity_claim_fallback.sql (if present and
+    applied to the target database) lets the SQL helper fall back to Auth email
+    for staff when user_id metadata is absent. Confirm the deployed function/
+    migration and log in again when claims change.
+  - Identity comparisons have historically been a source of bugs: compare
+    account_identifier, assigned_faculty_user_id, JWT user_id, and Auth email
+    before concluding that a case assignment is missing.
+
+Grievance lifecycle:
+  - grievances stores the current case state: UUID id, human-facing grievance
+    code/number, submitter, subject, description, classification, status,
+    priority, due date, assignment, resolution state/remark, and document
+    metadata.
+  - grievance_events stores append-only event history such as submission,
+    forwarding/reassignment, remarks, status changes, resolution proposals, and
+    resolution confirmation.
+  - grievance_event_recipients stores recipient snapshots for events where
+    recipients are recorded. Older events may have no recipient snapshot; show
+    that as unspecified rather than inventing recipients.
+  - The thread displays categorized events and subscribes to Supabase Realtime.
+  - Supporting documents are uploaded to the private "grievance-documents"
+    bucket. Store object paths and metadata in supporting_documents; obtain
+    access through short-lived signed URLs.
+
+Read/write flow:
+  - Pages own UI state and call functions in services/.
+  - grievanceService.js is the shared boundary for Supabase grievance queries.
+  - Authenticated reads are constrained by RLS.
+  - Mutating workflow operations should use role-checked RPCs (for example
+    assign_grievance and add_grievance_remark) or documented database triggers.
+    Those operations should update the case and append its event atomically.
+  - Do not insert grievance_events directly from UI code. Do not change the
+    activity history as a side effect without considering transactionality,
+    recipient snapshots, actor identity, and all affected roles.
+  - Realtime subscriptions refresh the page after database changes; they do not
+    grant permission to read the changed row.
+
+
+4. SUPABASE AND MIGRATIONS
+--------------------------
+Frontend .env.local (ignored by Git) should contain:
+  VITE_SUPABASE_URL=https://<project-ref>.supabase.co
+  VITE_SUPABASE_PUBLISHABLE_KEY=<browser publishable/anon key>
+
+The service-role key is server-only. It belongs in Supabase Edge Function
+secrets, never in frontend variables, source code, logs, docs, or commits.
+Never repeat real credentials or test passwords in reports.
+
+Database changes are deployed separately from Edge Functions. Deploying
+login-by-user-id does NOT apply SQL migrations. For backend behavior, determine
+whether the issue is a function deployment, migration/policy deployment, Auth
+configuration, data mismatch, or frontend code before changing anything.
+
+Migration rules:
+  - Read migrations in filename order and review dependencies before editing.
+  - Add a new timestamp-prefixed migration for changes that might already have
+    been applied. Do not rewrite a migration that is already deployed.
+  - Test SQL and role behavior on a non-production Supabase project when
+    possible. State clearly which migration/function the operator must deploy.
+  - Preserve existing data; avoid destructive DDL or broad UPDATE/DELETE unless
+    explicitly requested and backed up.
+  - Database RPC signatures and arguments must match service calls exactly.
+  - Review RLS for SELECT, INSERT, UPDATE, and event/recipient access separately.
+
+Current migration sequence in the repository (check filenames for the latest):
+  202609290001_grievances.sql
+  202610150001_grievance_codes.sql
+  202610150002_staff_email_identity.sql
+  202610150003_student_resolution_confirmation.sql
+  202610160001_teaching_staff_remarks.sql
+  202610160002_case_insensitive_staff_search.sql
+  202610160003_prevent_past_grievance_due_dates.sql
+  202610200001_grievance_thread.sql
+  202610200002_allow_participant_remarks.sql
+  202610210001_staff_identity_claim_fallback.sql
+
+Do not assume every listed migration has been applied to the connected project.
+Inspect Supabase migration/deployment state or ask the operator to confirm.
+Read exgrev/SUPABASE_SETUP.md for exact preconditions and operational steps.
+
+
+5. DEVELOPMENT STYLE AND CHANGE PRINCIPLES
+-------------------------------------------
+Follow the established patterns:
+  - React function components and hooks; JSX files use .jsx, services/data
+    utilities use .js, the Deno Edge Function uses .ts.
+  - Keep page orchestration and UI state in pages; keep reusable visual units
+    in components; keep Supabase operations in services.
+  - Reuse existing components, styles, notification patterns, and service
+    helpers instead of duplicating business logic.
+  - Keep changes focused and surgical. Do not redesign or refactor unrelated
+    code as part of a feature/fix.
+  - Surface failures to the user through the existing error/notice patterns.
+    Do not silently catch errors, return fake successful data, or hide
+    authorization failures.
+  - Keep display text accessible: labels for controls, semantic buttons,
+    appropriate dialog roles, and status/alert semantics.
+  - Avoid adding dependencies unless necessary. Use existing Bootstrap/
+    React Bootstrap and CSS patterns.
+  - Preserve the current role workflow and existing data. Document migration
+    and deployment requirements when behavior depends on backend changes.
+  - Do not commit environment files, credentials, private data, or test account
+    passwords. Dev/Testing/testStudent.js contains credentials and must not be
+    copied into public documentation or output.
+
+When adding/removing a function, first identify every surface:
+  1. UI entry point, page state, component props, and role-specific visibility.
+  2. Service API and all callers.
+  3. Supabase query/RPC/function, schema, trigger, and RLS/Storage policies.
+  4. Realtime subscription/update behavior.
+  5. Event history and participant/recipient semantics.
+  6. Setup documentation, migration order, and function deployment instructions.
+  7. Student, EC, and teaching-staff behavior, including denied access.
+
+Removing a UI action alone is not revocation. Remove/adjust its backend RPC
+grants and policy as appropriate, and consider existing data and other callers.
+Adding a new role/action requires server-side authorization and explicit tests
+for both allowed and denied roles.
+
+
+6. LOCAL DEVELOPMENT AND VERIFICATION
+-------------------------------------
+From PowerShell:
+
+  cd exgrev
+  npm ci
+  Copy-Item .env.example .env.local
+  # Fill in the two frontend values described above.
+  npm run dev
+
+Before finishing a source change, run the smallest relevant checks, normally:
+
+  npm run lint
+  npm run build
+
+Run them from exgrev/. This project currently has no automated npm test script.
+Do not claim a feature is tested only because the production build succeeds.
+For user workflows, use a configured development/test Supabase project and
+verify the relevant role behavior. Avoid mutating persistent production/test
+records without permission; for write verification use a disposable grievance
+or ask first.
+
+Useful role-focused manual checklist:
+  - Sign in and sign out for each test role; ensure a fresh login after claims
+    or Auth metadata changes.
+  - Student: submit a case, view own history/thread, access own documents,
+    post a remark, and confirm/decline resolution if that UI is present.
+  - Examination Cell: read all cases, find staff, assign/reassign, view thread,
+    post remarks, propose resolution, and inspect errors for unauthorized data.
+  - Teaching staff: only see cases assigned to the exact account identity, view
+    threads, post a remark, and be unable to perform EC-only actions.
+  - Verify status, assignee, event actor, event message, recipients, and realtime
+    refresh after each authorized workflow write.
+  - Check browser console/network, API response errors, and the active project's
+    URL/ref. Never copy access tokens or credentials into diagnostics.
+
+When a dashboard is empty, distinguish a successful empty result from a
+query/policy problem. Check the actual assigned_faculty_user_id values and
+compare to users.account_identifier, JWT user_id, and Auth email. A PostgREST
+RLS-filtered query may return zero rows rather than an obvious permission error.
+Also ensure the right SQL migrations ran; Edge Function deployment is not SQL
+migration deployment.
+
+
+7. KNOWN OPERATIONAL CAVEATS
+----------------------------
+  - The app expects an existing public.users table with exact, quoted legacy
+    column names. Verify it before adapting SQL.
+  - Role values have appeared with capitalization differences. Normalize at
+    well-defined boundaries and make database policy comparisons consistent.
+  - Staff identity moved from a legacy User ID to account_identifier/email in
+    migrations. Existing assignments and JWT claims may be stale if migration,
+    Edge Function, or sign-in refresh was missed.
+  - Thread/remark fixes require the corresponding SQL migration on the hosted
+    project; local source alone does not change hosted database functions.
+  - Realtime is a refresh mechanism, not a replacement for normal reads or RLS.
+  - Migration files in source control describe intended backend state; they do
+    not prove the connected Supabase project has that state.
+  - `Dev/` has legacy/manual utilities and test data, not application modules.
+    The guide is intentionally whitelisted for Git; unrelated Dev files remain
+    ignored.
+
+
+8. HOW TO START A FUTURE TASK
+-----------------------------
+For a new feature or bug:
+  1. Read this guide, the root README, exgrev/SUPABASE_SETUP.md, and current git
+     status. Preserve unrelated/uncommitted work.
+  2. Trace the affected behavior from page/component through service to the
+     database/function and authorization rules. Search for all callers before
+     changing a shared function.
+  3. Clarify uncertain product behavior instead of inventing a policy.
+  4. Implement the smallest complete change across every required layer.
+  5. Update directly related documentation and add a new migration when backend
+     state changes.
+  6. Run lint/build and targeted role verification; state exactly what was and
+     was not tested, and list required deployment steps.
+
+If this guide and the current source disagree, trust the current source for
+implementation details, investigate the discrepancy, and update this guide
+when the durable project contract has changed.

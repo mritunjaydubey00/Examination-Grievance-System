@@ -123,13 +123,13 @@ Deno.serve(async (request) => {
       full_name: row["Full Name"],
       department: row.Department,
       branch: row.Branch,
-      role: row["Ex Factor"] ?? "",
+      role,
       must_change_password:
         authData.user.user_metadata?.must_change_password === true,
     };
     const appMetadata = {
       ...(authData.user.app_metadata ?? {}),
-      exgrev_profile_version: 1,
+      exgrev_profile_version: 2,
       user_id: profileMetadata.user_id,
       full_name: profileMetadata.full_name,
       department: profileMetadata.department,
@@ -169,7 +169,7 @@ Deno.serve(async (request) => {
         name: row["Full Name"],
         department: row.Department,
         branch: row.Branch,
-        role: row["Ex Factor"] ?? "",
+        role,
         mustChangePassword: profileMetadata.must_change_password === true,
       },
     });

@@ -4,6 +4,8 @@ const statusOptions = ["New", "In Progress", "Resolved", "Over Due"];
 
 function AdminWorkspace({
   grievances,
+  loading,
+  error,
   search,
   onSearchChange,
   statusFilter,
@@ -44,6 +46,8 @@ function AdminWorkspace({
       </div>
       <GrievanceTable
         grievances={grievances}
+        loading={loading}
+        error={error}
         onAction={onAction}
         onOpenThread={onOpenThread}
         audience={audience}
