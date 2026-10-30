@@ -9,7 +9,7 @@ import GrievanceForm from "../components/StudentPage/GrievanceForm.jsx";
 import GrievanceHistory from "../components/StudentPage/GrievanceHistory.jsx";
 import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 
-function StudentPage({ session, onLogout }) {
+function StudentPage({ session, onLogout, onChangePassword }) {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedProblem, setSelectedProblem] = useState("");
   const [grievances, setGrievances] = useState([]);
@@ -84,13 +84,18 @@ function StudentPage({ session, onLogout }) {
         session={session}
         onBack={() => setThreadGrievanceId(null)}
         onLogout={onLogout}
+        onChangePassword={onChangePassword}
       />
     );
   }
 
   return (
     <main className="student-page">
-      <StudentHeader session={session} onLogout={onLogout} />
+      <StudentHeader
+        session={session}
+        onLogout={onLogout}
+        onChangePassword={onChangePassword}
+      />
       <GrievanceForm
         selectedCategory={selectedCategory}
         onCategoryChange={setSelectedCategory}

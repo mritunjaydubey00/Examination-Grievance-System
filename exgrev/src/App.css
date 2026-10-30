@@ -87,6 +87,74 @@
   font-size: 0.88rem;
 }
 
+.auth-success {
+  padding: 10px 12px;
+  border: 1px solid #c7e4dc;
+  border-radius: 6px;
+  background: #f0faf6;
+  color: #24605d;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.text-button {
+  width: fit-content;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #137f78;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.text-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.forgot-password-button {
+  justify-self: end;
+}
+
+.login-notice {
+  margin-top: 16px;
+}
+
+.login-back-button,
+.password-cancel-button {
+  margin-top: 18px;
+}
+
+.account-security-button {
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid #b8d5d1;
+  border-radius: 7px;
+  background: #f4faf9;
+  color: #137f78;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.account-security-button:hover {
+  border-color: #15958c;
+  background: #eaf5f3;
+}
+
+.account-security-button:focus-visible,
+.text-button:focus-visible {
+  outline: 3px solid rgba(21, 149, 140, 0.25);
+  outline-offset: 2px;
+}
+
 .auth-form .submit-button:disabled {
   cursor: wait;
   opacity: 0.7;
@@ -792,6 +860,8 @@
   .student-header-actions {
     justify-content: space-between;
     width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
   }
 
   .grievance-panel {

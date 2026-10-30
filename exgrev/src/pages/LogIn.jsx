@@ -5,6 +5,7 @@ import {
 } from "../services/userService.js";
 import LoginIntro from "../components/LogIn/LoginIntro.jsx";
 import LoginForm from "../components/LogIn/LoginForm.jsx";
+import ForgotPassword from "./ForgotPassword.jsx";
 
 function getOAuthError() {
   const parameters = new URLSearchParams(
@@ -14,6 +15,12 @@ function getOAuthError() {
   if (!error) return "";
 
   const description = parameters.get("error_description")?.toLowerCase() ?? "";
+  if (
+    parameters.get("error_code") === "otp_expired" ||
+    description.includes("expired")
+  ) {
+    return "This password recovery link is invalid or has expired. Request a new one.";
+  }
   if (
     description.includes("approved") ||
     description.includes("signups not allowed") ||
@@ -27,9 +34,10 @@ function getOAuthError() {
   return "Google sign-in could not be completed. Please try again.";
 }
 
-function LogIn({ onLogin, authError = "" }) {
+function LogIn({ onLogin, authError = "", notice = "" }) {
   const [error, setError] = useState(() => getOAuthError() || authError);
   const [busy, setBusy] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   useEffect(() => {
     const parameters = new URLSearchParams(
@@ -81,12 +89,21 @@ function LogIn({ onLogin, authError = "" }) {
   return (
     <main className="login-page">
       <LoginIntro />
-      <LoginForm
-        onSubmit={handleLogin}
-        onGoogleSignIn={handleGoogleSignIn}
-        error={error}
-        busy={busy}
-      />
+      {showForgotPassword ? (
+        <ForgotPassword onBack={() => setShowForgotPassword(false)} />
+      ) : (
+        <LoginForm
+          onSubmit={handleLogin}
+          onGoogleSignIn={handleGoogleSignIn}
+          onForgotPassword={() => {
+            setError("");
+            setShowForgotPassword(true);
+          }}
+          error={error}
+          notice={notice}
+          busy={busy}
+        />
+      )}
     </main>
   );
 }

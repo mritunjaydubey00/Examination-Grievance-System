@@ -9,10 +9,17 @@ import TeachingStaffPage from "./pages/TeachingStaffPage.jsx";
 import { supabase } from "./lib/supabase.js";
 import { getAuthenticatedProfile, signOut } from "./services/userService.js";
 
+const RECOVERY_SESSION_KEY = "exgrev.passwordRecovery";
+
 function App() {
   const [profile, setProfile] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [authError, setAuthError] = useState("");
+  const [passwordNotice, setPasswordNotice] = useState("");
+  const [passwordRecovery, setPasswordRecovery] = useState(
+    () => sessionStorage.getItem(RECOVERY_SESSION_KEY) === "true",
+  );
+  const [showPasswordSettings, setShowPasswordSettings] = useState(false);
   const [loggedInAt, setLoggedInAt] = useState(null);
   const [uptimeSeconds, setUptimeSeconds] = useState(0);
   const normalizedRole = String(profile?.role || "")
@@ -28,10 +35,26 @@ function App() {
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
         if (data.session) {
-          const userProfile = await getAuthenticatedProfile();
+          if (sessionStorage.getItem(RECOVERY_SESSION_KEY) === "true") {
+            if (active) setPasswordRecovery(true);
+          } else {
+            const userProfile = await getAuthenticatedProfile();
+            if (active) {
+              setProfile(userProfile);
+              setLoggedInAt(Date.now());
+            }
+          }
+        } else {
+          const hadRecoveryRequest =
+            sessionStorage.getItem(RECOVERY_SESSION_KEY) === "true";
+          sessionStorage.removeItem(RECOVERY_SESSION_KEY);
           if (active) {
-            setProfile(userProfile);
-            setLoggedInAt(Date.now());
+            setPasswordRecovery(false);
+            if (hadRecoveryRequest) {
+              setAuthError(
+                "This password reset link is invalid or has expired. Request a new one.",
+              );
+            }
           }
         }
       } catch (error) {
@@ -58,7 +81,24 @@ function App() {
 
     const { data: listener } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (event === "PASSWORD_RECOVERY" && session) {
+          sessionStorage.setItem(RECOVERY_SESSION_KEY, "true");
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname,
+          );
+          setPasswordRecovery(true);
+          setShowPasswordSettings(false);
+          setProfile(null);
+          setLoggedInAt(null);
+          setAuthChecked(true);
+          return;
+        }
         if (event === "SIGNED_OUT" || !session) {
+          sessionStorage.removeItem(RECOVERY_SESSION_KEY);
+          setPasswordRecovery(false);
+          setShowPasswordSettings(false);
           setProfile(null);
           setLoggedInAt(null);
           setAuthChecked(true);
@@ -84,9 +124,27 @@ function App() {
 
   function handleLogin(userProfile) {
     setAuthError("");
+    setPasswordNotice("");
+    setPasswordRecovery(false);
+    sessionStorage.removeItem(RECOVERY_SESSION_KEY);
     sessionStorage.setItem("exgrev.profile", JSON.stringify(userProfile));
     setProfile(userProfile);
     setLoggedInAt(Date.now());
+  }
+
+  async function handlePasswordRecoveryComplete() {
+    try {
+      await signOut();
+      setPasswordNotice(
+        "Your password has been reset. Sign in with your new password.",
+      );
+      setAuthError("");
+    } catch {
+      const message =
+        "Your password was updated, but the recovery session could not be closed securely. Try again or close this browser session.";
+      setAuthError(message);
+      throw new Error(message);
+    }
   }
 
   async function handleLogout() {
@@ -98,11 +156,30 @@ function App() {
       <h1 className="app-wordmark">ExGrev</h1>
       {!authChecked ? (
         <p className="auth-loading">Checking your session…</p>
+      ) : passwordRecovery ? (
+        <ChangePassword
+          mode="recovery"
+          onComplete={handlePasswordRecoveryComplete}
+        />
       ) : !profile ? (
-        <LogIn onLogin={handleLogin} authError={authError} />
+        <LogIn
+          onLogin={handleLogin}
+          authError={authError}
+          notice={passwordNotice}
+        />
       ) : profile.mustChangePassword ? (
         <ChangePassword
+          mode="initial"
           onComplete={(updatedProfile) => setProfile(updatedProfile)}
+        />
+      ) : showPasswordSettings ? (
+        <ChangePassword
+          mode="change"
+          onCancel={() => setShowPasswordSettings(false)}
+          onComplete={(updatedProfile) => {
+            setProfile(updatedProfile);
+            setShowPasswordSettings(false);
+          }}
         />
       ) : [
           "examination cell",
@@ -113,13 +190,19 @@ function App() {
         <ExaminationCell
           session={{ ...profile, uptimeSeconds }}
           onLogout={handleLogout}
+          onChangePassword={() => setShowPasswordSettings(true)}
         />
       ) : ["teaching staff", "teaching", "faculty"].includes(normalizedRole) ? (
-        <TeachingStaffPage session={profile} onLogout={handleLogout} />
+        <TeachingStaffPage
+          session={profile}
+          onLogout={handleLogout}
+          onChangePassword={() => setShowPasswordSettings(true)}
+        />
       ) : normalizedRole === "student" ? (
         <StudentPage
           session={{ ...profile, uptimeSeconds }}
           onLogout={handleLogout}
+          onChangePassword={() => setShowPasswordSettings(true)}
         />
       ) : (
         <main className="auth-panel" role="alert">

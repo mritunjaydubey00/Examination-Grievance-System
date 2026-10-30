@@ -145,7 +145,17 @@ export async function signInWithGoogle() {
   return { error: error?.message ?? null };
 }
 
-export async function changePassword(password) {
+export async function requestPasswordReset(email) {
+  const { error } = await supabase.auth.resetPasswordForEmail(
+    String(email ?? "").trim(),
+    {
+      redirectTo: `${window.location.origin}${window.location.pathname}`,
+    },
+  );
+  if (error) throw error;
+}
+
+async function saveNewPassword(password) {
   const { error } = await supabase.auth.updateUser({
     password,
     data: { must_change_password: false },
@@ -156,6 +166,43 @@ export async function changePassword(password) {
   const updatedProfile = { ...profile, mustChangePassword: false };
   sessionStorage.setItem(PROFILE_KEY, JSON.stringify(updatedProfile));
   return updatedProfile;
+}
+
+export async function changePassword(password) {
+  return saveNewPassword(password);
+}
+
+export async function resetPassword(password) {
+  const { data, error } = await supabase.auth.getSession();
+  if (error) throw error;
+  if (!data.session) {
+    throw new Error("This password reset link is invalid or has expired.");
+  }
+  await saveNewPassword(password);
+}
+
+export async function changeSignedInPassword(currentPassword, newPassword) {
+  const { data, error } = await supabase.auth.getSession();
+  if (error) throw error;
+  const currentUser = data.session?.user;
+  if (!currentUser?.email) {
+    throw new Error("Your session has expired. Sign in again to continue.");
+  }
+
+  const { data: verified, error: verificationError } =
+    await supabase.auth.signInWithPassword({
+      email: currentUser.email,
+      password: currentPassword,
+    });
+  if (
+    verificationError ||
+    !verified.user ||
+    verified.user.id !== currentUser.id
+  ) {
+    throw new Error("The current password is incorrect.");
+  }
+
+  return saveNewPassword(newPassword);
 }
 
 export async function signOut() {

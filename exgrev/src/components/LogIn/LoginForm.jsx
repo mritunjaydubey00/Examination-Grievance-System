@@ -3,7 +3,14 @@ import GoogleLoginButton from "./GoogleLoginButton.jsx";
 
 const GOOGLE_LOGIN_DISABLED = true;
 
-function LoginForm({ onSubmit, onGoogleSignIn, error, busy }) {
+function LoginForm({
+  onSubmit,
+  onGoogleSignIn,
+  onForgotPassword,
+  error,
+  notice,
+  busy,
+}) {
   return (
     <section className="login-panel" aria-labelledby="login-title">
       <div className="login-panel-heading">
@@ -36,6 +43,15 @@ function LoginForm({ onSubmit, onGoogleSignIn, error, busy }) {
           />
         </div>
 
+        <button
+          type="button"
+          className="text-button forgot-password-button"
+          onClick={onForgotPassword}
+          disabled={busy}
+        >
+          Forgot password?
+        </button>
+
         {error && (
           <p className="login-error" role="alert">
             {error}
@@ -46,6 +62,11 @@ function LoginForm({ onSubmit, onGoogleSignIn, error, busy }) {
           {busy ? "Signing in…" : "Sign in"}
         </button>
       </form>
+      {notice && (
+        <p className="auth-success login-notice" role="status">
+          {notice}
+        </p>
+      )}
       <div className="login-divider" aria-hidden="true">
         <span>or</span>
       </div>

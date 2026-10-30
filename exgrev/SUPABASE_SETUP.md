@@ -25,6 +25,14 @@ The `email` and `Phone Number` fields must be present for each account. Emails m
 
 The app's Supabase URL and publishable key are already in the ignored `.env.local` file. There is no sign-up form: approved users sign in with their existing Google account or the credentials provisioned for them. The server checks the verified email against `public.users` and gets the role/profile from that table; Google profile fields are not used to assign access. Deploy both functions after profile-claim changes; the app revalidates older sessions when the profile version changes, and staff should sign out and back in if their dashboard still shows no cases.
 
+## Password recovery and changes
+
+The sign-in screen accepts the account email for password recovery. Supabase sends a one-time recovery link to that address; the app displays the same confirmation whether or not an account exists, so the interface does not disclose registered accounts. A valid link opens a dedicated password-reset screen, and the recovery session is signed out after the password changes. Signed-in users can change their password from any role's dashboard or grievance thread; they must enter their current password first. First sign-in still requires creating a personal password.
+
+In Supabase **Authentication → URL Configuration**, add the exact deployed app and local development redirect URLs to **Redirect URLs** (the app uses the current origin and path). Avoid broad wildcards unless the deployment requires them. In **Authentication → Email Templates**, ensure the password recovery template uses Supabase's recovery URL (`{{ .ConfirmationURL }}`) and an appropriate expiry. Configure a production SMTP provider and review Auth email rate limits before launch; the app's neutral confirmation is not a substitute for provider-side rate limiting. Recovery links are single-use and time-limited by Supabase. Users should request a new link if one expires.
+
+New and changed passwords must be at least 12 characters in the app. Review **Authentication → Settings** for the project's minimum password length and leaked-password protection, and set compatible policies there as well. Keep the Supabase service-role key server-side; password recovery and updates use the signed-in Supabase Auth client and do not require a new Edge Function or database migration.
+
 ### Google sign-in troubleshooting
 
 If sign-in returns `Unsupported provider: provider is not enabled`, Supabase Auth has not enabled Google for the project receiving the request. In this app, confirm the Supabase dashboard project ref is `hkdonpsbywfegfvzvqik`, then open **Authentication → Sign In / Providers → Google**, enable Google, save the provider settings, and confirm the Google client ID and secret are present. The `VITE_SUPABASE_URL` configured for this app points to `hkdonpsbywfegfvzvqik.supabase.co`. If you changed `.env.local`, restart the Vite development server before retrying.

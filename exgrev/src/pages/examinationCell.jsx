@@ -13,7 +13,7 @@ import {
 import { supabase } from "../lib/supabase.js";
 import "./ExaminationCell.css";
 
-function ExaminationCell({ session, onLogout }) {
+function ExaminationCell({ session, onLogout, onChangePassword }) {
   const [grievances, setGrievances] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -138,13 +138,18 @@ function ExaminationCell({ session, onLogout }) {
         session={session}
         onBack={() => setThreadGrievanceId(null)}
         onLogout={onLogout}
+        onChangePassword={onChangePassword}
       />
     );
   }
 
   return (
     <main className="student-page examination-cell-page">
-      <AdminHeader session={session} onLogout={onLogout} />
+      <AdminHeader
+        session={session}
+        onLogout={onLogout}
+        onChangePassword={onChangePassword}
+      />
       <AdminStats grievances={grievances} />
       <AdminWorkspace
         grievances={filteredGrievances}

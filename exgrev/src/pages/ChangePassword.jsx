@@ -1,20 +1,32 @@
 import { useState } from "react";
-import { changePassword } from "../services/userService.js";
+import PasswordFields from "../components/PasswordFields.jsx";
+import {
+  changePassword,
+  changeSignedInPassword,
+  resetPassword,
+} from "../services/userService.js";
 
-function ChangePassword({ onComplete }) {
+const MIN_PASSWORD_LENGTH = 12;
+
+function ChangePassword({ mode = "initial", onComplete, onCancel }) {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const isRecovery = mode === "recovery";
+  const isSignedInChange = mode === "change";
 
   async function handleSubmit(event) {
     event.preventDefault();
     setError("");
     setSaving(true);
     const form = new FormData(event.currentTarget);
+    const currentPassword = String(form.get("currentPassword") ?? "");
     const password = String(form.get("newPassword") ?? "");
     const confirmation = String(form.get("confirmPassword") ?? "");
 
-    if (password.length < 8) {
-      setError("Choose a password with at least 8 characters.");
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      setError(
+        `Choose a password with at least ${MIN_PASSWORD_LENGTH} characters.`,
+      );
       setSaving(false);
       return;
     }
@@ -23,39 +35,79 @@ function ChangePassword({ onComplete }) {
       setSaving(false);
       return;
     }
+    if (isSignedInChange && password === currentPassword) {
+      setError("Choose a new password that differs from your current one.");
+      setSaving(false);
+      return;
+    }
 
     try {
-      const profile = await changePassword(password);
+      if (isRecovery) {
+        await resetPassword(password);
+        await onComplete();
+        return;
+      }
+
+      const profile = isSignedInChange
+        ? await changeSignedInPassword(currentPassword, password)
+        : await changePassword(password);
       if (!profile) throw new Error("Could not load your account profile.");
       onComplete(profile);
     } catch (changeError) {
-      setError(changeError.message || "Could not update your password. Please try again.");
+      const knownMessage = [
+        "The current password is incorrect.",
+        "Your session has expired. Sign in again to continue.",
+        "This password reset link is invalid or has expired.",
+        "Your password was updated, but the recovery session could not be closed securely. Try again or close this browser session.",
+      ].find((message) => message === changeError.message);
+      setError(
+        knownMessage ||
+          "Could not update your password. Choose a stronger password and try again.",
+      );
     } finally {
       setSaving(false);
     }
   }
 
+  const title = isRecovery
+    ? "Choose a new password"
+    : isSignedInChange
+      ? "Change your password"
+      : "Create your password";
+  const description = isRecovery
+    ? "Set a new password to secure your ExGrev account."
+    : isSignedInChange
+      ? "Confirm your current password before choosing a new one."
+      : "Choose a personal password before continuing to your portal.";
+
   return (
-    <main className="auth-panel">
-      <p className="eyebrow">First sign-in</p>
-      <h2>Create your password</h2>
-      <p className="auth-description">
-        Choose a personal password before continuing to the student portal.
+    <main className="auth-panel" aria-labelledby="password-title">
+      <p className="eyebrow">
+        {isRecovery ? "Password recovery" : isSignedInChange ? "Account security" : "First sign-in"}
       </p>
+      <h2 id="password-title">{title}</h2>
+      <p className="auth-description">{description}</p>
       <form className="auth-form" onSubmit={handleSubmit}>
-        <label className="form-field">
-          <span>New password</span>
-          <input name="newPassword" type="password" autoComplete="new-password" minLength="8" required />
-        </label>
-        <label className="form-field">
-          <span>Confirm new password</span>
-          <input name="confirmPassword" type="password" autoComplete="new-password" minLength="8" required />
-        </label>
-        {error && <p className="auth-error" role="alert">{error}</p>}
+        <PasswordFields requireCurrentPassword={isSignedInChange} />
+        {error && (
+          <p className="auth-error" role="alert">
+            {error}
+          </p>
+        )}
         <button className="submit-button" type="submit" disabled={saving}>
-          {saving ? "Saving…" : "Save password"}
+          {saving ? "Saving…" : isRecovery ? "Reset password" : "Save password"}
         </button>
       </form>
+      {onCancel && (
+        <button
+          type="button"
+          className="text-button password-cancel-button"
+          onClick={onCancel}
+          disabled={saving}
+        >
+          Cancel
+        </button>
+      )}
     </main>
   );
 }

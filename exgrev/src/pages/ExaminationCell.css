@@ -470,6 +470,8 @@
   .admin-header-actions {
     justify-content: space-between;
     width: 100%;
+    flex-wrap: wrap;
+    gap: 10px;
   }
   .admin-header h2 {
     font-size: 1.7rem;

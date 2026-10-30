@@ -12,7 +12,7 @@ import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 import { supabase } from "../lib/supabase.js";
 import "./ExaminationCell.css";
 
-function TeachingStaffPage({ session, onLogout }) {
+function TeachingStaffPage({ session, onLogout, onChangePassword }) {
   const [grievances, setGrievances] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -107,13 +107,18 @@ function TeachingStaffPage({ session, onLogout }) {
         session={session}
         onBack={() => setThreadGrievanceId(null)}
         onLogout={onLogout}
+        onChangePassword={onChangePassword}
       />
     );
   }
 
   return (
     <main className="student-page examination-cell-page">
-      <TeachingStaffHeader session={session} onLogout={onLogout} />
+      <TeachingStaffHeader
+        session={session}
+        onLogout={onLogout}
+        onChangePassword={onChangePassword}
+      />
       <TeachingStaffStats grievances={grievances} />
       <TeachingStaffWorkspace
         grievances={filteredGrievances}

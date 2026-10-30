@@ -17,6 +17,12 @@
   border-bottom: 1px solid #dfe5e4;
 }
 
+.thread-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .thread-page-header h1 {
   margin: 4px 0 0;
   color: #172b35;
@@ -266,6 +272,14 @@
   .thread-page-header,
   .thread-case-summary {
     align-items: flex-start;
+  }
+
+  .thread-page-header {
+    flex-direction: column;
+  }
+
+  .thread-header-actions {
+    flex-wrap: wrap;
   }
 
   .thread-page-header h1 {

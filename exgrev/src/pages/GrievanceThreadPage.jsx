@@ -6,6 +6,7 @@ import {
 } from "../services/grievanceService.js";
 import { supabase } from "../lib/supabase.js";
 import ToastNotice from "../components/ToastNotice.jsx";
+import AccountSecurityActions from "../components/AccountSecurityActions.jsx";
 import "./GrievanceThread.css";
 
 const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
@@ -110,7 +111,13 @@ function getEventMessage(event) {
   return event.details?.remark || event.details?.note || "";
 }
 
-function GrievanceThreadPage({ grievanceId, session, onBack, onLogout }) {
+function GrievanceThreadPage({
+  grievanceId,
+  session,
+  onBack,
+  onLogout,
+  onChangePassword,
+}) {
   const [thread, setThread] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -259,9 +266,12 @@ function GrievanceThreadPage({ grievanceId, session, onBack, onLogout }) {
           <p className="eyebrow">Case history</p>
           <h1>Grievance thread</h1>
         </div>
-        <button type="button" className="logout-button" onClick={onLogout}>
-          Log out
-        </button>
+        <div className="thread-header-actions">
+          <AccountSecurityActions onChangePassword={onChangePassword} />
+          <button type="button" className="logout-button" onClick={onLogout}>
+            Log out
+          </button>
+        </div>
       </header>
 
       {loading ? (
