@@ -3,12 +3,13 @@ import {
   BookOpen,
   ClipboardList,
   FilePlus2,
+  FileText,
   LayoutDashboard,
   LogOut,
   UserRound,
 } from "lucide-react";
 
-function createMenu(basePath, grievanceItems) {
+function createMenu(basePath, grievanceItems, includeContentManagement = false) {
   return [
     {
       label: "Dashboard",
@@ -20,6 +21,15 @@ function createMenu(basePath, grievanceItems) {
       icon: ClipboardList,
       children: grievanceItems,
     },
+    ...(includeContentManagement
+      ? [
+          {
+            label: "Content Management",
+            icon: FileText,
+            path: `${basePath}/content-management`,
+          },
+        ]
+      : []),
     { label: "Guidelines", icon: BookOpen, path: `${basePath}/guidelines` },
     { label: "Profile", icon: UserRound, path: `${basePath}/profile` },
     { label: "Notice Board", icon: Bell, path: `${basePath}/notices` },
@@ -53,15 +63,19 @@ export const facultyMenu = createMenu("/faculty", [
   },
 ]);
 
-export const examCellMenu = createMenu("/examcell", [
-  {
-    label: "Active Grievances",
-    icon: ClipboardList,
-    path: "/examcell/grievances/active",
-  },
-  {
-    label: "Resolved Grievances",
-    icon: ClipboardList,
-    path: "/examcell/grievances/resolved",
-  },
-]);
+export const examCellMenu = createMenu(
+  "/examcell",
+  [
+    {
+      label: "Active Grievances",
+      icon: ClipboardList,
+      path: "/examcell/grievances/active",
+    },
+    {
+      label: "Resolved Grievances",
+      icon: ClipboardList,
+      path: "/examcell/grievances/resolved",
+    },
+  ],
+  true,
+);

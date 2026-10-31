@@ -9,7 +9,12 @@ import StudentPage from "./pages/StudentPage.jsx";
 import TeachingStaffPage from "./pages/TeachingStaffPage.jsx";
 import DashboardLayout from "./components/DashboardLayout.jsx";
 import { examCellMenu, facultyMenu, studentMenu } from "./config/menuConfig.js";
-import { ComingSoonPage, DashboardPage } from "./pages/PortalPages.jsx";
+import {
+  ComingSoonPage,
+  ContentManagementPage,
+  DashboardPage,
+  PortalContentPage,
+} from "./pages/PortalPages.jsx";
 import { supabase } from "./lib/supabase.js";
 import { getAuthenticatedProfile, signOut } from "./services/userService.js";
 
@@ -150,20 +155,35 @@ function App() {
             />
             <Route
               path={`${role.basePath}/dashboard`}
-              element={<DashboardPage roleLabel={role.label} />}
+              element={
+                <DashboardPage roleLabel={role.label} basePath={role.basePath} />
+              }
             />
             <Route
               path={`${role.basePath}/guidelines`}
-              element={<ComingSoonPage role={roleKey} title="Guidelines" />}
+              element={
+                <PortalContentPage
+                  contentType="guideline"
+                  title="Guidelines"
+                />
+              }
             />
             <Route
               path={`${role.basePath}/profile`}
-              element={<ComingSoonPage role={roleKey} title="Profile" />}
+              element={<ComingSoonPage title="Profile" />}
             />
             <Route
               path={`${role.basePath}/notices`}
-              element={<ComingSoonPage role={roleKey} title="Notice Board" />}
+              element={
+                <PortalContentPage contentType="notice" title="Notice Board" />
+              }
             />
+            {roleKey === "examcell" && (
+              <Route
+                path="/examcell/content-management"
+                element={<ContentManagementPage />}
+              />
+            )}
             {roleKey === "student" ? (
               <>
                 <Route

@@ -101,6 +101,7 @@ For a first-time account, login accepts the Student's User ID or a staff member'
 
 - `src/services/userService.js` invokes the `login-by-user-id` function, establishes the Supabase session, restores the user's profile, and handles password changes and sign-out.
 - `src/services/grievanceService.js` reads and writes grievances and timeline events, uploads supporting documents to the private `grievance-documents` bucket, and requests short-lived signed URLs for access.
+- `src/services/portalContentService.js` reads and manages notices and guidelines stored in `public.portal_content`. RLS allows all three portal roles to read published content and restricts publishing actions to the Examination Cell.
 - `grievances` stores the current case state; `grievance_events` stores the case activity timeline. Realtime subscriptions keep role workspaces refreshed.
 - Database migrations and RLS policies are authoritative for data access. When changing a role's capabilities or a query's data requirements, update and review the associated database policy/function as well as the UI.
 
