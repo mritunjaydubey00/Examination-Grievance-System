@@ -17,14 +17,6 @@ import {
 import { supabase } from "../lib/supabase.js";
 import "./ExaminationCell.css";
 
-// TODO: Replace these overall placeholder counts with Examination Cell data.
-const examinationCellMetrics = [
-  { label: "Total Grievances Received", value: 42, tone: "teal" },
-  { label: "Resolved", value: 20, tone: "green" },
-  { label: "Pending", value: 16, tone: "amber" },
-  { label: "Forwarded to Faculty", value: 6, tone: "blue" },
-];
-
 function ExaminationCell({ session, onLogout, onChangePassword }) {
   const [grievances, setGrievances] = useState([]);
   const [search, setSearch] = useState("");
@@ -36,6 +28,34 @@ function ExaminationCell({ session, onLogout, onChangePassword }) {
   const [loadError, setLoadError] = useState("");
   const [threadGrievanceId, setThreadGrievanceId] = useState(null);
   const [activePage, setActivePage] = useState("Dashboard");
+
+  // listGrievances supplies the overall set visible to the Examination Cell.
+  const examinationCellMetrics = [
+    {
+      label: "Total Grievances Received",
+      value: grievances.length,
+      tone: "teal",
+    },
+    {
+      label: "Resolved",
+      value: grievances.filter((grievance) => grievance.status === "Resolved")
+        .length,
+      tone: "green",
+    },
+    {
+      label: "Pending",
+      value: grievances.filter((grievance) => grievance.status === "New")
+        .length,
+      tone: "amber",
+    },
+    {
+      label: "Forwarded to Faculty",
+      value: grievances.filter(
+        (grievance) => grievance.status === "In Progress",
+      ).length,
+      tone: "blue",
+    },
+  ];
 
   const refresh = useCallback(async () => {
     setLoading(true);

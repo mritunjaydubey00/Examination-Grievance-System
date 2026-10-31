@@ -16,13 +16,6 @@ import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 import { supabase } from "../lib/supabase.js";
 import "./ExaminationCell.css";
 
-// TODO: Replace these placeholders with grievances assigned to this faculty member.
-const facultyMetrics = [
-  { label: "Total Received", value: 8, tone: "teal" },
-  { label: "Active", value: 3, tone: "amber" },
-  { label: "Resolved", value: 5, tone: "green" },
-];
-
 function TeachingStaffPage({ session, onLogout, onChangePassword }) {
   const [grievances, setGrievances] = useState([]);
   const [search, setSearch] = useState("");
@@ -32,6 +25,23 @@ function TeachingStaffPage({ session, onLogout, onChangePassword }) {
   const [noticeType, setNoticeType] = useState("success");
   const [threadGrievanceId, setThreadGrievanceId] = useState(null);
   const [activePage, setActivePage] = useState("Dashboard");
+
+  // listAssignedGrievances is scoped to the signed-in faculty member.
+  const facultyMetrics = [
+    { label: "Total Received", value: grievances.length, tone: "teal" },
+    {
+      label: "Active",
+      value: grievances.filter((grievance) => grievance.status !== "Resolved")
+        .length,
+      tone: "amber",
+    },
+    {
+      label: "Resolved",
+      value: grievances.filter((grievance) => grievance.status === "Resolved")
+        .length,
+      tone: "green",
+    },
+  ];
 
   const refresh = useCallback(async () => {
     try {

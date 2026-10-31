@@ -14,13 +14,6 @@ import {
 } from "../components/PortalNavigation.jsx";
 import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 
-// TODO: Replace these student-only placeholder counts with the student's data.
-const studentMetrics = [
-  { label: "Total Submitted", value: 12, tone: "teal" },
-  { label: "Pending", value: 4, tone: "amber" },
-  { label: "Resolved", value: 8, tone: "green" },
-];
-
 function StudentPage({ session, onLogout, onChangePassword }) {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedProblem, setSelectedProblem] = useState("");
@@ -29,6 +22,23 @@ function StudentPage({ session, onLogout, onChangePassword }) {
   const [message, setMessage] = useState("");
   const [threadGrievanceId, setThreadGrievanceId] = useState(null);
   const [activePage, setActivePage] = useState("Dashboard");
+
+  // The listStudentGrievances query is scoped to this signed-in student.
+  const studentMetrics = [
+    { label: "Total Submitted", value: grievances.length, tone: "teal" },
+    {
+      label: "Pending",
+      value: grievances.filter((grievance) => grievance.status !== "Resolved")
+        .length,
+      tone: "amber",
+    },
+    {
+      label: "Resolved",
+      value: grievances.filter((grievance) => grievance.status === "Resolved")
+        .length,
+      tone: "green",
+    },
+  ];
 
   const refresh = useCallback(async () => {
     try {
