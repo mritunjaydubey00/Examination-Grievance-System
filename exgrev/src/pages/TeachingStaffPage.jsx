@@ -1,9 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import TeachingStaffHeader from "../components/teachingStaff/TeachingStaffHeader.jsx";
-import TeachingStaffStats from "../components/teachingStaff/TeachingStaffStats.jsx";
 import TeachingStaffWorkspace from "../components/teachingStaff/TeachingStaffWorkspace.jsx";
 import TeachingStaffCaseDialog from "../components/teachingStaff/TeachingStaffCaseDialog.jsx";
 import ToastNotice from "../components/ToastNotice.jsx";
+import {
+  PortalDashboard,
+  PortalPlaceholderPage,
+  PortalSidePanel,
+} from "../components/PortalNavigation.jsx";
 import {
   addGrievanceRemark,
   listAssignedGrievances,
@@ -11,6 +15,13 @@ import {
 import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 import { supabase } from "../lib/supabase.js";
 import "./ExaminationCell.css";
+
+// TODO: Replace these placeholders with grievances assigned to this faculty member.
+const facultyMetrics = [
+  { label: "Total Received", value: 8, tone: "teal" },
+  { label: "Active", value: 3, tone: "amber" },
+  { label: "Resolved", value: 5, tone: "green" },
+];
 
 function TeachingStaffPage({ session, onLogout, onChangePassword }) {
   const [grievances, setGrievances] = useState([]);
@@ -20,6 +31,7 @@ function TeachingStaffPage({ session, onLogout, onChangePassword }) {
   const [notice, setNotice] = useState("");
   const [noticeType, setNoticeType] = useState("success");
   const [threadGrievanceId, setThreadGrievanceId] = useState(null);
+  const [activePage, setActivePage] = useState("Dashboard");
 
   const refresh = useCallback(async () => {
     try {
@@ -78,8 +90,15 @@ function TeachingStaffPage({ session, onLogout, onChangePassword }) {
           .toLowerCase()
           .includes(search.toLowerCase()),
       );
+    const viewMatches =
+      activePage === "Active Grievances"
+        ? grievance.status !== "Resolved"
+        : activePage === "Resolved Grievances"
+          ? grievance.status === "Resolved"
+          : true;
     return (
       searchMatches &&
+      viewMatches &&
       (statusFilter === "ALL" || grievance.status === statusFilter)
     );
   });
@@ -102,13 +121,29 @@ function TeachingStaffPage({ session, onLogout, onChangePassword }) {
 
   if (threadGrievanceId) {
     return (
-      <GrievanceThreadPage
-        grievanceId={threadGrievanceId}
-        session={session}
-        onBack={() => setThreadGrievanceId(null)}
-        onLogout={onLogout}
-        onChangePassword={onChangePassword}
-      />
+      <div className="student-page examination-cell-page portal-thread-shell">
+        <div className="portal-layout">
+          <PortalSidePanel
+            role="faculty"
+            activePage={activePage}
+            onNavigate={(page) => {
+              setThreadGrievanceId(null);
+              setActivePage(page);
+              setStatusFilter("ALL");
+            }}
+            onLogout={onLogout}
+          />
+          <div className="portal-content portal-thread-content">
+            <GrievanceThreadPage
+              grievanceId={threadGrievanceId}
+              session={session}
+              onBack={() => setThreadGrievanceId(null)}
+              onLogout={onLogout}
+              onChangePassword={onChangePassword}
+            />
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -119,18 +154,47 @@ function TeachingStaffPage({ session, onLogout, onChangePassword }) {
         onLogout={onLogout}
         onChangePassword={onChangePassword}
       />
-      <TeachingStaffStats grievances={grievances} />
-      <TeachingStaffWorkspace
-        grievances={filteredGrievances}
-        search={search}
-        onSearchChange={setSearch}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-        onOpenGrievance={(grievance) =>
-          setActiveAction({ grievance, mode: "view" })
-        }
-        onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
-      />
+      <div className="portal-layout">
+        <PortalSidePanel
+          role="faculty"
+          activePage={activePage}
+          onNavigate={(page) => {
+            setActivePage(page);
+            if (page === "Active Grievances" || page === "Resolved Grievances") {
+              setStatusFilter("ALL");
+            }
+          }}
+          onLogout={onLogout}
+        />
+        <div className="portal-content">
+          {activePage === "Dashboard" && (
+            <PortalDashboard
+              role="faculty"
+              metrics={facultyMetrics}
+              canEditContent={false}
+            />
+          )}
+          {["Active Grievances", "Resolved Grievances"].includes(activePage) && (
+            <TeachingStaffWorkspace
+              grievances={filteredGrievances}
+              search={search}
+              onSearchChange={setSearch}
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
+              onOpenGrievance={(grievance) =>
+                setActiveAction({ grievance, mode: "view" })
+              }
+              onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
+            />
+          )}
+          {["Guidelines", "Profile", "Notice Board"].includes(activePage) && (
+            <PortalPlaceholderPage
+              page={activePage}
+              canEditContent={false}
+            />
+          )}
+        </div>
+      </div>
       <TeachingStaffCaseDialog
         key={`${activeAction?.grievance.id || "none"}-${activeAction?.mode || "closed"}`}
         grievance={activeAction?.grievance}

@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import AdminHeader from "../components/ExaminationCell/AdminHeader.jsx";
-import AdminStats from "../components/ExaminationCell/AdminStats.jsx";
 import AdminWorkspace from "../components/ExaminationCell/AdminWorkspace.jsx";
 import CaseActionDialog from "../components/ExaminationCell/CaseActionDialog.jsx";
 import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 import ToastNotice from "../components/ToastNotice.jsx";
+import {
+  PortalDashboard,
+  PortalPlaceholderPage,
+  PortalSidePanel,
+} from "../components/PortalNavigation.jsx";
 import {
   getDocumentUrl,
   listGrievances,
@@ -12,6 +16,14 @@ import {
 } from "../services/grievanceService.js";
 import { supabase } from "../lib/supabase.js";
 import "./ExaminationCell.css";
+
+// TODO: Replace these overall placeholder counts with Examination Cell data.
+const examinationCellMetrics = [
+  { label: "Total Grievances Received", value: 42, tone: "teal" },
+  { label: "Resolved", value: 20, tone: "green" },
+  { label: "Pending", value: 16, tone: "amber" },
+  { label: "Forwarded to Faculty", value: 6, tone: "blue" },
+];
 
 function ExaminationCell({ session, onLogout, onChangePassword }) {
   const [grievances, setGrievances] = useState([]);
@@ -23,6 +35,7 @@ function ExaminationCell({ session, onLogout, onChangePassword }) {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [threadGrievanceId, setThreadGrievanceId] = useState(null);
+  const [activePage, setActivePage] = useState("Dashboard");
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -102,6 +115,11 @@ function ExaminationCell({ session, onLogout, onChangePassword }) {
             .toLowerCase()
             .includes(search.toLowerCase()),
         )) &&
+      (activePage === "Active Grievances"
+        ? grievance.status !== "Resolved"
+        : activePage === "Resolved Grievances"
+          ? grievance.status === "Resolved"
+          : true) &&
       (statusFilter === "ALL" || grievance.status === statusFilter),
   );
 
@@ -133,13 +151,29 @@ function ExaminationCell({ session, onLogout, onChangePassword }) {
 
   if (threadGrievanceId) {
     return (
-      <GrievanceThreadPage
-        grievanceId={threadGrievanceId}
-        session={session}
-        onBack={() => setThreadGrievanceId(null)}
-        onLogout={onLogout}
-        onChangePassword={onChangePassword}
-      />
+      <div className="student-page examination-cell-page portal-thread-shell">
+        <div className="portal-layout">
+          <PortalSidePanel
+            role="exam-cell"
+            activePage={activePage}
+            onNavigate={(page) => {
+              setThreadGrievanceId(null);
+              setActivePage(page);
+              setStatusFilter("ALL");
+            }}
+            onLogout={onLogout}
+          />
+          <div className="portal-content portal-thread-content">
+            <GrievanceThreadPage
+              grievanceId={threadGrievanceId}
+              session={session}
+              onBack={() => setThreadGrievanceId(null)}
+              onLogout={onLogout}
+              onChangePassword={onChangePassword}
+            />
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -150,20 +184,49 @@ function ExaminationCell({ session, onLogout, onChangePassword }) {
         onLogout={onLogout}
         onChangePassword={onChangePassword}
       />
-      <AdminStats grievances={grievances} />
-      <AdminWorkspace
-        grievances={filteredGrievances}
-        loading={loading}
-        error={loadError}
-        search={search}
-        onSearchChange={setSearch}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-        onAction={(grievance, action) =>
-          setActiveAction({ grievance, action })
-        }
-        onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
-      />
+      <div className="portal-layout">
+        <PortalSidePanel
+          role="exam-cell"
+          activePage={activePage}
+          onNavigate={(page) => {
+            setActivePage(page);
+            if (page === "Active Grievances" || page === "Resolved Grievances") {
+              setStatusFilter("ALL");
+            }
+          }}
+          onLogout={onLogout}
+        />
+        <div className="portal-content">
+          {activePage === "Dashboard" && (
+            <PortalDashboard
+              role="exam-cell"
+              metrics={examinationCellMetrics}
+              canEditContent
+            />
+          )}
+          {["Active Grievances", "Resolved Grievances"].includes(activePage) && (
+            <AdminWorkspace
+              grievances={filteredGrievances}
+              loading={loading}
+              error={loadError}
+              search={search}
+              onSearchChange={setSearch}
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
+              onAction={(grievance, action) =>
+                setActiveAction({ grievance, action })
+              }
+              onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
+            />
+          )}
+          {["Guidelines", "Profile", "Notice Board"].includes(activePage) && (
+            <PortalPlaceholderPage
+              page={activePage}
+              canEditContent
+            />
+          )}
+        </div>
+      </div>
       <CaseActionDialog
         grievance={activeAction?.grievance}
         action={activeAction?.action}

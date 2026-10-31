@@ -7,7 +7,19 @@ import { supabase } from "../lib/supabase.js";
 import StudentHeader from "../components/StudentPage/StudentHeader.jsx";
 import GrievanceForm from "../components/StudentPage/GrievanceForm.jsx";
 import GrievanceHistory from "../components/StudentPage/GrievanceHistory.jsx";
+import {
+  PortalDashboard,
+  PortalPlaceholderPage,
+  PortalSidePanel,
+} from "../components/PortalNavigation.jsx";
 import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
+
+// TODO: Replace these student-only placeholder counts with the student's data.
+const studentMetrics = [
+  { label: "Total Submitted", value: 12, tone: "teal" },
+  { label: "Pending", value: 4, tone: "amber" },
+  { label: "Resolved", value: 8, tone: "green" },
+];
 
 function StudentPage({ session, onLogout, onChangePassword }) {
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -16,6 +28,7 @@ function StudentPage({ session, onLogout, onChangePassword }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [threadGrievanceId, setThreadGrievanceId] = useState(null);
+  const [activePage, setActivePage] = useState("Dashboard");
 
   const refresh = useCallback(async () => {
     try {
@@ -79,13 +92,28 @@ function StudentPage({ session, onLogout, onChangePassword }) {
 
   if (threadGrievanceId) {
     return (
-      <GrievanceThreadPage
-        grievanceId={threadGrievanceId}
-        session={session}
-        onBack={() => setThreadGrievanceId(null)}
-        onLogout={onLogout}
-        onChangePassword={onChangePassword}
-      />
+      <div className="student-page portal-thread-shell">
+        <div className="portal-layout">
+          <PortalSidePanel
+            role="student"
+            activePage={activePage}
+            onNavigate={(page) => {
+              setThreadGrievanceId(null);
+              setActivePage(page);
+            }}
+            onLogout={onLogout}
+          />
+          <div className="portal-content portal-thread-content">
+            <GrievanceThreadPage
+              grievanceId={threadGrievanceId}
+              session={session}
+              onBack={() => setThreadGrievanceId(null)}
+              onLogout={onLogout}
+              onChangePassword={onChangePassword}
+            />
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -96,19 +124,46 @@ function StudentPage({ session, onLogout, onChangePassword }) {
         onLogout={onLogout}
         onChangePassword={onChangePassword}
       />
-      <GrievanceForm
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-        selectedProblem={selectedProblem}
-        onProblemChange={setSelectedProblem}
-        busy={busy}
-        message={message}
-        onSubmit={handleSubmit}
-      />
-      <GrievanceHistory
-        grievances={grievances}
-        onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
-      />
+      <div className="portal-layout">
+        <PortalSidePanel
+          role="student"
+          activePage={activePage}
+          onNavigate={setActivePage}
+          onLogout={onLogout}
+        />
+        <div className="portal-content">
+          {activePage === "Dashboard" && (
+            <PortalDashboard
+              role="student"
+              metrics={studentMetrics}
+              canEditContent={false}
+            />
+          )}
+          {activePage === "Add New" && (
+            <GrievanceForm
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+              selectedProblem={selectedProblem}
+              onProblemChange={setSelectedProblem}
+              busy={busy}
+              message={message}
+              onSubmit={handleSubmit}
+            />
+          )}
+          {activePage === "Your Grievances" && (
+            <GrievanceHistory
+              grievances={grievances}
+              onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
+            />
+          )}
+          {["Guidelines", "Profile", "Notice Board"].includes(activePage) && (
+            <PortalPlaceholderPage
+              page={activePage}
+              canEditContent={false}
+            />
+          )}
+        </div>
+      </div>
     </main>
   );
 }
