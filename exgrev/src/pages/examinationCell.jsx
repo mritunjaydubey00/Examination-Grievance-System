@@ -38,8 +38,10 @@ function ExaminationCell({ session, onLogout, onChangePassword }) {
     },
     {
       label: "Resolved",
-      value: grievances.filter((grievance) => grievance.status === "Resolved")
-        .length,
+      value: grievances.filter(
+        (grievance) =>
+          grievance.status === "Resolved" && !grievance.resolution_pending,
+      ).length,
       tone: "green",
     },
     {
@@ -49,11 +51,19 @@ function ExaminationCell({ session, onLogout, onChangePassword }) {
       tone: "amber",
     },
     {
+      label: "Awaiting Student Response",
+      value: grievances.filter((grievance) => grievance.resolution_pending)
+        .length,
+      tone: "blue",
+    },
+    {
       label: "Forwarded to Faculty",
       value: grievances.filter(
-        (grievance) => grievance.status === "In Progress",
+        (grievance) =>
+          grievance.status === "In Progress" &&
+          grievance.assigned_faculty_user_id,
       ).length,
-      tone: "blue",
+      tone: "teal",
     },
   ];
 

@@ -7,6 +7,10 @@ import {
 import { supabase } from "../lib/supabase.js";
 import ToastNotice from "../components/ToastNotice.jsx";
 import AccountSecurityActions from "../components/AccountSecurityActions.jsx";
+import {
+  getGrievanceStatusLabel,
+  isResolutionWindowOpen,
+} from "../lib/grievanceStatus.js";
 import "./GrievanceThread.css";
 
 const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
@@ -93,12 +97,21 @@ function getEventCategory(eventType) {
   if (eventType === "student_confirmed_resolution") {
     return "Resolution Confirmed";
   }
+  if (eventType === "resolved_awaiting_response") {
+    return "Resolved, awaiting student response";
+  }
+  if (eventType === "student_accepted_resolution") {
+    return "Resolution accepted";
+  }
+  if (eventType === "student_continued") return "Grievance continued";
+  if (eventType === "auto_resolved") return "Auto-resolved";
+  if (eventType === "status_changed") return "Status changed";
   if (eventType === "resolved") return "Resolution";
-  if (eventType === "status_changed") return "Status Update";
   return "Case Update";
 }
 
 function getEventMessage(event) {
+  if (event.message) return event.message;
   if (event.event_type === "forwarded" || event.event_type === "reassigned") {
     return event.details?.remark || event.details?.note || "";
   }
@@ -126,6 +139,7 @@ function GrievanceThreadPage({
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState("");
   const [noticeType, setNoticeType] = useState("success");
+  const [now, setNow] = useState(() => Date.now());
 
   const refresh = useCallback(async () => {
     try {
@@ -137,6 +151,12 @@ function GrievanceThreadPage({
       setLoading(false);
     }
   }, [grievanceId]);
+
+  useEffect(() => {
+    if (!thread?.grievance?.resolution_pending) return undefined;
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [thread?.grievance?.resolution_pending, thread?.grievance?.window_expires_at]);
 
   useEffect(() => {
     let active = true;
@@ -248,9 +268,22 @@ function GrievanceThreadPage({
 
   const grievance = thread?.grievance;
   const isStudent = session.role === "student";
+  const responseWindowOpen = isResolutionWindowOpen(grievance, now);
   const canPostRemark =
-    grievance?.status !== "Resolved" &&
-    (!grievance?.resolution_pending || isStudent);
+    grievance?.status !== "Resolved" || (isStudent && responseWindowOpen);
+  const secondsLeft = responseWindowOpen
+    ? Math.max(
+        0,
+        Math.ceil((Date.parse(grievance.window_expires_at) - now) / 1000),
+      )
+    : 0;
+  const countdown = [
+    Math.floor(secondsLeft / 3600),
+    Math.floor((secondsLeft % 3600) / 60),
+    secondsLeft % 60,
+  ]
+    .map((value) => String(value).padStart(2, "0"))
+    .join(":");
 
   return (
     <main className="student-page examination-cell-page grievance-thread-page">
@@ -293,11 +326,29 @@ function GrievanceThreadPage({
               </p>
             </div>
             <span className="admin-status">
-              {grievance.resolution_pending
-                ? "Awaiting student confirmation"
-                : grievance.status}
+              {getGrievanceStatusLabel(
+                grievance,
+                isStudent ? "student" : "staff",
+              )}
             </span>
           </section>
+
+          {responseWindowOpen && (
+            <p className="thread-window-countdown" aria-live="polite">
+              {isStudent
+                ? "Time remaining to accept or continue:"
+                : "Student response window:"}{" "}
+              <strong>{countdown}</strong>
+            </p>
+          )}
+          {isStudent &&
+            grievance.resolution_pending &&
+            !responseWindowOpen && (
+              <p className="thread-window-countdown" role="status">
+                The 48-hour response window has ended. If you are still not
+                satisfied, please submit a new grievance.
+              </p>
+            )}
 
           {grievance.resolution_remark && (
             <section className="thread-resolution-summary">
@@ -329,6 +380,12 @@ function GrievanceThreadPage({
                         <strong>From</strong>{" "}
                         {event.actor_display_name || event.actor_user_id}
                       </p>
+                      {event.actor_role && (
+                        <p className="thread-event-sender">
+                          <strong>Role</strong>{" "}
+                          {event.actor_role.replaceAll("_", " ")}
+                        </p>
+                      )}
                       {event.event_type === "forwarded" ||
                       event.event_type === "reassigned" ? (
                         <p className="thread-event-assignment">
@@ -388,7 +445,11 @@ function GrievanceThreadPage({
 
           {canPostRemark && (
             <form className="thread-reply-form" onSubmit={handleSubmitRemark}>
-              <label htmlFor="thread-remark">Add a remark</label>
+              <label htmlFor="thread-remark">
+                {isStudent && responseWindowOpen
+                  ? "Add a remark to continue this grievance"
+                  : "Add a remark"}
+              </label>
               <textarea
                 id="thread-remark"
                 rows="4"

@@ -82,6 +82,21 @@
   font-size: 1.3rem;
 }
 
+.thread-window-countdown {
+  margin: 14px 0;
+  padding: 12px 16px;
+  border: 1px solid #d5e7e2;
+  border-radius: 7px;
+  background: #f0f8f6;
+  color: #344d55;
+  font-size: 0.88rem;
+}
+
+.thread-window-countdown strong {
+  color: #137f78;
+  font-variant-numeric: tabular-nums;
+}
+
 .thread-case-summary p:last-child,
 .thread-resolution-summary p {
   margin: 7px 0 0;

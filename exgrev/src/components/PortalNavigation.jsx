@@ -129,6 +129,10 @@ function PortalDashboard({ role, metrics, canEditContent }) {
             {/* TODO: Replace guideline placeholders with published guidelines. */}
             <li>Provide clear details and relevant examination information.</li>
             <li>Attach supporting documents where applicable.</li>
+            <li>
+              After the Exam Cell marks a grievance resolved, respond within 48
+              hours to accept or continue it.
+            </li>
           </ul>
         </section>
       </div>
@@ -164,6 +168,12 @@ function PortalPlaceholderPage({ page, canEditContent }) {
         <p className="portal-placeholder-message">
           Content will appear here when it is available.
         </p>
+        {isGuidelines && (
+          <p className="resolution-window-note">
+            If the Exam Cell marks a grievance resolved, the student has 48
+            hours to accept the resolution or continue the grievance.
+          </p>
+        )}
       </div>
     </section>
   );

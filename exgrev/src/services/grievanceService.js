@@ -134,7 +134,8 @@ export async function getGrievanceThread(grievanceId) {
     .from("grievance_events")
     .select("*")
     .eq("grievance_id", grievanceId)
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true });
   if (eventsError) throw eventsError;
 
   const eventIds = (events || []).map((event) => event.id);

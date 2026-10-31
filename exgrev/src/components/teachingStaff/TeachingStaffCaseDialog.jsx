@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import GrievanceTimeline from "../StudentPage/GrievanceTimeline.jsx";
 import SupportingDocuments from "../StudentPage/SupportingDocuments.jsx";
+import { getGrievanceStatusLabel } from "../../lib/grievanceStatus.js";
 
 function TeachingStaffCaseDialog({
   grievance,
@@ -86,7 +87,7 @@ function TeachingStaffCaseDialog({
           <div>
             <dt>Status / priority</dt>
             <dd>
-              {grievance.status} · {grievance.priority}
+              {getGrievanceStatusLabel(grievance)} · {grievance.priority}
             </dd>
           </div>
           <div>
@@ -106,7 +107,12 @@ function TeachingStaffCaseDialog({
           {grievance.resolution_pending && (
             <div className="detail-description">
               <dt>Resolution status</dt>
-              <dd>Awaiting student confirmation</dd>
+              <dd>
+                Awaiting student response until{" "}
+                {grievance.window_expires_at
+                  ? new Date(grievance.window_expires_at).toLocaleString()
+                  : "the 48-hour deadline"}
+              </dd>
             </div>
           )}
         </dl>
@@ -170,7 +176,8 @@ function TeachingStaffCaseDialog({
               )}
             {grievance.resolution_pending && (
               <p className="resolution-pending-notice">
-                Waiting for the student to confirm the proposed resolution.
+                Waiting for the student to accept the resolution or continue
+                the grievance within 48 hours.
               </p>
             )}
           </div>

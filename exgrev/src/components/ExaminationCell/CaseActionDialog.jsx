@@ -3,6 +3,7 @@ import GrievanceTimeline from "../StudentPage/GrievanceTimeline.jsx";
 import SupportingDocuments from "../StudentPage/SupportingDocuments.jsx";
 import CalendarDatePicker from "../CalendarDatePicker.jsx";
 import { listAssignableUsers } from "../../services/grievanceService.js";
+import { getGrievanceStatusLabel } from "../../lib/grievanceStatus.js";
 
 function getTodayDateValue() {
   const today = new Date();
@@ -130,7 +131,7 @@ function CaseActionDialog({
           <div>
             <dt>Status / priority</dt>
             <dd>
-              {grievance.status} · {grievance.priority}
+              {getGrievanceStatusLabel(grievance)} · {grievance.priority}
             </dd>
           </div>
           <div>
@@ -154,7 +155,12 @@ function CaseActionDialog({
           {isResolutionPending && (
             <div className="detail-description">
               <dt>Resolution status</dt>
-              <dd>Awaiting student confirmation</dd>
+              <dd>
+                Awaiting student response until{" "}
+                {grievance.window_expires_at
+                  ? new Date(grievance.window_expires_at).toLocaleString()
+                  : "the 48-hour deadline"}
+              </dd>
             </div>
           )}
         </dl>
@@ -247,7 +253,7 @@ function CaseActionDialog({
                   ? "Instructions (optional)"
                   : isRemark
                     ? "Remark for the student"
-                    : "Proposed resolution"}
+                    : "Resolution for the student's 48-hour response window"}
               </span>
               <textarea
                 rows="4"
@@ -259,7 +265,7 @@ function CaseActionDialog({
                     ? "Explain what should be reviewed."
                     : isRemark
                       ? "Share an update or request more information."
-                      : "Describe the resolution for the student's confirmation."
+                      : "Describe the resolution. The student will have 48 hours to accept it or continue the grievance."
                 }
               />
             </label>
@@ -280,7 +286,7 @@ function CaseActionDialog({
                   ? "Forward grievance"
                   : isRemark
                     ? "Send remark"
-                    : "Propose resolution"}
+                    : "Mark resolved (start 48-hour window)"}
               </button>
             </div>
           </form>
@@ -334,7 +340,8 @@ function CaseActionDialog({
               )}
             {isResolutionPending && (
               <p className="resolution-pending-notice">
-                Waiting for the student to confirm the proposed resolution.
+                Waiting for the student to accept the resolution or continue
+                the grievance within 48 hours.
               </p>
             )}
           </div>

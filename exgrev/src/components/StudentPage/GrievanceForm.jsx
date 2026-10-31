@@ -18,6 +18,10 @@ function GrievanceForm({
         <p className="eyebrow">New request</p>
         <h3 id="grievance-title">Submit a grievance</h3>
         <p>Tell us what happened and our examination team will review it.</p>
+        <p className="resolution-window-note">
+          If the Exam Cell marks your grievance resolved, you will have 48
+          hours to accept the resolution or continue the grievance.
+        </p>
       </div>
       <form className="grievance-form" onSubmit={onSubmit}>
         <div className="form-grid">

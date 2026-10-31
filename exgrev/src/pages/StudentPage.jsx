@@ -28,14 +28,18 @@ function StudentPage({ session, onLogout, onChangePassword }) {
     { label: "Total Submitted", value: grievances.length, tone: "teal" },
     {
       label: "Pending",
-      value: grievances.filter((grievance) => grievance.status !== "Resolved")
-        .length,
+      value: grievances.filter(
+        (grievance) =>
+          grievance.status !== "Resolved" || grievance.resolution_pending,
+      ).length,
       tone: "amber",
     },
     {
       label: "Resolved",
-      value: grievances.filter((grievance) => grievance.status === "Resolved")
-        .length,
+      value: grievances.filter(
+        (grievance) =>
+          grievance.status === "Resolved" && !grievance.resolution_pending,
+      ).length,
       tone: "green",
     },
   ];
@@ -164,6 +168,8 @@ function StudentPage({ session, onLogout, onChangePassword }) {
             <GrievanceHistory
               grievances={grievances}
               onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
+              onRefresh={refresh}
+              onSubmitNewGrievance={() => setActivePage("Add New")}
             />
           )}
           {["Guidelines", "Profile", "Notice Board"].includes(activePage) && (

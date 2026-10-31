@@ -1,6 +1,11 @@
 import StudentGrievance from "./StudentGrievance.jsx";
 
-function GrievanceHistory({ grievances, onOpenThread }) {
+function GrievanceHistory({
+  grievances,
+  onOpenThread,
+  onRefresh,
+  onSubmitNewGrievance,
+}) {
   return (
     <section
       className="grievance-panel student-history"
@@ -12,6 +17,10 @@ function GrievanceHistory({ grievances, onOpenThread }) {
         <p>
           Follow assignment, status, and resolution updates as they happen.
         </p>
+        <p className="resolution-window-note">
+          When the Exam Cell marks a grievance resolved, you have 48 hours to
+          accept the resolution or continue the grievance with a remark.
+        </p>
       </div>
       {grievances.length ? (
         grievances.map((grievance) => (
@@ -19,6 +28,8 @@ function GrievanceHistory({ grievances, onOpenThread }) {
             key={grievance.id}
             grievance={grievance}
             onOpenThread={onOpenThread}
+            onRefresh={onRefresh}
+            onSubmitNewGrievance={onSubmitNewGrievance}
           />
         ))
       ) : (

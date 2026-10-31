@@ -31,15 +31,25 @@ function TeachingStaffPage({ session, onLogout, onChangePassword }) {
     { label: "Total Received", value: grievances.length, tone: "teal" },
     {
       label: "Active",
-      value: grievances.filter((grievance) => grievance.status !== "Resolved")
-        .length,
+      value: grievances.filter(
+        (grievance) =>
+          grievance.status !== "Resolved" || grievance.resolution_pending,
+      ).length,
       tone: "amber",
     },
     {
       label: "Resolved",
-      value: grievances.filter((grievance) => grievance.status === "Resolved")
-        .length,
+      value: grievances.filter(
+        (grievance) =>
+          grievance.status === "Resolved" && !grievance.resolution_pending,
+      ).length,
       tone: "green",
+    },
+    {
+      label: "Awaiting Student Response",
+      value: grievances.filter((grievance) => grievance.resolution_pending)
+        .length,
+      tone: "blue",
     },
   ];
 

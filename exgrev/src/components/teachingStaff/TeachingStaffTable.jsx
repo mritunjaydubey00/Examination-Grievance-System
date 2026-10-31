@@ -1,3 +1,5 @@
+import { getGrievanceStatusLabel } from "../../lib/grievanceStatus.js";
+
 function TeachingStaffTable({ grievances, onOpenGrievance, onOpenThread }) {
   return (
     <section className="admin-case-panel">
@@ -41,9 +43,7 @@ function TeachingStaffTable({ grievances, onOpenGrievance, onOpenThread }) {
                   <td>{grievance.problem_type}</td>
                   <td>
                     <span className="admin-status">
-                      {grievance.resolution_pending
-                        ? "Awaiting student confirmation"
-                        : grievance.status}
+                      {getGrievanceStatusLabel(grievance)}
                     </span>
                   </td>
                   <td className="admin-actions-cell">
