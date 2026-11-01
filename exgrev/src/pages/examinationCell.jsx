@@ -21,6 +21,7 @@ function ExaminationCell({ session, onLogout, onChangePassword }) {
   const [grievances, setGrievances] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [dashboardMetric, setDashboardMetric] = useState("");
   const [activeAction, setActiveAction] = useState(null);
   const [notice, setNotice] = useState("");
   const [noticeType, setNoticeType] = useState("success");
@@ -32,11 +33,13 @@ function ExaminationCell({ session, onLogout, onChangePassword }) {
   // listGrievances supplies the overall set visible to the Examination Cell.
   const examinationCellMetrics = [
     {
+      key: "total",
       label: "Total Grievances Received",
       value: grievances.length,
       tone: "teal",
     },
     {
+      key: "resolved",
       label: "Resolved",
       value: grievances.filter(
         (grievance) =>
@@ -45,18 +48,21 @@ function ExaminationCell({ session, onLogout, onChangePassword }) {
       tone: "green",
     },
     {
+      key: "pending",
       label: "Pending",
       value: grievances.filter((grievance) => grievance.status === "New")
         .length,
       tone: "amber",
     },
     {
+      key: "awaiting-response",
       label: "Awaiting Student Response",
       value: grievances.filter((grievance) => grievance.resolution_pending)
         .length,
       tone: "blue",
     },
     {
+      key: "forwarded",
       label: "Forwarded to Faculty",
       value: grievances.filter(
         (grievance) =>
@@ -146,12 +152,39 @@ function ExaminationCell({ session, onLogout, onChangePassword }) {
             .includes(search.toLowerCase()),
         )) &&
       (activePage === "Active Grievances"
-        ? grievance.status !== "Resolved"
+        ? dashboardMetric
+          ? true
+          : grievance.status !== "Resolved"
         : activePage === "Resolved Grievances"
-          ? grievance.status === "Resolved"
+          ? dashboardMetric
+            ? true
+            : grievance.status === "Resolved"
           : true) &&
+      (!dashboardMetric ||
+        dashboardMetric === "total" ||
+        (dashboardMetric === "resolved" &&
+          grievance.status === "Resolved" &&
+          !grievance.resolution_pending) ||
+        (dashboardMetric === "pending" && grievance.status === "New") ||
+        (dashboardMetric === "awaiting-response" &&
+          grievance.resolution_pending) ||
+        (dashboardMetric === "forwarded" &&
+          grievance.status === "In Progress" &&
+          grievance.assigned_faculty_user_id)) &&
       (statusFilter === "ALL" || grievance.status === statusFilter),
   );
+
+  function showMetricGrievances(metric) {
+    setDashboardMetric(metric);
+    setStatusFilter("ALL");
+    setActivePage(
+      metric === "total"
+        ? "All Grievances"
+        : metric === "resolved"
+          ? "Resolved Grievances"
+          : "Active Grievances",
+    );
+  }
 
   async function submitAction({ faculty, notes, dueDate, priority }) {
     try {
@@ -189,7 +222,14 @@ function ExaminationCell({ session, onLogout, onChangePassword }) {
             onNavigate={(page) => {
               setThreadGrievanceId(null);
               setActivePage(page);
-              setStatusFilter("ALL");
+              setDashboardMetric("");
+              if (
+                ["All Grievances", "Active Grievances", "Resolved Grievances"].includes(
+                  page,
+                )
+              ) {
+                setStatusFilter("ALL");
+              }
             }}
             onLogout={onLogout}
           />
@@ -220,7 +260,12 @@ function ExaminationCell({ session, onLogout, onChangePassword }) {
           activePage={activePage}
           onNavigate={(page) => {
             setActivePage(page);
-            if (page === "Active Grievances" || page === "Resolved Grievances") {
+            setDashboardMetric("");
+            if (
+              ["All Grievances", "Active Grievances", "Resolved Grievances"].includes(
+                page,
+              )
+            ) {
               setStatusFilter("ALL");
             }
           }}
@@ -232,9 +277,12 @@ function ExaminationCell({ session, onLogout, onChangePassword }) {
               role="exam-cell"
               metrics={examinationCellMetrics}
               canEditContent
+              onMetricClick={showMetricGrievances}
             />
           )}
-          {["Active Grievances", "Resolved Grievances"].includes(activePage) && (
+          {["All Grievances", "Active Grievances", "Resolved Grievances"].includes(
+            activePage,
+          ) && (
             <AdminWorkspace
               grievances={filteredGrievances}
               loading={loading}

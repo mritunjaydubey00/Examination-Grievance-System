@@ -66,8 +66,7 @@
 
 .thread-case-summary,
 .thread-resolution-summary,
-.thread-events,
-.thread-reply-form {
+.thread-events {
   margin-top: 20px;
   padding: 22px;
   border: 1px solid #dfe5e4;
@@ -186,9 +185,108 @@
   white-space: pre-wrap;
 }
 
+.thread-reply-dialog {
+  box-sizing: border-box;
+  width: min(560px, calc(100vw - 32px));
+  max-width: 560px;
+  max-height: min(90vh, 760px);
+  padding: 0;
+  overflow: auto;
+  border: 1px solid #dfe5e4;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 18px 50px rgba(18, 35, 39, 0.2);
+}
+
+.thread-reply-dialog::backdrop {
+  background: rgba(18, 35, 39, 0.48);
+}
+
 .thread-reply-form {
   display: grid;
   gap: 12px;
+  margin: 0;
+  padding: 24px;
+  border: 0;
+  background: #fff;
+}
+
+.thread-reply-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.thread-reply-heading h2 {
+  margin: 0;
+  color: #172b35;
+  font-family: var(--heading);
+  font-size: 1.15rem;
+  font-weight: 650;
+}
+
+.thread-reply-close {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border: 1px solid #dfe5e4;
+  border-radius: 5px;
+  background: #fff;
+  color: #52666c;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.thread-post-remark-button {
+  position: fixed;
+  z-index: 18;
+  right: 48px;
+  bottom: calc(48px + var(--footer-clearance, 0px));
+  box-shadow: 0 6px 18px rgba(28, 61, 65, 0.2);
+  transition: bottom 180ms ease;
+}
+
+.thread-post-remark-button::after {
+  position: absolute;
+  inset: -5px;
+  border: 2px solid #42c8bb;
+  border-radius: 9px;
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+}
+
+.thread-post-remark-button.is-at-thread-end::after {
+  animation: thread-post-remark-pulse 1.8s ease-out infinite;
+}
+
+@keyframes thread-post-remark-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(66, 200, 187, 0.55);
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+
+  100% {
+    box-shadow: 0 0 0 9px rgba(66, 200, 187, 0);
+    opacity: 0;
+    transform: scale(1.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thread-post-remark-button {
+    transition: none;
+  }
+
+  .thread-post-remark-button.is-at-thread-end::after {
+    animation: none;
+    box-shadow: 0 0 8px 2px rgba(66, 200, 187, 0.55);
+    opacity: 1;
+  }
 }
 
 .thread-reply-form textarea {
@@ -316,10 +414,18 @@
   }
 
   .thread-events,
-  .thread-reply-form,
   .thread-case-summary,
   .thread-resolution-summary {
     padding: 16px;
+  }
+
+  .thread-reply-form {
+    padding: 18px;
+  }
+
+  .thread-post-remark-button {
+    right: 28px;
+    bottom: 28px;
   }
 
   .thread-event-heading {

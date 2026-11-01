@@ -4,7 +4,11 @@ import "./PortalNavigation.css";
 const grievanceLinks = {
   student: ["Add New", "Your Grievances"],
   faculty: ["Active Grievances", "Resolved Grievances"],
-  "exam-cell": ["Active Grievances", "Resolved Grievances"],
+  "exam-cell": [
+    "All Grievances",
+    "Active Grievances",
+    "Resolved Grievances",
+  ],
 };
 
 function PortalSidePanel({ role, activePage, onNavigate, onLogout }) {
@@ -64,7 +68,7 @@ function PortalSidePanel({ role, activePage, onNavigate, onLogout }) {
   );
 }
 
-function PortalDashboard({ role, metrics, canEditContent }) {
+function PortalDashboard({ role, metrics, canEditContent, onMetricClick }) {
   const audienceLabel =
     role === "student"
       ? "Your grievance overview"
@@ -81,18 +85,33 @@ function PortalDashboard({ role, metrics, canEditContent }) {
         </div>
       </div>
       <section className="admin-stats portal-stats" aria-label={audienceLabel}>
-        {metrics.map((metric) => (
-          <article
-            className={`admin-stat admin-stat-${metric.tone}`}
-            key={metric.label}
-          >
-            <span className="admin-stat-indicator" aria-hidden="true" />
-            <div>
-              <p>{metric.label}</p>
-              <strong>{metric.value}</strong>
-            </div>
-          </article>
-        ))}
+        {metrics.map((metric) =>
+          onMetricClick ? (
+            <button
+              type="button"
+              className={`admin-stat admin-stat-${metric.tone} portal-stat-button`}
+              key={metric.label}
+              onClick={() => onMetricClick(metric.key)}
+            >
+              <span className="admin-stat-indicator" aria-hidden="true" />
+              <div>
+                <p>{metric.label}</p>
+                <strong>{metric.value}</strong>
+              </div>
+            </button>
+          ) : (
+            <article
+              className={`admin-stat admin-stat-${metric.tone}`}
+              key={metric.label}
+            >
+              <span className="admin-stat-indicator" aria-hidden="true" />
+              <div>
+                <p>{metric.label}</p>
+                <strong>{metric.value}</strong>
+              </div>
+            </article>
+          ),
+        )}
       </section>
       <div className="portal-dashboard-sections">
         <section className="portal-info-card" aria-labelledby="dashboard-notices">

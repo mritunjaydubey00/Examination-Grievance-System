@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   addGrievanceRemarkWithAttachments,
   getThreadAttachmentUrl,
@@ -140,6 +140,11 @@ function GrievanceThreadPage({
   const [notice, setNotice] = useState("");
   const [noticeType, setNoticeType] = useState("success");
   const [now, setNow] = useState(() => Date.now());
+  const [replyDialogOpen, setReplyDialogOpen] = useState(false);
+  const replyDialog = useRef(null);
+  const threadEndMarker = useRef(null);
+  const [atThreadEnd, setAtThreadEnd] = useState(false);
+  const [footerClearance, setFooterClearance] = useState(0);
 
   const refresh = useCallback(async () => {
     try {
@@ -157,6 +162,12 @@ function GrievanceThreadPage({
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, [thread?.grievance?.resolution_pending, thread?.grievance?.window_expires_at]);
+
+  useEffect(() => {
+    if (replyDialogOpen && replyDialog.current && !replyDialog.current.open) {
+      replyDialog.current.showModal();
+    }
+  }, [replyDialogOpen]);
 
   useEffect(() => {
     let active = true;
@@ -221,6 +232,7 @@ function GrievanceThreadPage({
       setRemark("");
       setAttachments([]);
       formElement.reset();
+      replyDialog.current?.close();
       setNoticeType("success");
       setNotice(
         attachments.length
@@ -269,8 +281,10 @@ function GrievanceThreadPage({
   const grievance = thread?.grievance;
   const isStudent = session.role === "student";
   const responseWindowOpen = isResolutionWindowOpen(grievance, now);
-  const canPostRemark =
-    grievance?.status !== "Resolved" || (isStudent && responseWindowOpen);
+  const canPostRemark = Boolean(
+    grievance &&
+      (grievance.status !== "Resolved" || (isStudent && responseWindowOpen)),
+  );
   const secondsLeft = responseWindowOpen
     ? Math.max(
         0,
@@ -284,6 +298,33 @@ function GrievanceThreadPage({
   ]
     .map((value) => String(value).padStart(2, "0"))
     .join(":");
+
+  useEffect(() => {
+    const marker = threadEndMarker.current;
+    if (!marker || !canPostRemark) return undefined;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setAtThreadEnd(entry.isIntersecting),
+      { rootMargin: "0px 0px -24px 0px" },
+    );
+    observer.observe(marker);
+    return () => observer.disconnect();
+  }, [canPostRemark, thread?.events.length]);
+
+  useEffect(() => {
+    const footer = document.querySelector(".app-footer");
+    if (!footer || !canPostRemark) return undefined;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      setFooterClearance(
+        entry.isIntersecting
+          ? Math.ceil(entry.target.getBoundingClientRect().height) + 16
+          : 0,
+      );
+    });
+    observer.observe(footer);
+    return () => observer.disconnect();
+  }, [canPostRemark]);
 
   return (
     <main className="student-page examination-cell-page grievance-thread-page">
@@ -443,12 +484,48 @@ function GrievanceThreadPage({
             )}
           </section>
 
-          {canPostRemark && (
+        </>
+      ) : null}
+      <div ref={threadEndMarker} className="thread-end-marker" aria-hidden="true" />
+      {canPostRemark && (
+        <>
+          <button
+            type="button"
+            className={`admin-confirm-button is-forward thread-post-remark-button${atThreadEnd ? " is-at-thread-end" : ""}`}
+            style={{ "--footer-clearance": `${footerClearance}px` }}
+            onClick={() => setReplyDialogOpen(true)}
+          >
+            Post remark
+          </button>
+          <dialog
+            ref={replyDialog}
+            className="thread-reply-dialog"
+            aria-labelledby="thread-reply-title"
+            onClose={() => setReplyDialogOpen(false)}
+          >
             <form className="thread-reply-form" onSubmit={handleSubmitRemark}>
-              <label htmlFor="thread-remark">
-                {isStudent && responseWindowOpen
-                  ? "Add a remark to continue this grievance"
-                  : "Add a remark"}
+              <div className="thread-reply-heading">
+                <h2 id="thread-reply-title">
+                  {isStudent && responseWindowOpen
+                    ? "Add a remark to continue this grievance"
+                    : "Add a remark"}
+                </h2>
+                <button
+                  type="button"
+                  className="thread-reply-close"
+                  onClick={() => replyDialog.current?.close()}
+                  aria-label="Close remark dialog"
+                >
+                  ×
+                </button>
+              </div>
+              {replyDialogOpen && noticeType === "error" && notice && (
+                <p className="thread-error" role="alert">
+                  {notice}
+                </p>
+              )}
+              <label htmlFor="thread-remark" className="visually-hidden">
+                Remark
               </label>
               <textarea
                 id="thread-remark"
@@ -505,14 +582,16 @@ function GrievanceThreadPage({
                 {saving ? "Posting…" : "Post remark"}
               </button>
             </form>
-          )}
+          </dialog>
         </>
-      ) : null}
-      <ToastNotice
-        message={notice}
-        type={noticeType}
-        onDismiss={() => setNotice("")}
-      />
+      )}
+      {!replyDialogOpen && (
+        <ToastNotice
+          message={notice}
+          type={noticeType}
+          onDismiss={() => setNotice("")}
+        />
+      )}
     </main>
   );
 }

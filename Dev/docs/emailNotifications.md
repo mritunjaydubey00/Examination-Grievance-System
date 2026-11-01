@@ -7,8 +7,8 @@ This guide configures event-driven email notifications for the ExGrev Supabase p
 Grievance actions create activity events and recipient snapshots in the database. A database trigger queues one private outbox item per event recipient. A scheduled Supabase Edge Function sends those items through Resend.
 
 - New grievance submissions notify every account whose `Ex Factor` normalizes to `Examination Cell`, `Exam Cell`, `Admin`, or `Exam Cell Admin`, provided that account has an email.
-- Forwarding or reassigning a case notifies the selected staff member.
-- Remarks and resolution events notify the other recipients recorded for that event.
+- After submission, events notify the student, current or previously assigned staff, and Examination Cell or faculty members who have interacted with the grievance. Forwarding also includes the newly assigned staff member.
+- Examination Cell accounts retain access to view and update every grievance, but receive follow-up emails only after they interact with that grievance.
 - Emails include an event summary, case reference, actor display name, and a link to ExGrev. They do not include grievance descriptions, remarks, or attachments.
 - Delivery is asynchronous, so an email-provider outage does not block grievance actions. Transient errors are retried up to five times; permanent failures are marked `failed`.
 - Only events created after the migration is applied are queued. Existing events are not sent retroactively.
@@ -78,13 +78,13 @@ Keep the printed value private. Use exactly the same value in the Edge Function 
 2. Open **Edge Functions → Secrets** (some dashboard versions label this **Functions → Secrets**).
 3. Add each secret below and save:
 
-| Secret | Value |
-|---|---|
-| `RESEND_API_KEY` | The restricted API key copied from Resend. |
-| `EXGREV_EMAIL_FROM` | A sender at the verified domain, for example `ExGrev <notifications@notifications.example.edu>`. Use your real domain. |
-| `EXGREV_APP_URL` | The app origin users should open, for example `https://grievances.example.edu/`. For local testing, use the exact Vite URL such as `http://localhost:5173/`. |
-| `NOTIFICATION_WEBHOOK_SECRET` | The random value generated in Part 3. |
-| `SUPABASE_SERVICE_ROLE_KEY` | The project's server-side service-role key only if the function runtime does not already provide it. Never add it to frontend configuration. |
+| Secret                        | Value                                                                                                                                                        |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `RESEND_API_KEY`              | The restricted API key copied from Resend.                                                                                                                   |
+| `EXGREV_EMAIL_FROM`           | A sender at the verified domain, for example `ExGrev <notifications@notifications.example.edu>`. Use your real domain.                                       |
+| `EXGREV_APP_URL`              | The app origin users should open, for example `https://grievances.example.edu/`. For local testing, use the exact Vite URL such as `http://localhost:5173/`. |
+| `NOTIFICATION_WEBHOOK_SECRET` | The random value generated in Part 3.                                                                                                                        |
+| `SERVICE_ROLE_KEY_Supabase`   | The project's server-side service-role key only if the function runtime does not already provide it. Never add it to frontend configuration.                 |
 
 `SUPABASE_URL` is provided by the Supabase Edge Function runtime. Do not create a `VITE_` variable for any secret above. `EXGREV_APP_URL` is reduced to its origin by the worker, so do not include a route, query string, or recovery token.
 
@@ -95,11 +95,11 @@ The scheduled Postgres dispatcher reads three values from Vault: the project URL
 1. In Supabase, open **Integrations → Vault** (the menu may appear as **Database → Vault**).
 2. Add the following three secrets. Use the exact name in the first column:
 
-| Vault secret name | Value |
-|---|---|
-| `grievance_email_function_url` | `https://hkdonpsbywfegfvzvqik.supabase.co` |
+| Vault secret name                 | Value                                                                                                               |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `grievance_email_function_url`    | `https://hkdonpsbywfegfvzvqik.supabase.co`                                                                          |
 | `grievance_email_publishable_key` | The ExGrev **publishable** key from **Project Settings → API Keys**. Legacy projects may label this the `anon` key. |
-| `grievance_email_webhook_secret` | The exact same random value saved as `NOTIFICATION_WEBHOOK_SECRET` in Part 4. |
+| `grievance_email_webhook_secret`  | The exact same random value saved as `NOTIFICATION_WEBHOOK_SECRET` in Part 4.                                       |
 
 3. Save each secret in Vault. Verify that the names match exactly; do not reveal or copy the decrypted values into chat.
 
@@ -189,15 +189,15 @@ The outbox is intentionally inaccessible to browser users. Do not expose it thro
 
 ## Troubleshooting
 
-| Symptom | Checks |
-|---|---|
-| No outbox rows after an event | Confirm the migration succeeded; confirm the event has recipient rows; verify recipient `account_identifier` maps to a `public.users` row with a non-empty email. New submissions use normalized Examination Cell/Admin role aliases. |
-| Outbox remains `pending` | Check `cron.job` for one active schedule. Check Vault secret names and ensure the URL, publishable key, and webhook secret are present. Review `pg_net` request errors and Edge Function logs. |
-| Worker returns unauthorized | Ensure Vault's `grievance_email_webhook_secret` exactly matches Edge Function `NOTIFICATION_WEBHOOK_SECRET`. Do not include surrounding whitespace. |
-| Worker reports missing configuration | Check all required Edge Function secrets: `RESEND_API_KEY`, `EXGREV_EMAIL_FROM`, `EXGREV_APP_URL`, `NOTIFICATION_WEBHOOK_SECRET`, and `SUPABASE_SERVICE_ROLE_KEY` where runtime injection does not provide it. |
-| Resend rejects the sender | Confirm the sender domain is verified, and `EXGREV_EMAIL_FROM` uses an address on that domain. Check the Resend API key is active and restricted to the correct domain. |
-| Outbox becomes `failed` | Review `last_error`, Edge Function logs, and Resend logs. Transient failures retry automatically up to five attempts; permanent provider rejection does not. Fix the provider/configuration issue before any manual retry. |
-| Recipient does not receive mail | Confirm their account email is valid, check spam/quarantine, and inspect Resend delivery/bounce logs. A provider "accepted" result is not proof the user's mailbox received it. |
+| Symptom                              | Checks                                                                                                                                                                                                                                |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No outbox rows after an event        | Confirm the migration succeeded; confirm the event has recipient rows; verify recipient `account_identifier` maps to a `public.users` row with a non-empty email. New submissions use normalized Examination Cell/Admin role aliases. |
+| Outbox remains `pending`             | Check `cron.job` for one active schedule. Check Vault secret names and ensure the URL, publishable key, and webhook secret are present. Review `pg_net` request errors and Edge Function logs.                                        |
+| Worker returns unauthorized          | Ensure Vault's `grievance_email_webhook_secret` exactly matches Edge Function `NOTIFICATION_WEBHOOK_SECRET`. Do not include surrounding whitespace.                                                                                   |
+| Worker reports missing configuration | Check all required Edge Function secrets: `RESEND_API_KEY`, `EXGREV_EMAIL_FROM`, `EXGREV_APP_URL`, `NOTIFICATION_WEBHOOK_SECRET`, and `SUPABASE_SERVICE_ROLE_KEY` where runtime injection does not provide it.                        |
+| Resend rejects the sender            | Confirm the sender domain is verified, and `EXGREV_EMAIL_FROM` uses an address on that domain. Check the Resend API key is active and restricted to the correct domain.                                                               |
+| Outbox becomes `failed`              | Review `last_error`, Edge Function logs, and Resend logs. Transient failures retry automatically up to five attempts; permanent provider rejection does not. Fix the provider/configuration issue before any manual retry.            |
+| Recipient does not receive mail      | Confirm their account email is valid, check spam/quarantine, and inspect Resend delivery/bounce logs. A provider "accepted" result is not proof the user's mailbox received it.                                                       |
 
 Do not manually resend or reset outbox records without understanding provider idempotency and the previous delivery result; doing so can create duplicate mail.
 
@@ -217,6 +217,6 @@ Do not manually resend or reset outbox records without understanding provider id
 
 - [Supabase setup overview](../../exgrev/SUPABASE_SETUP.md)
 - [Notification migration](../../exgrev/supabase/migrations/202610310001_grievance_email_notifications.sql)
+- [Active thread participant migration](../../exgrev/supabase/migrations/202611010001_active_grievance_thread_participants.sql)
 - [Notification Edge Function](../../exgrev/supabase/functions/grievance-email-notifications/index.ts)
 - [Supabase Function config](../../exgrev/supabase/config.toml)
-
