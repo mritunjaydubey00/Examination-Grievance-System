@@ -28,11 +28,13 @@ function StudentPage({
   const [message, setMessage] = useState("");
   const [threadGrievanceId, setThreadGrievanceId] = useState(null);
   const [activePage, setActivePage] = useState("Dashboard");
+  const [dashboardMetric, setDashboardMetric] = useState("");
 
   // The listStudentGrievances query is scoped to this signed-in student.
   const studentMetrics = [
-    { label: "Total Submitted", value: grievances.length, tone: "teal" },
+    { key: "total", label: "Total Submitted", value: grievances.length, tone: "teal" },
     {
+      key: "pending",
       label: "Pending",
       value: grievances.filter(
         (grievance) =>
@@ -41,6 +43,7 @@ function StudentPage({
       tone: "amber",
     },
     {
+      key: "resolved",
       label: "Resolved",
       value: grievances.filter(
         (grievance) =>
@@ -49,6 +52,22 @@ function StudentPage({
       tone: "green",
     },
   ];
+
+  const displayedGrievances = grievances.filter(
+    (grievance) =>
+      !dashboardMetric ||
+      dashboardMetric === "total" ||
+      (dashboardMetric === "pending" &&
+        (grievance.status !== "Resolved" || grievance.resolution_pending)) ||
+      (dashboardMetric === "resolved" &&
+        grievance.status === "Resolved" &&
+        !grievance.resolution_pending),
+  );
+
+  function showMetricGrievances(metric) {
+    setDashboardMetric(metric);
+    setActivePage("Your Grievances");
+  }
 
   const refresh = useCallback(async () => {
     try {
@@ -119,6 +138,7 @@ function StudentPage({
             activePage={activePage}
             onNavigate={(page) => {
               setThreadGrievanceId(null);
+              setDashboardMetric("");
               setActivePage(page);
             }}
             onLogout={onLogout}
@@ -146,7 +166,10 @@ function StudentPage({
         <PortalSidePanel
           role="student"
           activePage={activePage}
-          onNavigate={setActivePage}
+          onNavigate={(page) => {
+            setDashboardMetric("");
+            setActivePage(page);
+          }}
           onLogout={onLogout}
         />
         <div className="portal-content">
@@ -155,6 +178,7 @@ function StudentPage({
               role="student"
               metrics={studentMetrics}
               canEditContent={false}
+              onMetricClick={showMetricGrievances}
             />
           )}
           {activePage === "Add New" && (
@@ -170,7 +194,7 @@ function StudentPage({
           )}
           {activePage === "Your Grievances" && (
             <GrievanceHistory
-              grievances={grievances}
+              grievances={displayedGrievances}
               onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
               onRefresh={refresh}
               onSubmitNewGrievance={() => setActivePage("Add New")}

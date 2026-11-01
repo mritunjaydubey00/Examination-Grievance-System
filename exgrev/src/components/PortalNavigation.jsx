@@ -3,7 +3,7 @@ import "./PortalNavigation.css";
 
 const grievanceLinks = {
   student: ["Add New", "Your Grievances"],
-  faculty: ["Active Grievances", "Resolved Grievances"],
+  faculty: ["All Grievances", "Active Grievances", "Resolved Grievances"],
   "exam-cell": [
     "All Grievances",
     "Active Grievances",

@@ -31,11 +31,13 @@ function TeachingStaffPage({
   const [noticeType, setNoticeType] = useState("success");
   const [threadGrievanceId, setThreadGrievanceId] = useState(null);
   const [activePage, setActivePage] = useState("Dashboard");
+  const [dashboardMetric, setDashboardMetric] = useState("");
 
   // listAssignedGrievances is scoped to the signed-in faculty member.
   const facultyMetrics = [
-    { label: "Total Received", value: grievances.length, tone: "teal" },
+    { key: "total", label: "Total Received", value: grievances.length, tone: "teal" },
     {
+      key: "active",
       label: "Active",
       value: grievances.filter(
         (grievance) =>
@@ -44,6 +46,7 @@ function TeachingStaffPage({
       tone: "amber",
     },
     {
+      key: "resolved",
       label: "Resolved",
       value: grievances.filter(
         (grievance) =>
@@ -52,12 +55,25 @@ function TeachingStaffPage({
       tone: "green",
     },
     {
+      key: "awaiting-response",
       label: "Awaiting Student Response",
       value: grievances.filter((grievance) => grievance.resolution_pending)
         .length,
       tone: "blue",
     },
   ];
+
+  function showMetricGrievances(metric) {
+    setDashboardMetric(metric);
+    setStatusFilter("ALL");
+    setActivePage(
+      metric === "total"
+        ? "All Grievances"
+        : metric === "resolved"
+          ? "Resolved Grievances"
+          : "Active Grievances",
+    );
+  }
 
   const refresh = useCallback(async () => {
     try {
@@ -116,8 +132,16 @@ function TeachingStaffPage({
           .toLowerCase()
           .includes(search.toLowerCase()),
       );
-    const viewMatches =
-      activePage === "Active Grievances"
+    const viewMatches = dashboardMetric
+      ? dashboardMetric === "total" ||
+        (dashboardMetric === "active" &&
+          (grievance.status !== "Resolved" || grievance.resolution_pending)) ||
+        (dashboardMetric === "resolved" &&
+          grievance.status === "Resolved" &&
+          !grievance.resolution_pending) ||
+        (dashboardMetric === "awaiting-response" &&
+          grievance.resolution_pending)
+      : activePage === "Active Grievances"
         ? grievance.status !== "Resolved"
         : activePage === "Resolved Grievances"
           ? grievance.status === "Resolved"
@@ -155,6 +179,7 @@ function TeachingStaffPage({
             onNavigate={(page) => {
               setThreadGrievanceId(null);
               setActivePage(page);
+              setDashboardMetric("");
               setStatusFilter("ALL");
             }}
             onLogout={onLogout}
@@ -184,7 +209,12 @@ function TeachingStaffPage({
           activePage={activePage}
           onNavigate={(page) => {
             setActivePage(page);
-            if (page === "Active Grievances" || page === "Resolved Grievances") {
+            setDashboardMetric("");
+            if (
+              ["All Grievances", "Active Grievances", "Resolved Grievances"].includes(
+                page,
+              )
+            ) {
               setStatusFilter("ALL");
             }
           }}
@@ -196,9 +226,10 @@ function TeachingStaffPage({
               role="faculty"
               metrics={facultyMetrics}
               canEditContent={false}
+              onMetricClick={showMetricGrievances}
             />
           )}
-          {["Active Grievances", "Resolved Grievances"].includes(activePage) && (
+          {["All Grievances", "Active Grievances", "Resolved Grievances"].includes(activePage) && (
             <TeachingStaffWorkspace
               grievances={filteredGrievances}
               search={search}
