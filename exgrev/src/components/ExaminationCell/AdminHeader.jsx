@@ -1,6 +1,4 @@
-import AccountSecurityActions from "../AccountSecurityActions.jsx";
-
-function AdminHeader({ session, onLogout, onChangePassword }) {
+function AdminHeader({ session, onLogout }) {
   return (
     <header className="admin-header">
       <div>
@@ -21,7 +19,6 @@ function AdminHeader({ session, onLogout, onChangePassword }) {
             <small>{session.department || "Examination administration"}</small>
           </span>
         </div>
-        <AccountSecurityActions onChangePassword={onChangePassword} />
         <button type="button" className="logout-button" onClick={onLogout}>
           Log out
         </button>

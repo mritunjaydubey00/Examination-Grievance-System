@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import TeachingStaffHeader from "../components/teachingStaff/TeachingStaffHeader.jsx";
+import UserProfileSection from "../components/UserProfileSection.jsx";
 import TeachingStaffWorkspace from "../components/teachingStaff/TeachingStaffWorkspace.jsx";
 import TeachingStaffCaseDialog from "../components/teachingStaff/TeachingStaffCaseDialog.jsx";
 import ToastNotice from "../components/ToastNotice.jsx";
@@ -16,7 +17,12 @@ import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 import { supabase } from "../lib/supabase.js";
 import "./ExaminationCell.css";
 
-function TeachingStaffPage({ session, onLogout, onChangePassword }) {
+function TeachingStaffPage({
+  session,
+  onLogout,
+  onChangePassword,
+  onProfileUpdated,
+}) {
   const [grievances, setGrievances] = useState([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -159,7 +165,6 @@ function TeachingStaffPage({ session, onLogout, onChangePassword }) {
               session={session}
               onBack={() => setThreadGrievanceId(null)}
               onLogout={onLogout}
-              onChangePassword={onChangePassword}
             />
           </div>
         </div>
@@ -172,7 +177,6 @@ function TeachingStaffPage({ session, onLogout, onChangePassword }) {
       <TeachingStaffHeader
         session={session}
         onLogout={onLogout}
-        onChangePassword={onChangePassword}
       />
       <div className="portal-layout">
         <PortalSidePanel
@@ -207,7 +211,14 @@ function TeachingStaffPage({ session, onLogout, onChangePassword }) {
               onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
             />
           )}
-          {["Guidelines", "Profile", "Notice Board"].includes(activePage) && (
+          {activePage === "Profile" && (
+            <UserProfileSection
+              session={session}
+              onChangePassword={onChangePassword}
+              onProfileUpdated={onProfileUpdated}
+            />
+          )}
+          {["Guidelines", "Notice Board"].includes(activePage) && (
             <PortalPlaceholderPage
               page={activePage}
               canEditContent={false}

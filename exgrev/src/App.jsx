@@ -132,6 +132,11 @@ function App() {
     setLoggedInAt(Date.now());
   }
 
+  function handleProfileUpdated(updatedProfile) {
+    setProfile(updatedProfile);
+    sessionStorage.setItem("exgrev.profile", JSON.stringify(updatedProfile));
+  }
+
   async function handlePasswordRecoveryComplete() {
     try {
       await signOut();
@@ -191,18 +196,21 @@ function App() {
           session={{ ...profile, uptimeSeconds }}
           onLogout={handleLogout}
           onChangePassword={() => setShowPasswordSettings(true)}
+          onProfileUpdated={handleProfileUpdated}
         />
       ) : ["teaching staff", "teaching", "faculty"].includes(normalizedRole) ? (
         <TeachingStaffPage
           session={profile}
           onLogout={handleLogout}
           onChangePassword={() => setShowPasswordSettings(true)}
+          onProfileUpdated={handleProfileUpdated}
         />
       ) : normalizedRole === "student" ? (
         <StudentPage
           session={{ ...profile, uptimeSeconds }}
           onLogout={handleLogout}
           onChangePassword={() => setShowPasswordSettings(true)}
+          onProfileUpdated={handleProfileUpdated}
         />
       ) : (
         <main className="auth-panel" role="alert">

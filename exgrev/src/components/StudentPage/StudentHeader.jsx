@@ -1,6 +1,4 @@
-import AccountSecurityActions from "../AccountSecurityActions.jsx";
-
-function StudentHeader({ session, onLogout, onChangePassword }) {
+function StudentHeader({ session, onLogout }) {
   return (
     <header className="student-header">
       <div>
@@ -15,7 +13,6 @@ function StudentHeader({ session, onLogout, onChangePassword }) {
           <span className="status-dot" />
           Session active <strong>{session.uptimeSeconds}s</strong>
         </div>
-        <AccountSecurityActions onChangePassword={onChangePassword} />
         <button type="button" className="logout-button" onClick={onLogout}>
           Log out
         </button>

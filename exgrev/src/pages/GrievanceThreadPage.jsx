@@ -6,7 +6,6 @@ import {
 } from "../services/grievanceService.js";
 import { supabase } from "../lib/supabase.js";
 import ToastNotice from "../components/ToastNotice.jsx";
-import AccountSecurityActions from "../components/AccountSecurityActions.jsx";
 import {
   getGrievanceStatusLabel,
   isResolutionWindowOpen,
@@ -129,7 +128,6 @@ function GrievanceThreadPage({
   session,
   onBack,
   onLogout,
-  onChangePassword,
 }) {
   const [thread, setThread] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -341,7 +339,6 @@ function GrievanceThreadPage({
           <h1>Grievance thread</h1>
         </div>
         <div className="thread-header-actions">
-          <AccountSecurityActions onChangePassword={onChangePassword} />
           <button type="button" className="logout-button" onClick={onLogout}>
             Log out
           </button>

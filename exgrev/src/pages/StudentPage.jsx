@@ -5,6 +5,7 @@ import {
 } from "../services/grievanceService.js";
 import { supabase } from "../lib/supabase.js";
 import StudentHeader from "../components/StudentPage/StudentHeader.jsx";
+import UserProfileSection from "../components/UserProfileSection.jsx";
 import GrievanceForm from "../components/StudentPage/GrievanceForm.jsx";
 import GrievanceHistory from "../components/StudentPage/GrievanceHistory.jsx";
 import {
@@ -14,7 +15,12 @@ import {
 } from "../components/PortalNavigation.jsx";
 import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 
-function StudentPage({ session, onLogout, onChangePassword }) {
+function StudentPage({
+  session,
+  onLogout,
+  onChangePassword,
+  onProfileUpdated,
+}) {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedProblem, setSelectedProblem] = useState("");
   const [grievances, setGrievances] = useState([]);
@@ -123,7 +129,6 @@ function StudentPage({ session, onLogout, onChangePassword }) {
               session={session}
               onBack={() => setThreadGrievanceId(null)}
               onLogout={onLogout}
-              onChangePassword={onChangePassword}
             />
           </div>
         </div>
@@ -136,7 +141,6 @@ function StudentPage({ session, onLogout, onChangePassword }) {
       <StudentHeader
         session={session}
         onLogout={onLogout}
-        onChangePassword={onChangePassword}
       />
       <div className="portal-layout">
         <PortalSidePanel
@@ -172,7 +176,14 @@ function StudentPage({ session, onLogout, onChangePassword }) {
               onSubmitNewGrievance={() => setActivePage("Add New")}
             />
           )}
-          {["Guidelines", "Profile", "Notice Board"].includes(activePage) && (
+          {activePage === "Profile" && (
+            <UserProfileSection
+              session={session}
+              onChangePassword={onChangePassword}
+              onProfileUpdated={onProfileUpdated}
+            />
+          )}
+          {["Guidelines", "Notice Board"].includes(activePage) && (
             <PortalPlaceholderPage
               page={activePage}
               canEditContent={false}

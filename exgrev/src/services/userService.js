@@ -1,8 +1,6 @@
 import { supabase } from "../lib/supabase.js";
 
 const PROFILE_KEY = "exgrev.profile";
-const PROFILE_VERSION = 3;
-
 function normalizeUserRole(value) {
   const role = String(value || "")
     .trim()
@@ -87,36 +85,33 @@ export async function getAuthenticatedProfile() {
   const { data: sessionData } = await supabase.auth.getSession();
   if (!sessionData.session) return null;
 
-  let appMetadata = sessionData.session.user.app_metadata ?? {};
-  if (appMetadata.exgrev_profile_version !== PROFILE_VERSION) {
-    const { data, error } = await supabase.functions.invoke(
-      "resolve-authenticated-profile",
+  const { data, error } = await supabase.functions.invoke(
+    "resolve-authenticated-profile",
+  );
+  if (error) {
+    let responseBody;
+    try {
+      responseBody = await error.context?.clone?.().json();
+    } catch {
+      responseBody = null;
+    }
+    throw new Error(
+      responseBody?.error ||
+        "Unable to verify your ExGrev account. Please try again.",
     );
-    if (error) {
-      let responseBody;
-      try {
-        responseBody = await error.context?.clone?.().json();
-      } catch {
-        responseBody = null;
-      }
-      throw new Error(
-        responseBody?.error ||
-          "Unable to verify your ExGrev account. Please try again.",
-      );
-    }
-    if (!data?.profile) {
-      throw new Error(
-        "This Google account is not approved for ExGrev. Contact your administrator.",
-      );
-    }
-
-    const { data: refreshedSession, error: refreshError } =
-      await supabase.auth.refreshSession();
-    if (refreshError || !refreshedSession.session) {
-      throw new Error("Unable to start your session. Please try again.");
-    }
-    appMetadata = refreshedSession.session.user.app_metadata ?? {};
   }
+  if (!data?.profile) {
+    throw new Error(
+      "This Google account is not approved for ExGrev. Contact your administrator.",
+    );
+  }
+
+  const { data: refreshedSession, error: refreshError } =
+    await supabase.auth.refreshSession();
+  if (refreshError || !refreshedSession.session) {
+    throw new Error("Unable to start your session. Please try again.");
+  }
+  const appMetadata = refreshedSession.session.user.app_metadata ?? {};
 
   if (!appMetadata.user_id) {
     throw new Error("Unable to load your ExGrev account profile.");
@@ -132,6 +127,40 @@ export async function getAuthenticatedProfile() {
   };
   sessionStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
   return profile;
+}
+
+const PROFILE_COLUMNS =
+  '"User ID", "Full Name", "Ex Factor", Department, Branch, email, "Phone Number", account_identifier';
+
+export async function getUserProfile(userId) {
+  const { data, error } = await supabase
+    .from("users")
+    .select(PROFILE_COLUMNS)
+    .eq("account_identifier", userId)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateOwnUserProfile(userId, profile) {
+  const updates = {
+    "Full Name": String(profile["Full Name"] || "").trim(),
+    Department: String(profile.Department || "").trim(),
+    Branch: String(profile.Branch || "").trim(),
+    "Phone Number": String(profile["Phone Number"] || "").trim(),
+  };
+  if (!updates["Full Name"] || !updates["Phone Number"]) {
+    throw new Error("Name and phone number are required.");
+  }
+
+  const { data, error } = await supabase
+    .from("users")
+    .update(updates)
+    .eq("account_identifier", userId)
+    .select(PROFILE_COLUMNS)
+    .single();
+  if (error) throw error;
+  return data;
 }
 
 export async function signInWithGoogle() {

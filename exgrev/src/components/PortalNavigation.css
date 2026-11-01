@@ -173,6 +173,7 @@
   font-size: 0.75rem;
   font-weight: 700;
   white-space: nowrap;
+  cursor: pointer;
 }
 
 .portal-add-button:disabled {
@@ -182,6 +183,91 @@
 
 .portal-placeholder-page > .portal-info-card {
   margin-top: 22px;
+}
+
+.profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-secondary-button {
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid #cbd8d7;
+  border-radius: 6px;
+  background: #fff;
+  color: #52666c;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.profile-secondary-button:hover {
+  background: #f3f7f6;
+}
+
+.profile-secondary-button:disabled,
+.portal-add-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.user-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.profile-field {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+  color: #718286;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.profile-field strong {
+  min-height: 22px;
+  color: #172b35;
+  font-size: 0.88rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.profile-field input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid #cbd8d7;
+  border-radius: 6px;
+  background: #fbfdfc;
+  color: #172b35;
+  font: inherit;
+  font-weight: 500;
+}
+
+.profile-field input:focus {
+  border-color: #15958c;
+  outline: 3px solid rgba(21, 149, 140, 0.13);
+}
+
+.profile-message {
+  margin: 0 0 12px;
+  color: #28664f;
+  font-size: 0.84rem;
+}
+
+.profile-error {
+  color: #a12828;
+}
+
+.profile-actions button:focus-visible {
+  outline: 3px solid rgba(21, 149, 140, 0.25);
+  outline-offset: 2px;
 }
 
 .portal-thread-shell .portal-thread-content > .grievance-thread-page {
@@ -215,6 +301,10 @@
   }
 
   .portal-dashboard-sections {
+    grid-template-columns: 1fr;
+  }
+
+  .user-profile-grid {
     grid-template-columns: 1fr;
   }
 }

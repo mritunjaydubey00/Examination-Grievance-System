@@ -1,6 +1,4 @@
-import AccountSecurityActions from "../AccountSecurityActions.jsx";
-
-function TeachingStaffHeader({ session, onLogout, onChangePassword }) {
+function TeachingStaffHeader({ session, onLogout }) {
   return (
     <header className="admin-header">
       <div>
@@ -21,7 +19,6 @@ function TeachingStaffHeader({ session, onLogout, onChangePassword }) {
             <small>{session.department || "Department not set"}</small>
           </span>
         </div>
-        <AccountSecurityActions onChangePassword={onChangePassword} />
         <button type="button" className="logout-button" onClick={onLogout}>
           Log out
         </button>
