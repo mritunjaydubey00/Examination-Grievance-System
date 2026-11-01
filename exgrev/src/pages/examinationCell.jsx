@@ -16,6 +16,7 @@ import {
   updateGrievance,
 } from "../services/grievanceService.js";
 import { supabase } from "../lib/supabase.js";
+import PortalLoading from "../components/PortalLoading.jsx";
 import "./ExaminationCell.css";
 
 function ExaminationCell({
@@ -31,6 +32,7 @@ function ExaminationCell({
   const [notice, setNotice] = useState("");
   const [noticeType, setNoticeType] = useState("success");
   const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [threadGrievanceId, setThreadGrievanceId] = useState(null);
   const [activePage, setActivePage] = useState("Dashboard");
@@ -125,6 +127,7 @@ function ExaminationCell({
       setNotice(message);
     } finally {
       setLoading(false);
+      setInitialLoading(false);
     }
   }, []);
 
@@ -215,6 +218,10 @@ function ExaminationCell({
       setNoticeType("error");
       setNotice(error.message || "Could not update grievance.");
     }
+  }
+
+  if (initialLoading) {
+    return <PortalLoading label="Loading the Examination Cell…" />;
   }
 
   if (threadGrievanceId) {

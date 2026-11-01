@@ -14,6 +14,7 @@ import {
   PortalSidePanel,
 } from "../components/PortalNavigation.jsx";
 import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
+import PortalLoading from "../components/PortalLoading.jsx";
 
 function StudentPage({
   session,
@@ -23,6 +24,7 @@ function StudentPage({
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedProblem, setSelectedProblem] = useState("");
   const [grievances, setGrievances] = useState([]);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [threadGrievanceId, setThreadGrievanceId] = useState(null);
@@ -73,6 +75,8 @@ function StudentPage({
       setGrievances(await listStudentGrievances(session.userId));
     } catch (error) {
       setMessage(error.message || "Could not load your grievances.");
+    } finally {
+      setInitialLoading(false);
     }
   }, [session.userId]);
 
@@ -126,6 +130,10 @@ function StudentPage({
     } finally {
       setBusy(false);
     }
+  }
+
+  if (initialLoading) {
+    return <PortalLoading label="Loading your grievances…" />;
   }
 
   if (threadGrievanceId) {

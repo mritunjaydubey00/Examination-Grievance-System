@@ -15,6 +15,7 @@ import {
 } from "../services/grievanceService.js";
 import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 import { supabase } from "../lib/supabase.js";
+import PortalLoading from "../components/PortalLoading.jsx";
 import "./ExaminationCell.css";
 
 function TeachingStaffPage({
@@ -23,6 +24,7 @@ function TeachingStaffPage({
   onChangePassword,
 }) {
   const [grievances, setGrievances] = useState([]);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [activeAction, setActiveAction] = useState(null);
@@ -94,6 +96,8 @@ function TeachingStaffPage({
     } catch (error) {
       setNoticeType("error");
       setNotice(error.message || "Could not load your assigned grievances.");
+    } finally {
+      setInitialLoading(false);
     }
   }, [session.userId]);
 
@@ -166,6 +170,10 @@ function TeachingStaffPage({
       setNoticeType("error");
       setNotice(error.message || "Could not send the remark.");
     }
+  }
+
+  if (initialLoading) {
+    return <PortalLoading label="Loading your assigned grievances…" />;
   }
 
   if (threadGrievanceId) {

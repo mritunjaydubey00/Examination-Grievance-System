@@ -249,24 +249,38 @@
 .admin-status {
   display: inline-flex;
   padding: 4px 8px;
+  border: 1px solid transparent;
   border-radius: 4px;
-  color: #785414;
-  background: #fbf2df;
   font-size: 0.7rem;
   font-weight: 750;
 }
 
+.admin-status-new {
+  border-color: #f2cecb;
+  color: #a12828;
+  background: #fcebea;
+}
+
+.admin-status-in-progress,
 .admin-status-forwarded {
+  border-color: #cbdde8;
   color: #315f7e;
   background: #e8f1f6;
 }
+
 .admin-status-resolved {
+  border-color: #c9e2d3;
   color: #28664f;
   background: #e7f3ed;
 }
+
 .admin-actions-cell {
   text-align: right;
   white-space: nowrap;
+}
+
+.admin-actions-cell > .admin-action-button + .admin-action-button {
+  margin-left: 8px;
 }
 
 .admin-row-actions {

@@ -3,6 +3,7 @@ import {
   getUserProfile,
   updateOwnUserProfile,
 } from "../services/userService.js";
+import PortalLoading from "./PortalLoading.jsx";
 
 const editableFields = [
   { key: "Phone Number", label: "Phone number" },
@@ -120,9 +121,7 @@ function UserProfileSection({ session, onChangePassword }) {
         </p>
       )}
       {loading ? (
-        <div className="portal-info-card">
-          <p className="portal-placeholder-message">Loading your profile…</p>
-        </div>
+        <PortalLoading label="Loading your profile…" />
       ) : profile ? (
         editing ? (
           <form

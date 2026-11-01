@@ -72,7 +72,9 @@ function GrievanceTable({
                   <td>{grievance.problem_category}</td>
                   <td>{grievance.problem_type}</td>
                   <td>
-                    <span className="admin-status">
+                    <span
+                      className={`admin-status admin-status-${String(grievance.status || "").toLowerCase().replaceAll(" ", "-")}`}
+                    >
                       {getGrievanceStatusLabel(grievance)}
                     </span>
                   </td>

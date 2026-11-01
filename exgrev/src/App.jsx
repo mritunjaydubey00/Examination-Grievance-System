@@ -6,6 +6,7 @@ import ChangePassword from "./pages/ChangePassword.jsx";
 import ExaminationCell from "./pages/examinationCell.jsx";
 import StudentPage from "./pages/StudentPage.jsx";
 import TeachingStaffPage from "./pages/TeachingStaffPage.jsx";
+import PortalLoading from "./components/PortalLoading.jsx";
 import { supabase } from "./lib/supabase.js";
 import { getAuthenticatedProfile, signOut } from "./services/userService.js";
 
@@ -155,7 +156,7 @@ function App() {
     <div className={`app-shell${profile ? "" : " app-shell-auth"}`}>
       {profile && <h1 className="app-wordmark">ExGrev</h1>}
       {!authChecked ? (
-        <p className="auth-loading">Checking your session…</p>
+        <PortalLoading label="Checking your session…" />
       ) : passwordRecovery ? (
         <ChangePassword
           mode="recovery"

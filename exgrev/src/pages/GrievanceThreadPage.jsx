@@ -5,6 +5,7 @@ import {
   getGrievanceThread,
 } from "../services/grievanceService.js";
 import { supabase } from "../lib/supabase.js";
+import PortalLoading from "../components/PortalLoading.jsx";
 import ToastNotice from "../components/ToastNotice.jsx";
 import PortalHero from "../components/PortalHero.jsx";
 import {
@@ -341,7 +342,7 @@ function GrievanceThreadPage({
       />
 
       {loading ? (
-        <p className="thread-state">Loading grievance thread…</p>
+        <PortalLoading label="Loading grievance thread…" />
       ) : loadError ? (
         <p className="thread-state thread-error" role="alert">
           {loadError}
@@ -358,7 +359,9 @@ function GrievanceThreadPage({
                 {grievance.problem_category} · {grievance.problem_type}
               </p>
             </div>
-            <span className="admin-status">
+            <span
+              className={`admin-status admin-status-${String(grievance.status || "").toLowerCase().replaceAll(" ", "-")}`}
+            >
               {getGrievanceStatusLabel(
                 grievance,
                 isStudent ? "student" : "staff",
