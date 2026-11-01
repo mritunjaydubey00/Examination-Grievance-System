@@ -94,26 +94,7 @@ function UserProfileSection({ session, onChangePassword, onProfileUpdated }) {
           <h3>Profile</h3>
           <p>View and update your own account details.</p>
         </div>
-        {editing ? (
-          <div className="profile-actions">
-            <button
-              type="button"
-              className="profile-secondary-button"
-              onClick={cancelEditing}
-              disabled={saving}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              form="user-profile-form"
-              className="portal-add-button profile-save-button"
-              disabled={saving}
-            >
-              {saving ? "Saving…" : "Save changes"}
-            </button>
-          </div>
-        ) : (
+        {!editing && (
           <div className="profile-actions">
             <button
               type="button"
@@ -134,22 +115,29 @@ function UserProfileSection({ session, onChangePassword, onProfileUpdated }) {
         )}
       </div>
 
-      {error && <p className="profile-message profile-error" role="alert">{error}</p>}
-      {message && <p className="profile-message" role="status">{message}</p>}
+      {error && (
+        <p className="profile-message profile-error" role="alert">
+          {error}
+        </p>
+      )}
+      {message && (
+        <p className="profile-message" role="status">
+          {message}
+        </p>
+      )}
       {loading ? (
         <div className="portal-info-card">
           <p className="portal-placeholder-message">Loading your profile…</p>
         </div>
       ) : profile ? (
-        <form
-          id="user-profile-form"
-          className="portal-info-card user-profile-grid"
-          onSubmit={handleSubmit}
-        >
-          {editableFields.map(({ key, label }) => (
-            <label className="profile-field" key={key}>
-              <span>{label}</span>
-              {editing ? (
+        editing ? (
+          <form
+            className="portal-info-card user-profile-grid"
+            onSubmit={handleSubmit}
+          >
+            {editableFields.map(({ key, label }) => (
+              <label className="profile-field" key={key}>
+                <span>{label}</span>
                 <input
                   type="text"
                   value={form[key]}
@@ -163,18 +151,48 @@ function UserProfileSection({ session, onChangePassword, onProfileUpdated }) {
                   }
                   disabled={saving}
                 />
-              ) : (
+              </label>
+            ))}
+            {readOnlyFields.map(({ key, label }) => (
+              <div className="profile-field" key={key}>
+                <span>{label}</span>
                 <strong>{profile[key] || "Not provided"}</strong>
-              )}
-            </label>
-          ))}
-          {readOnlyFields.map(({ key, label }) => (
-            <div className="profile-field" key={key}>
-              <span>{label}</span>
-              <strong>{profile[key] || "Not provided"}</strong>
+              </div>
+            ))}
+            <div className="profile-actions profile-form-actions">
+              <button
+                type="button"
+                className="profile-secondary-button"
+                onClick={cancelEditing}
+                disabled={saving}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="portal-add-button profile-save-button"
+                disabled={saving}
+              >
+                {saving ? "Saving…" : "Save changes"}
+              </button>
             </div>
-          ))}
-        </form>
+          </form>
+        ) : (
+          <div className="portal-info-card user-profile-grid">
+            {editableFields.map(({ key, label }) => (
+              <div className="profile-field" key={key}>
+                <span>{label}</span>
+                <strong>{profile[key] || "Not provided"}</strong>
+              </div>
+            ))}
+            {readOnlyFields.map(({ key, label }) => (
+              <div className="profile-field" key={key}>
+                <span>{label}</span>
+                <strong>{profile[key] || "Not provided"}</strong>
+              </div>
+            ))}
+          </div>
+        )
       ) : null}
     </section>
   );

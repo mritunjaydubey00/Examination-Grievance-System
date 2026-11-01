@@ -191,6 +191,11 @@
   gap: 8px;
 }
 
+.profile-form-actions {
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+}
+
 .profile-secondary-button {
   min-height: 34px;
   padding: 7px 10px;
