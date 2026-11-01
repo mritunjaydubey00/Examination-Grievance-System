@@ -194,7 +194,7 @@ function App() {
         />
       ) : ["teaching staff", "teaching", "faculty"].includes(normalizedRole) ? (
         <TeachingStaffPage
-          session={profile}
+          session={{ ...profile, uptimeSeconds }}
           onLogout={handleLogout}
           onChangePassword={() => setShowPasswordSettings(true)}
         />

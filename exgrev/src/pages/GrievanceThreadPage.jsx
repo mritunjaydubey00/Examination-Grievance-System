@@ -6,6 +6,7 @@ import {
 } from "../services/grievanceService.js";
 import { supabase } from "../lib/supabase.js";
 import ToastNotice from "../components/ToastNotice.jsx";
+import PortalHero from "../components/PortalHero.jsx";
 import {
   getGrievanceStatusLabel,
   isResolutionWindowOpen,
@@ -326,24 +327,18 @@ function GrievanceThreadPage({
 
   return (
     <main className="student-page examination-cell-page grievance-thread-page">
-      <header className="thread-page-header">
-        <div>
-          <button
-            type="button"
-            className="thread-back-button"
-            onClick={onBack}
-          >
-            Back to grievances
-          </button>
-          <p className="eyebrow">Case history</p>
-          <h1>Grievance thread</h1>
-        </div>
-        <div className="thread-header-actions">
-          <button type="button" className="logout-button" onClick={onLogout}>
-            Log out
-          </button>
-        </div>
-      </header>
+      <PortalHero
+        eyebrow="Case history"
+        title="Grievance thread"
+        context={
+          grievance
+            ? `${grievance.grievance_code || "Grievance"}  /  ${grievance.subject}`
+            : "View grievance updates and messages."
+        }
+        session={session}
+        onLogout={onLogout}
+        onBack={onBack}
+      />
 
       {loading ? (
         <p className="thread-state">Loading grievance thread…</p>
