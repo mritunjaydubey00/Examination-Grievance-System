@@ -22,7 +22,6 @@ function ExaminationCell({
   session,
   onLogout,
   onChangePassword,
-  onProfileUpdated,
 }) {
   const [grievances, setGrievances] = useState([]);
   const [search, setSearch] = useState("");
@@ -305,7 +304,6 @@ function ExaminationCell({
             <UserProfileSection
               session={session}
               onChangePassword={onChangePassword}
-              onProfileUpdated={onProfileUpdated}
             />
           )}
           {["Guidelines", "Notice Board"].includes(activePage) && (

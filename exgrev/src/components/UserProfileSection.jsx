@@ -5,20 +5,20 @@ import {
 } from "../services/userService.js";
 
 const editableFields = [
-  { key: "Full Name", label: "Full name" },
-  { key: "Department", label: "Department" },
-  { key: "Branch", label: "Branch" },
   { key: "Phone Number", label: "Phone number" },
 ];
 
 const readOnlyFields = [
+  { key: "Full Name", label: "Full name" },
+  { key: "Department", label: "Department" },
+  { key: "Branch", label: "Branch" },
   { key: "User ID", label: "User ID" },
   { key: "email", label: "Email" },
   { key: "Ex Factor", label: "Account type" },
   { key: "account_identifier", label: "Account identifier" },
 ];
 
-function UserProfileSection({ session, onChangePassword, onProfileUpdated }) {
+function UserProfileSection({ session, onChangePassword }) {
   const [profile, setProfile] = useState(null);
   const [form, setForm] = useState({});
   const [editing, setEditing] = useState(false);
@@ -72,12 +72,6 @@ function UserProfileSection({ session, onChangePassword, onProfileUpdated }) {
       setProfile(updated);
       setForm(toFormValues(updated));
       setEditing(false);
-      onProfileUpdated?.({
-        ...session,
-        name: updated["Full Name"],
-        department: updated.Department,
-        branch: updated.Branch,
-      });
       setMessage("Profile updated.");
     } catch (saveError) {
       setError(saveError.message || "Could not update your profile.");
@@ -92,7 +86,7 @@ function UserProfileSection({ session, onChangePassword, onProfileUpdated }) {
         <div>
           <p className="eyebrow">Account</p>
           <h3>Profile</h3>
-          <p>View and update your own account details.</p>
+          <p>View your account details and update your phone number.</p>
         </div>
         {!editing && (
           <div className="profile-actions">
@@ -141,8 +135,8 @@ function UserProfileSection({ session, onChangePassword, onProfileUpdated }) {
                 <input
                   type="text"
                   value={form[key]}
-                  maxLength="160"
-                  required={key === "Full Name" || key === "Phone Number"}
+                  maxLength="32"
+                  required
                   onChange={(event) =>
                     setForm((current) => ({
                       ...current,

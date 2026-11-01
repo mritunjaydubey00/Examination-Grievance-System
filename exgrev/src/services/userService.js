@@ -144,13 +144,10 @@ export async function getUserProfile(userId) {
 
 export async function updateOwnUserProfile(userId, profile) {
   const updates = {
-    "Full Name": String(profile["Full Name"] || "").trim(),
-    Department: String(profile.Department || "").trim(),
-    Branch: String(profile.Branch || "").trim(),
     "Phone Number": String(profile["Phone Number"] || "").trim(),
   };
-  if (!updates["Full Name"] || !updates["Phone Number"]) {
-    throw new Error("Name and phone number are required.");
+  if (!updates["Phone Number"]) {
+    throw new Error("Phone number is required.");
   }
 
   const { data, error } = await supabase

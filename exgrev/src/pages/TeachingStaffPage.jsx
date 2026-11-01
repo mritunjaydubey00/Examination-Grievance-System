@@ -21,7 +21,6 @@ function TeachingStaffPage({
   session,
   onLogout,
   onChangePassword,
-  onProfileUpdated,
 }) {
   const [grievances, setGrievances] = useState([]);
   const [search, setSearch] = useState("");
@@ -246,7 +245,6 @@ function TeachingStaffPage({
             <UserProfileSection
               session={session}
               onChangePassword={onChangePassword}
-              onProfileUpdated={onProfileUpdated}
             />
           )}
           {["Guidelines", "Notice Board"].includes(activePage) && (

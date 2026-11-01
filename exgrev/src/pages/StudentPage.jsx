@@ -19,7 +19,6 @@ function StudentPage({
   session,
   onLogout,
   onChangePassword,
-  onProfileUpdated,
 }) {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedProblem, setSelectedProblem] = useState("");
@@ -204,7 +203,6 @@ function StudentPage({
             <UserProfileSection
               session={session}
               onChangePassword={onChangePassword}
-              onProfileUpdated={onProfileUpdated}
             />
           )}
           {["Guidelines", "Notice Board"].includes(activePage) && (
