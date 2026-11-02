@@ -17,6 +17,19 @@ function StudentGrievance({ grievance, onOpenThread }) {
       className="student-grievance student-history-card"
       aria-label={`Grievance ${grievance.grievance_code || "ID pending"}`}
     >
+      <div className="student-grievance-details">
+        <strong className="student-grievance-code">
+          {grievance.grievance_code || "ID pending"}
+        </strong>
+        <h4>{grievance.subject || "Untitled grievance"}</h4>
+        {(grievance.problem_category || grievance.problem_type) && (
+          <p>
+            {[grievance.problem_category, grievance.problem_type]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
+        )}
+      </div>
       <div className="student-grievance-row">
         <span
           className={`admin-status admin-status-${grievance.status.toLowerCase().replaceAll(" ", "-")}`}

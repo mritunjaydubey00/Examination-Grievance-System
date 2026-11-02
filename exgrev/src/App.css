@@ -846,10 +846,36 @@
   max-width: none;
 }
 
+.student-grievance-details {
+  min-width: 0;
+  margin-bottom: 12px;
+}
+
+.student-grievance-code {
+  color: #344d55;
+  font-size: 0.82rem;
+}
+
+.student-grievance-details h4 {
+  margin: 3px 0 0;
+  color: #172b35;
+  font-size: 1rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.student-grievance-details p {
+  margin: 4px 0 0;
+  color: #65777d;
+  font-size: 0.84rem;
+  overflow-wrap: anywhere;
+}
+
 .student-grievance-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
 }
 
@@ -871,13 +897,12 @@
   }
 
   .student-grievance-row {
-    align-items: stretch;
-    flex-direction: column;
+    align-items: center;
     gap: 8px;
   }
 
   .student-grievance-row .admin-status {
-    align-self: flex-start;
+    flex: 1 1 100%;
   }
 
   .student-grievance-row .thread-open-button {
