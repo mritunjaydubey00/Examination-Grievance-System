@@ -14,7 +14,7 @@ function StudentGrievance({ grievance, onOpenThread }) {
 
   return (
     <article
-      className="student-grievance student-history-card"
+      className="student-grievance student-history-card interactive-card stagger-item"
       aria-label={`Grievance ${grievance.grievance_code || "ID pending"}`}
     >
       <div className="student-grievance-details">

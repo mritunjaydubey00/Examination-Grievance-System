@@ -10,20 +10,20 @@
   gap: 28px;
   margin: 22px 0 28px;
   padding: 24px 28px;
-  border: 1px solid #d5e7e2;
-  border-top: 3px solid #137f78;
+  border: 1px solid var(--border-accent);
+  border-top: 3px solid var(--accent-action);
   border-radius: 13px;
   background:
-    radial-gradient(circle at 90% 0, rgba(19, 127, 120, 0.09), transparent 32%),
-    linear-gradient(110deg, #f0f8f6, #fff 72%);
-  box-shadow: 0 9px 26px rgba(28, 61, 65, 0.075);
+    radial-gradient(circle at 90% 0, rgb(var(--accent-rgb) / 9%), transparent 32%),
+    linear-gradient(110deg, var(--bg-accent-subtle), var(--bg-surface) 72%);
+  box-shadow: 0 9px 26px rgb(var(--shadow-rgb) / 7.5%);
 }
 
 .admin-header h2,
 .admin-case-heading h3,
 .admin-dialog h3 {
   margin: 0;
-  color: #172b35;
+  color: var(--text-main);
   font-family: var(--heading);
   font-weight: 650;
 }
@@ -34,7 +34,7 @@
 
 .admin-header-description {
   margin-top: 8px;
-  color: #65777d;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
@@ -46,7 +46,7 @@
 }
 
 .admin-identity {
-  color: #344d55;
+  color: var(--text-secondary);
   font-size: 0.82rem;
 }
 
@@ -56,10 +56,10 @@
 }
 
 .admin-identity strong {
-  color: #172b35;
+  color: var(--text-main);
 }
 .admin-identity small {
-  color: #718286;
+  color: var(--text-muted);
   font-size: 0.75rem;
 }
 
@@ -69,8 +69,8 @@
   height: 38px;
   place-items: center;
   border-radius: 9px;
-  color: #137f78;
-  background: #e5f1ef;
+  color: var(--accent-action);
+  background: var(--bg-accent-subtle);
   font-size: 0.78rem;
   font-weight: 800;
 }
@@ -88,9 +88,9 @@
   gap: 14px;
   min-height: 88px;
   padding: 17px;
-  border: 1px solid #dfe5e4;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  background: #fff;
+  background: var(--bg-surface);
 }
 
 .admin-stat-indicator {
@@ -98,21 +98,21 @@
   height: 38px;
   flex: 0 0 auto;
   border-radius: 4px;
-  background: #137f78;
+  background: var(--accent-action);
 }
 
 .admin-stat-amber .admin-stat-indicator {
-  background: #c38824;
+  background: var(--status-pending-text);
 }
 .admin-stat-blue .admin-stat-indicator {
-  background: #3c79a3;
+  background: var(--status-info-text);
 }
 .admin-stat-green .admin-stat-indicator {
-  background: #38876b;
+  background: var(--status-resolved-text);
 }
 
 .admin-stat p {
-  color: #65777d;
+  color: var(--text-muted);
   font-size: 0.77rem;
   font-weight: 600;
 }
@@ -120,16 +120,16 @@
 .admin-stat strong {
   display: block;
   margin-top: 3px;
-  color: #172b35;
+  color: var(--text-main);
   font-size: 1.55rem;
   line-height: 1.1;
 }
 
 .admin-workspace {
   overflow: hidden;
-  border: 1px solid #dfe5e4;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  background: #fff;
+  background: var(--bg-surface);
 }
 
 .admin-toolbar {
@@ -137,7 +137,7 @@
   align-items: center;
   gap: 10px;
   padding: 15px;
-  border-bottom: 1px solid #e6eceb;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .admin-search-field {
@@ -152,11 +152,11 @@
   width: 100%;
   min-height: 42px;
   padding: 9px 11px;
-  border: 1px solid #cbd8d7;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   outline: none;
-  background: #fbfdfc;
-  color: #172b35;
+  background: var(--bg-primary);
+  color: var(--text-main);
   font: inherit;
   font-size: 0.82rem;
 }
@@ -165,8 +165,8 @@
 .admin-filter-field select:focus,
 .admin-dialog-form select:focus,
 .admin-dialog-form textarea:focus {
-  border-color: #15958c;
-  box-shadow: 0 0 0 3px rgba(21, 149, 140, 0.13);
+  border-color: var(--accent-teal-hover);
+  box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / 13%);
 }
 
 .admin-filter-field {
@@ -188,7 +188,7 @@
   font-size: 1rem;
 }
 .admin-case-count {
-  color: #65777d;
+  color: var(--text-muted);
   font-size: 0.78rem;
   white-space: nowrap;
 }
@@ -199,15 +199,16 @@
 .admin-table {
   width: 100%;
   border-collapse: collapse;
+  background: var(--bg-surface);
   text-align: left;
   font-size: 0.82rem;
 }
 
 .admin-table th {
   padding: 11px 14px;
-  border-block: 1px solid #e6eceb;
-  background: #f6f9f8;
-  color: #65777d;
+  border-block: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-muted);
   font-size: 0.68rem;
   font-weight: 750;
   letter-spacing: 0.06em;
@@ -215,11 +216,15 @@
   white-space: nowrap;
 }
 
+.admin-table tbody tr {
+  background: var(--bg-surface);
+}
+
 .admin-table td {
   max-width: 280px;
   padding: 14px;
-  border-bottom: 1px solid #e9eeed;
-  color: #344d55;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
   vertical-align: middle;
 }
 
@@ -231,19 +236,19 @@
   display: block;
 }
 .admin-table td strong {
-  color: #172b35;
+  color: var(--text-main);
   font-weight: 700;
 }
 
 .admin-table td small {
   margin-top: 4px;
-  color: #718286;
+  color: var(--text-muted);
   font-size: 0.73rem;
   line-height: 1.4;
 }
 
 .admin-table td .admin-case-id {
-  color: #137f78;
+  color: var(--accent-action);
 }
 
 .admin-status {
@@ -256,22 +261,22 @@
 }
 
 .admin-status-new {
-  border-color: #f2cecb;
-  color: #a12828;
-  background: #fcebea;
+  border-color: var(--status-warning-border);
+  color: var(--status-rejected-text);
+  background: var(--status-rejected-bg);
 }
 
 .admin-status-in-progress,
 .admin-status-forwarded {
-  border-color: #cbdde8;
-  color: #315f7e;
-  background: #e8f1f6;
+  border-color: var(--status-info-border);
+  color: var(--status-info-text);
+  background: var(--status-info-bg);
 }
 
 .admin-status-resolved {
-  border-color: #c9e2d3;
-  color: #28664f;
-  background: #e7f3ed;
+  border-color: var(--status-resolved-border);
+  color: var(--status-resolved-text);
+  background: var(--status-resolved-bg);
 }
 
 .admin-actions-cell {
@@ -303,21 +308,21 @@
 }
 
 .admin-forward-button {
-  color: #315f7e;
-  background: #edf4f7;
+  color: var(--status-info-text);
+  background: var(--status-info-bg);
 }
 .admin-forward-button:hover {
-  background: #dfeef4;
+  background: var(--status-info-bg);
 }
 .admin-resolve-button {
-  color: #28664f;
-  background: #eaf4ee;
+  color: var(--status-resolved-text);
+  background: var(--status-resolved-bg);
 }
 .admin-resolve-button:hover {
-  background: #dceee3;
+  background: var(--status-resolved-bg);
 }
 .admin-closed-label {
-  color: #718286;
+  color: var(--text-muted);
   font-size: 0.76rem;
   font-weight: 650;
 }
@@ -334,13 +339,13 @@
 .admin-empty-state span {
   display: block;
   margin-top: 5px;
-  color: #718286;
+  color: var(--text-muted);
   font-size: 0.78rem;
 }
 
 .staff-empty-state {
   margin: 0 16px 16px;
-  border: 1px dashed #cbd8d7;
+  border: 1px dashed var(--border-color);
   border-radius: 6px;
 }
 
@@ -351,17 +356,17 @@
   display: grid;
   place-items: center;
   padding: 20px;
-  background: rgba(18, 35, 39, 0.48);
+  background: rgb(var(--overlay-rgb) / 40%);
 }
 
 .admin-dialog {
   position: relative;
   width: min(100%, 480px);
   padding: 28px;
-  border: 1px solid #dfe5e4;
+  border: 1px solid var(--border-color);
   border-radius: 9px;
-  background: #fff;
-  box-shadow: 0 18px 50px rgba(18, 35, 39, 0.2);
+  background: var(--bg-surface);
+  box-shadow: 0 18px 50px rgb(var(--shadow-rgb) / 20%);
 }
 
 .admin-detail-dialog {
@@ -378,25 +383,25 @@
 .grievance-detail-grid > div {
   padding: 11px;
   border-radius: 6px;
-  background: #f3f7f6;
+  background: var(--bg-elevated);
 }
-.grievance-detail-grid dt { color: #718286; font-size: .72rem; font-weight: 700; }
-.grievance-detail-grid dd { margin: 4px 0 0; color: #172b35; font-size: .85rem; overflow-wrap: anywhere; }
+.grievance-detail-grid dt { color: var(--text-muted); font-size: .72rem; font-weight: 700; }
+.grievance-detail-grid dd { margin: 4px 0 0; color: var(--text-main); font-size: .85rem; overflow-wrap: anywhere; }
 .grievance-detail-grid .detail-description { grid-column: 1 / -1; }
-.document-link { display: inline-block; margin: 0 8px 12px 0; color: #137f78; font-size: .82rem; }
-.grievance-message { margin: 14px; color: #315f4d; font-size: .85rem; }
-.resolution-pending-notice { flex-basis: 100%; margin: 0; color: #65777d; font-size: .84rem; }
-.student-resolution-confirmation { margin: 14px 0; padding: 14px; border: 1px solid #dfe5e4; border-radius: 8px; background: #f3f7f6; }
-.student-resolution-confirmation > p:first-child { margin: 0 0 12px; color: #344d55; font-size: .88rem; }
+.document-link { display: inline-block; margin: 0 8px 12px 0; color: var(--accent-action); font-size: .82rem; }
+.grievance-message { margin: 14px; color: var(--status-resolved-text); font-size: .85rem; }
+.resolution-pending-notice { flex-basis: 100%; margin: 0; color: var(--text-muted); font-size: .84rem; }
+.student-resolution-confirmation { margin: 14px 0; padding: 14px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-elevated); }
+.student-resolution-confirmation > p:first-child { margin: 0 0 12px; color: var(--text-secondary); font-size: .88rem; }
 .student-resolution-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.resolution-window-note { margin-top: 10px; color: #52666c; font-size: .84rem; line-height: 1.5; }
+.resolution-window-note { margin-top: 10px; color: var(--text-secondary); font-size: .84rem; line-height: 1.5; }
 .student-history { max-width: 900px; }
-.student-grievance { padding: 16px 0; border-top: 1px solid #e6eceb; }
+.student-grievance { padding: 16px 0; border-top: 1px solid var(--border-color); }
 .student-grievance-heading { display: flex; justify-content: space-between; gap: 12px; }
-.student-grievance h4 { margin: 5px 0; color: #172b35; font-size: 1rem; }
+.student-grievance h4 { margin: 5px 0; color: var(--text-main); font-size: 1rem; }
 .grievance-timeline { margin: 14px 0; padding-left: 22px; }
-.grievance-timeline li { padding: 0 0 13px 5px; color: #344d55; }
-.grievance-timeline small { display: block; color: #718286; }
+.grievance-timeline li { padding: 0 0 13px 5px; color: var(--text-secondary); }
+.grievance-timeline small { display: block; color: var(--text-muted); }
 .grievance-timeline p { margin: 5px 0 0; font-size: .84rem; }
 
 .admin-dialog h3 {
@@ -410,7 +415,7 @@
   right: 16px;
   border: 0;
   background: none;
-  color: #65777d;
+  color: var(--text-muted);
   cursor: pointer;
   font: inherit;
   font-size: 1.6rem;
@@ -423,13 +428,13 @@
   margin-bottom: 18px;
   padding: 13px;
   border-radius: 6px;
-  background: #f3f7f6;
-  color: #65777d;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
   font-size: 0.77rem;
 }
 
 .admin-dialog-summary strong {
-  color: #172b35;
+  color: var(--text-main);
 }
 
 .admin-dialog-form,
@@ -442,7 +447,7 @@
   gap: 7px;
 }
 .admin-dialog-form .form-field > span {
-  color: #344d55;
+  color: var(--text-secondary);
   font-size: 0.8rem;
   font-weight: 700;
 }
@@ -458,15 +463,15 @@
 }
 
 .admin-cancel-button {
-  color: #52666c;
-  background: #f0f4f3;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
 }
 .admin-confirm-button {
-  color: #fff;
-  background: #137f78;
+  color: var(--text-on-accent);
+  background: var(--accent-action);
 }
 .admin-confirm-button.is-forward {
-  background: #3c718f;
+  background: var(--status-info-text);
 }
 .admin-confirm-button:hover {
   filter: brightness(0.94);

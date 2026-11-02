@@ -9,10 +9,10 @@
   position: sticky;
   top: 20px;
   padding: 12px;
-  border: 1px solid #dfe5e4;
+  border: 1px solid var(--border-color);
   border-radius: 10px;
-  background: #fff;
-  box-shadow: 0 8px 22px rgba(28, 61, 65, 0.05);
+  background: var(--bg-surface);
+  box-shadow: 0 8px 22px rgb(var(--shadow-rgb) / 5%);
 }
 
 .portal-sidebar nav {
@@ -30,7 +30,7 @@
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: #52666c;
+  color: var(--text-secondary);
   cursor: pointer;
   font: inherit;
   font-size: 0.84rem;
@@ -39,19 +39,19 @@
 
 .portal-nav-link:hover,
 .portal-nav-link.is-active {
-  background: #eaf5f3;
-  color: #137f78;
+  background: var(--bg-accent-subtle);
+  color: var(--accent-action);
   font-weight: 700;
 }
 
 .portal-nav-link:focus-visible,
 .portal-add-button:focus-visible {
-  outline: 3px solid rgba(21, 149, 140, 0.25);
+  outline: 3px solid rgb(var(--accent-rgb) / 25%);
   outline-offset: 2px;
 }
 
 .portal-nav-chevron {
-  color: #137f78;
+  color: var(--accent-action);
   font-size: 1.1rem;
   line-height: 1;
 }
@@ -86,7 +86,7 @@
 .portal-section-heading h3,
 .portal-card-heading h3 {
   margin: 0;
-  color: #172b35;
+  color: var(--text-main);
   font-family: var(--heading);
   font-size: 1.25rem;
   font-weight: 650;
@@ -94,7 +94,7 @@
 
 .portal-section-heading > div > p:last-child {
   margin-top: 7px;
-  color: #65777d;
+  color: var(--text-muted);
   font-size: 0.88rem;
 }
 
@@ -116,12 +116,12 @@
 
 .portal-stat-button:hover {
   transform: translateY(-2px);
-  border-color: #9dc8c2;
-  box-shadow: 0 5px 14px rgba(28, 61, 65, 0.1);
+  border-color: var(--border-accent);
+  box-shadow: 0 5px 14px rgb(var(--shadow-rgb) / 10%);
 }
 
 .portal-stat-button:focus-visible {
-  outline: 3px solid rgba(21, 149, 140, 0.25);
+  outline: 3px solid rgb(var(--accent-rgb) / 25%);
   outline-offset: 2px;
 }
 
@@ -134,9 +134,9 @@
 .portal-info-card,
 .portal-placeholder-page > .portal-info-card {
   padding: 20px;
-  border: 1px solid #dfe5e4;
+  border: 1px solid var(--border-color);
   border-radius: 9px;
-  background: #fff;
+  background: var(--bg-surface);
 }
 
 .portal-card-heading .eyebrow {
@@ -152,23 +152,23 @@
   gap: 10px;
   margin: 18px 0 0;
   padding-left: 20px;
-  color: #52666c;
+  color: var(--text-secondary);
   font-size: 0.84rem;
   line-height: 1.5;
 }
 
 .portal-placeholder-message {
-  color: #65777d;
+  color: var(--text-muted);
   font-size: 0.88rem;
 }
 
 .portal-add-button {
   min-height: 34px;
   padding: 7px 10px;
-  border: 1px solid #b8d5d1;
+  border: 1px solid var(--border-accent);
   border-radius: 6px;
-  background: #f4faf9;
-  color: #137f78;
+  background: var(--bg-accent-subtle);
+  color: var(--accent-action);
   font: inherit;
   font-size: 0.75rem;
   font-weight: 700;
@@ -199,10 +199,10 @@
 .profile-secondary-button {
   min-height: 34px;
   padding: 7px 10px;
-  border: 1px solid #cbd8d7;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
-  background: #fff;
-  color: #52666c;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
   cursor: pointer;
   font: inherit;
   font-size: 0.75rem;
@@ -210,7 +210,7 @@
 }
 
 .profile-secondary-button:hover {
-  background: #f3f7f6;
+  background: var(--bg-elevated);
 }
 
 .profile-secondary-button:disabled,
@@ -229,14 +229,14 @@
   display: grid;
   min-width: 0;
   gap: 6px;
-  color: #718286;
+  color: var(--text-muted);
   font-size: 0.76rem;
   font-weight: 700;
 }
 
 .profile-field strong {
   min-height: 22px;
-  color: #172b35;
+  color: var(--text-main);
   font-size: 0.88rem;
   font-weight: 600;
   overflow-wrap: anywhere;
@@ -247,31 +247,31 @@
   width: 100%;
   min-height: 40px;
   padding: 8px 10px;
-  border: 1px solid #cbd8d7;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
-  background: #fbfdfc;
-  color: #172b35;
+  background: var(--bg-primary);
+  color: var(--text-main);
   font: inherit;
   font-weight: 500;
 }
 
 .profile-field input:focus {
-  border-color: #15958c;
-  outline: 3px solid rgba(21, 149, 140, 0.13);
+  border-color: var(--accent-teal-hover);
+  outline: 3px solid rgb(var(--accent-rgb) / 13%);
 }
 
 .profile-message {
   margin: 0 0 12px;
-  color: #28664f;
+  color: var(--status-resolved-text);
   font-size: 0.84rem;
 }
 
 .profile-error {
-  color: #a12828;
+  color: var(--status-rejected-text);
 }
 
 .profile-actions button:focus-visible {
-  outline: 3px solid rgba(21, 149, 140, 0.25);
+  outline: 3px solid rgb(var(--accent-rgb) / 25%);
   outline-offset: 2px;
 }
 

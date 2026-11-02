@@ -14,7 +14,6 @@ import {
   PortalSidePanel,
 } from "../components/PortalNavigation.jsx";
 import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
-import PortalLoading from "../components/PortalLoading.jsx";
 
 function StudentPage({
   session,
@@ -132,13 +131,9 @@ function StudentPage({
     }
   }
 
-  if (initialLoading) {
-    return <PortalLoading label="Loading your grievances…" />;
-  }
-
   if (threadGrievanceId) {
     return (
-      <div className="student-page portal-thread-shell">
+      <div className="student-page portal-thread-shell fade-in-up">
         <div className="portal-layout">
           <PortalSidePanel
             role="student"
@@ -164,7 +159,7 @@ function StudentPage({
   }
 
   return (
-    <main className="student-page">
+    <main className="student-page fade-in-up">
       <StudentHeader
         session={session}
         onLogout={onLogout}
@@ -202,6 +197,7 @@ function StudentPage({
           {activePage === "Your Grievances" && (
             <GrievanceHistory
               grievances={displayedGrievances}
+              loading={initialLoading}
               onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
             />
           )}

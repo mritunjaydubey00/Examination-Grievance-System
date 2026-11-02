@@ -8,21 +8,21 @@
   gap: 16px;
   width: min(440px, calc(100vw - 32px));
   padding: 15px 16px;
-  border: 1px solid #b9d9cf;
-  border-left: 4px solid #25805f;
+  border: 1px solid var(--border-accent);
+  border-left: 4px solid var(--status-resolved-text);
   border-radius: 8px;
-  background: #fff;
-  color: #24483b;
-  box-shadow: 0 14px 40px rgb(18 35 39 / 20%);
+  background: var(--bg-surface);
+  color: var(--status-resolved-text);
+  box-shadow: 0 14px 40px rgb(var(--shadow-rgb) / 20%);
   font-size: 0.9rem;
   line-height: 1.45;
   animation: toast-notice-enter 180ms ease-out;
 }
 
 .toast-notice-error {
-  border-color: #edc2c2;
-  border-left-color: #b53b3b;
-  color: #7b2828;
+  border-color: var(--status-warning-border);
+  border-left-color: var(--status-rejected-text);
+  color: var(--status-rejected-text);
 }
 
 .toast-notice button {
@@ -40,7 +40,7 @@
 }
 
 .toast-notice button:hover {
-  background: rgb(0 0 0 / 6%);
+  background: rgb(var(--shadow-rgb) / 6%);
 }
 
 @keyframes toast-notice-enter {

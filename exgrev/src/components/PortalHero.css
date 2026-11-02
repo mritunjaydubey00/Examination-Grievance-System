@@ -8,13 +8,13 @@
   gap: 24px;
   margin: 22px 0 28px;
   padding: 28px 34px;
-  border: 1px solid #d5e7e2;
-  border-top: 3px solid #137f78;
+  border: 1px solid var(--border-accent);
+  border-top: 3px solid var(--accent-action);
   border-radius: 13px;
   background:
-    radial-gradient(circle at 90% 0, rgba(19, 127, 120, 0.09), transparent 32%),
-    linear-gradient(110deg, #f0f8f6, #fff 72%);
-  box-shadow: 0 9px 26px rgba(28, 61, 65, 0.075);
+    radial-gradient(circle at 90% 0, rgb(var(--accent-rgb) / 9%), transparent 32%),
+    linear-gradient(110deg, var(--bg-accent-subtle), var(--bg-surface) 72%);
+  box-shadow: 0 9px 26px rgb(var(--shadow-rgb) / 7.5%);
 }
 
 .portal-hero-copy {
@@ -27,7 +27,7 @@
 
 .portal-hero h1 {
   margin: 0;
-  color: #172b35;
+  color: var(--text-main);
   font-family: var(--heading);
   font-size: clamp(2rem, 4vw, 3.2rem);
   font-weight: 700;
@@ -37,7 +37,7 @@
 
 .portal-hero-context {
   margin: 12px 0 0;
-  color: #65777d;
+  color: var(--text-muted);
   font-size: clamp(0.9rem, 1.5vw, 1.1rem);
   line-height: 1.5;
 }
@@ -53,14 +53,14 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #65777d;
+  color: var(--text-muted);
   font-size: 0.88rem;
   white-space: nowrap;
 }
 
 .portal-hero-session strong {
   margin-left: 2px;
-  color: #172b35;
+  color: var(--text-main);
 }
 
 .portal-hero-back {
@@ -68,7 +68,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: #137f78;
+  color: var(--accent-action);
   cursor: pointer;
   font: inherit;
   font-size: 0.85rem;
@@ -76,7 +76,7 @@
 }
 
 .portal-hero-back:focus-visible {
-  outline: 3px solid rgba(21, 149, 140, 0.25);
+  outline: 3px solid rgb(var(--accent-rgb) / 25%);
   outline-offset: 3px;
 }
 

@@ -7,6 +7,7 @@ import ExaminationCell from "./pages/examinationCell.jsx";
 import StudentPage from "./pages/StudentPage.jsx";
 import TeachingStaffPage from "./pages/TeachingStaffPage.jsx";
 import PortalLoading from "./components/PortalLoading.jsx";
+import ThemeToggle from "./components/ThemeToggle.jsx";
 import { supabase } from "./lib/supabase.js";
 import { getAuthenticatedProfile, signOut } from "./services/userService.js";
 
@@ -28,6 +29,16 @@ function App() {
     .toLowerCase()
     .replace(/[_-]+/g, " ")
     .replace(/\s+/g, " ");
+  const isKnownRole = [
+    "examination cell",
+    "exam cell",
+    "admin",
+    "exam cell admin",
+    "teaching staff",
+    "teaching",
+    "faculty",
+    "student",
+  ].includes(normalizedRole);
 
   useEffect(() => {
     let active = true;
@@ -154,6 +165,11 @@ function App() {
 
   return (
     <div className={`app-shell${profile ? "" : " app-shell-auth"}`}>
+      {(!authChecked ||
+        passwordRecovery ||
+        profile?.mustChangePassword ||
+        showPasswordSettings ||
+        (profile && !isKnownRole)) && <ThemeToggle />}
       {profile && <h1 className="app-wordmark">ExGrev</h1>}
       {!authChecked ? (
         <PortalLoading label="Checking your session…" />

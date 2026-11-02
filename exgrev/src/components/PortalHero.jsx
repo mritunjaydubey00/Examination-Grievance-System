@@ -1,4 +1,5 @@
 import "./PortalHero.css";
+import ThemeToggle from "./ThemeToggle.jsx";
 
 function PortalHero({
   eyebrow,
@@ -21,6 +22,7 @@ function PortalHero({
         {context && <p className="portal-hero-context">{context}</p>}
       </div>
       <div className="portal-hero-actions">
+        <ThemeToggle />
         <div className="portal-hero-session">
           <span className="status-dot" />
           Session active{" "}

@@ -529,7 +529,7 @@ function GrievanceThreadPage({
           </button>
           <dialog
             ref={replyDialog}
-            className="thread-reply-dialog"
+            className="thread-reply-dialog dialog-content"
             aria-labelledby="thread-reply-title"
             onClose={() => setReplyDialogOpen(false)}
           >

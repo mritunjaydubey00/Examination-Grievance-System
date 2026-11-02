@@ -84,13 +84,13 @@ function CaseActionDialog({
 
   return (
     <div
-      className="admin-dialog-backdrop"
+      className="admin-dialog-backdrop dialog-overlay"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
       <section
-        className="admin-dialog admin-detail-dialog"
+        className="admin-dialog admin-detail-dialog dialog-content"
         role="dialog"
         aria-modal="true"
         aria-labelledby="admin-dialog-title"

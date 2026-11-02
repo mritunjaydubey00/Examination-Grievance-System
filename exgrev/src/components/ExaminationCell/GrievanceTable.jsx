@@ -55,7 +55,7 @@ function GrievanceTable({
               </tr>
             ) : grievances.length ? (
               grievances.map((grievance) => (
-                <tr key={grievance.id}>
+                <tr className="stagger-item" key={grievance.id}>
                   <td>
                     <strong className="admin-case-id">
                       {grievance.grievance_code || "ID pending"}
