@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   addGrievanceRemarkWithAttachments,
+  confirmGrievanceResolution,
   getThreadAttachmentUrl,
   getGrievanceThread,
 } from "../services/grievanceService.js";
@@ -137,6 +138,8 @@ function GrievanceThreadPage({
   const [remark, setRemark] = useState("");
   const [attachments, setAttachments] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [confirmingResolution, setConfirmingResolution] = useState(false);
+  const [resolutionError, setResolutionError] = useState("");
   const [notice, setNotice] = useState("");
   const [noticeType, setNoticeType] = useState("success");
   const [now, setNow] = useState(() => Date.now());
@@ -245,6 +248,21 @@ function GrievanceThreadPage({
       setNotice(error.message || "Could not post your remark.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleConfirmResolution() {
+    setConfirmingResolution(true);
+    setResolutionError("");
+    try {
+      await confirmGrievanceResolution(grievanceId);
+      await refresh();
+    } catch (error) {
+      setResolutionError(
+        error.message || "Could not confirm the proposed resolution.",
+      );
+    } finally {
+      setConfirmingResolution(false);
     }
   }
 
@@ -390,6 +408,23 @@ function GrievanceThreadPage({
             <section className="thread-resolution-summary">
               <strong>Proposed resolution</strong>
               <p>{grievance.resolution_remark}</p>
+            </section>
+          )}
+          {isStudent && responseWindowOpen && (
+            <section className="thread-resolution-actions">
+              <button
+                type="button"
+                className="admin-confirm-button is-resolve"
+                disabled={confirmingResolution}
+                onClick={handleConfirmResolution}
+              >
+                {confirmingResolution ? "Accepting…" : "Accept resolution"}
+              </button>
+              {resolutionError && (
+                <p className="thread-error" role="alert">
+                  {resolutionError}
+                </p>
+              )}
             </section>
           )}
 

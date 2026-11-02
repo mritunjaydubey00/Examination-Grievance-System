@@ -96,6 +96,22 @@
   font-variant-numeric: tabular-nums;
 }
 
+.thread-resolution-actions {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.thread-resolution-actions .admin-confirm-button {
+  min-height: 42px;
+  padding: 9px 14px;
+}
+
+.thread-resolution-actions p {
+  margin: 0;
+}
+
 .thread-case-summary p:last-child,
 .thread-resolution-summary p {
   margin: 7px 0 0;

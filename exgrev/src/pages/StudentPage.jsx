@@ -203,8 +203,6 @@ function StudentPage({
             <GrievanceHistory
               grievances={displayedGrievances}
               onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
-              onRefresh={refresh}
-              onSubmitNewGrievance={() => setActivePage("Add New")}
             />
           )}
           {activePage === "Profile" && (

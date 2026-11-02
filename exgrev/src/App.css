@@ -835,11 +835,10 @@
 }
 
 .student-history .student-history-card {
-  position: relative;
-  margin: 0 0 16px;
-  padding: 20px 22px;
+  margin: 0 0 10px;
+  padding: 12px 14px;
   border: 1px solid rgba(11, 128, 122, 0.12);
-  border-radius: 18px 18px 18px 6px;
+  border-radius: 10px;
   background: rgba(235, 247, 245, 0.34);
 }
 
@@ -847,20 +846,43 @@
   max-width: none;
 }
 
-.student-history .student-history-card::before {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 160px;
-  height: 100px;
-  border-radius: 0 18px 0 100%;
-  background: rgba(11, 128, 122, 0.045);
-  content: "";
-  pointer-events: none;
+.student-grievance-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.student-history .student-history-card > * {
-  position: relative;
+.student-grievance-row .admin-status {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.student-grievance-row .thread-open-button {
+  flex: 0 0 auto;
+  min-height: 42px;
+  margin: 0;
+}
+
+@media (max-width: 520px) {
+  .student-history .student-history-card {
+    padding: 10px;
+  }
+
+  .student-grievance-row {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .student-grievance-row .admin-status {
+    align-self: flex-start;
+  }
+
+  .student-grievance-row .thread-open-button {
+    width: 100%;
+  }
 }
 
 .supporting-documents {
