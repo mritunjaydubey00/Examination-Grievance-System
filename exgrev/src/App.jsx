@@ -1,6 +1,6 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import LogIn from "./pages/LogIn.jsx";
 import ChangePassword from "./pages/ChangePassword.jsx";
 import ExaminationCell from "./pages/examinationCell.jsx";
@@ -14,6 +14,10 @@ import { getAuthenticatedProfile, signOut } from "./services/userService.js";
 const RECOVERY_SESSION_KEY = "exgrev.passwordRecovery";
 
 function App() {
+  const [mobileMenuTarget, setMobileMenuTarget] = useState(null);
+  const captureMobileMenuTarget = useCallback((element) => {
+    setMobileMenuTarget(element);
+  }, []);
   const [profile, setProfile] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [authError, setAuthError] = useState("");
@@ -170,7 +174,11 @@ function App() {
         profile?.mustChangePassword ||
         showPasswordSettings ||
         (profile && !isKnownRole)) && <ThemeToggle />}
-      {profile && <h1 className="app-wordmark">ExGrev</h1>}
+      {profile && (
+        <header ref={captureMobileMenuTarget} className="app-topbar">
+          <h1 className="app-wordmark">ExGrev</h1>
+        </header>
+      )}
       {!authChecked ? (
         <PortalLoading label="Checking your session…" />
       ) : passwordRecovery ? (
@@ -206,18 +214,21 @@ function App() {
         ].includes(normalizedRole) ? (
         <ExaminationCell
           session={{ ...profile, uptimeSeconds }}
+          mobileMenuTarget={mobileMenuTarget}
           onLogout={handleLogout}
           onChangePassword={() => setShowPasswordSettings(true)}
         />
       ) : ["teaching staff", "teaching", "faculty"].includes(normalizedRole) ? (
         <TeachingStaffPage
           session={{ ...profile, uptimeSeconds }}
+          mobileMenuTarget={mobileMenuTarget}
           onLogout={handleLogout}
           onChangePassword={() => setShowPasswordSettings(true)}
         />
       ) : normalizedRole === "student" ? (
         <StudentPage
           session={{ ...profile, uptimeSeconds }}
+          mobileMenuTarget={mobileMenuTarget}
           onLogout={handleLogout}
           onChangePassword={() => setShowPasswordSettings(true)}
         />

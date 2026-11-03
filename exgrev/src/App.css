@@ -202,7 +202,12 @@
   letter-spacing: -0.035em;
 }
 
-.app-shell > .app-wordmark {
+.app-shell > .app-topbar {
+  position: relative;
+  width: 100%;
+}
+
+.app-shell > .app-topbar > .app-wordmark {
   width: 100%;
   box-sizing: border-box;
   margin: 0;

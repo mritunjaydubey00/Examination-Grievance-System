@@ -21,6 +21,7 @@ import "./ExaminationCell.css";
 
 function ExaminationCell({
   session,
+  mobileMenuTarget,
   onLogout,
   onChangePassword,
 }) {
@@ -230,6 +231,7 @@ function ExaminationCell({
         <div className="portal-layout">
           <PortalSidePanel
             role="exam-cell"
+            mobileMenuTarget={mobileMenuTarget}
             activePage={activePage}
             onNavigate={(page) => {
               setThreadGrievanceId(null);
@@ -263,6 +265,7 @@ function ExaminationCell({
       <div className="portal-layout">
         <PortalSidePanel
           role="exam-cell"
+          mobileMenuTarget={mobileMenuTarget}
           activePage={activePage}
           onNavigate={(page) => {
             setActivePage(page);

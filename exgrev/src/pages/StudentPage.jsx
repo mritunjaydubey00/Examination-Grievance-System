@@ -17,6 +17,7 @@ import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 
 function StudentPage({
   session,
+  mobileMenuTarget,
   onLogout,
   onChangePassword,
 }) {
@@ -150,6 +151,7 @@ function StudentPage({
         <div className="portal-layout">
           <PortalSidePanel
             role="student"
+            mobileMenuTarget={mobileMenuTarget}
             activePage={activePage}
             onNavigate={(page) => {
               setThreadGrievanceId(null);
@@ -176,6 +178,7 @@ function StudentPage({
       <div className="portal-layout">
         <PortalSidePanel
           role="student"
+          mobileMenuTarget={mobileMenuTarget}
           activePage={activePage}
           onNavigate={(page) => {
             setDashboardMetric("");

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import "./PortalNavigation.css";
 
 const grievanceLinks = {
@@ -11,10 +12,17 @@ const grievanceLinks = {
   ],
 };
 
-function PortalSidePanel({ role, activePage, onNavigate, onLogout }) {
+function PortalSidePanel({
+  role,
+  activePage,
+  onNavigate,
+  onLogout,
+  mobileMenuTarget,
+}) {
   const [grievancesExpanded, setGrievancesExpanded] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const sidebarRef = useRef(null);
+  const mobileNavigationRef = useRef(null);
   const menuButtonRef = useRef(null);
   const links = grievanceLinks[role];
 
@@ -22,7 +30,10 @@ function PortalSidePanel({ role, activePage, onNavigate, onLogout }) {
     if (!mobileMenuOpen) return undefined;
 
     function closeMenuOnOutsideClick(event) {
-      if (!sidebarRef.current?.contains(event.target)) {
+      if (
+        !sidebarRef.current?.contains(event.target) &&
+        !mobileNavigationRef.current?.contains(event.target)
+      ) {
         setMobileMenuOpen(false);
       }
     }
@@ -42,36 +53,9 @@ function PortalSidePanel({ role, activePage, onNavigate, onLogout }) {
     };
   }, [mobileMenuOpen]);
 
-  function navigateTo(page) {
-    onNavigate(page);
-    setMobileMenuOpen(false);
-    if (window.matchMedia("(max-width: 680px)").matches) {
-      menuButtonRef.current?.focus();
-    }
-  }
-
-  return (
-    <aside
-      ref={sidebarRef}
-      className={`portal-sidebar${mobileMenuOpen ? " is-mobile-open" : ""}`}
-      aria-label="Portal navigation"
-    >
-      <button
-        ref={menuButtonRef}
-        type="button"
-        className="portal-mobile-menu-toggle"
-        aria-expanded={mobileMenuOpen}
-        aria-controls="portal-navigation-menu"
-        onClick={() => setMobileMenuOpen((open) => !open)}
-      >
-        <span className="portal-mobile-menu-icon" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </span>
-        Menu
-      </button>
-      <nav id="portal-navigation-menu">
+  function renderNavigation() {
+    return (
+      <>
         <button
           type="button"
           className={`portal-nav-link${activePage === "Dashboard" ? " is-active" : ""}`}
@@ -124,8 +108,53 @@ function PortalSidePanel({ role, activePage, onNavigate, onLogout }) {
         >
           Logout
         </button>
-      </nav>
-    </aside>
+      </>
+    );
+  }
+
+  function navigateTo(page) {
+    onNavigate(page);
+    setMobileMenuOpen(false);
+    if (window.matchMedia("(max-width: 680px)").matches) {
+      menuButtonRef.current?.focus();
+    }
+  }
+
+  return (
+    <>
+      <aside
+        ref={sidebarRef}
+        className="portal-sidebar"
+        aria-label="Portal navigation"
+      >
+        <nav>{renderNavigation()}</nav>
+      </aside>
+      {mobileMenuTarget &&
+        createPortal(
+          <div
+            ref={mobileNavigationRef}
+            className={`portal-mobile-navigation${mobileMenuOpen ? " is-open" : ""}`}
+          >
+            <button
+              ref={menuButtonRef}
+              type="button"
+              className="portal-mobile-menu-toggle"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="portal-navigation-menu"
+              onClick={() => setMobileMenuOpen((open) => !open)}
+            >
+              <span className="portal-mobile-menu-icon" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </span>
+              Menu
+            </button>
+            <nav id="portal-navigation-menu">{renderNavigation()}</nav>
+          </div>,
+          mobileMenuTarget,
+        )}
+    </>
   );
 }
 
