@@ -455,6 +455,12 @@ function GrievanceThreadPage({
                           {event.actor_role.replaceAll("_", " ")}
                         </p>
                       )}
+                      {event.event_type === "submitted" && grievance?.description && (
+                        <p className="thread-event-description">
+                          <strong>Description</strong>{" "}
+                          {grievance.description}
+                        </p>
+                      )}
                       {event.event_type === "forwarded" ||
                       event.event_type === "reassigned" ? (
                         <p className="thread-event-assignment">

@@ -184,6 +184,7 @@
 
 .thread-event-sender,
 .thread-event-assignment,
+.thread-event-description,
 .thread-event-message,
 .thread-event-recipients {
   margin: 6px 0 0;
@@ -191,6 +192,10 @@
   font-size: 0.88rem;
   line-height: 1.5;
   overflow-wrap: anywhere;
+}
+
+.thread-event-description {
+  margin-top: 12px;
 }
 
 .thread-event-message {
