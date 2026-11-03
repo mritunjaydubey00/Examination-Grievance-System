@@ -172,7 +172,29 @@ textarea {
     background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.12s ease,
+    filter 0.12s ease;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  button:not(:disabled):hover {
+    filter: brightness(1.08);
+  }
+}
+
+button:not(:disabled):active {
+  transform: scale(0.98);
+  filter: brightness(0.94);
+}
+
+button:focus-visible {
+  outline: 3px solid rgb(var(--accent-rgb) / 35%);
+  outline-offset: 2px;
 }
 
 .fade-in-up {
