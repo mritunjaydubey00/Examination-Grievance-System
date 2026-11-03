@@ -250,7 +250,6 @@ function ExaminationCell({
               grievanceId={threadGrievanceId}
               session={session}
               onBack={() => setThreadGrievanceId(null)}
-              onLogout={onLogout}
             />
           </div>
         </div>
@@ -260,10 +259,7 @@ function ExaminationCell({
 
   return (
     <main className="student-page examination-cell-page">
-      <AdminHeader
-        session={session}
-        onLogout={onLogout}
-      />
+      <AdminHeader session={session} />
       <div className="portal-layout">
         <PortalSidePanel
           role="exam-cell"

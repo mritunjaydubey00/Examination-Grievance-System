@@ -6,7 +6,6 @@ function PortalHero({
   title,
   context,
   session,
-  onLogout,
   onBack,
 }) {
   return (
@@ -28,9 +27,6 @@ function PortalHero({
           Session active{" "}
           <strong>{session.uptimeSeconds ?? 0}s</strong>
         </div>
-        <button type="button" className="logout-button" onClick={onLogout}>
-          Log out
-        </button>
       </div>
     </header>
   );

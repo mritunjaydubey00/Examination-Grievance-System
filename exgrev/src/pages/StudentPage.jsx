@@ -150,7 +150,6 @@ function StudentPage({
               grievanceId={threadGrievanceId}
               session={session}
               onBack={() => setThreadGrievanceId(null)}
-              onLogout={onLogout}
             />
           </div>
         </div>
@@ -160,10 +159,7 @@ function StudentPage({
 
   return (
     <main className="student-page fade-in-up">
-      <StudentHeader
-        session={session}
-        onLogout={onLogout}
-      />
+      <StudentHeader session={session} />
       <div className="portal-layout">
         <PortalSidePanel
           role="student"

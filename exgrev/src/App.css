@@ -790,7 +790,6 @@
   box-shadow: 0 0 0 4px var(--bg-accent-subtle);
 }
 
-.logout-button,
 .submit-button {
   border: 0;
   border-radius: 7px;
@@ -804,13 +803,6 @@
     background 160ms ease;
 }
 
-.logout-button {
-  padding: 9px 15px;
-  color: var(--status-resolved-text);
-  background: var(--bg-accent-subtle);
-}
-
-.logout-button:hover,
 .submit-button:hover {
   transform: translateY(-1px);
 }

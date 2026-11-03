@@ -130,7 +130,6 @@ function GrievanceThreadPage({
   grievanceId,
   session,
   onBack,
-  onLogout,
 }) {
   const [thread, setThread] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -355,7 +354,6 @@ function GrievanceThreadPage({
             : "View grievance updates and messages."
         }
         session={session}
-        onLogout={onLogout}
         onBack={onBack}
       />
 
