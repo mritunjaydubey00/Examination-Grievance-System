@@ -92,6 +92,77 @@
   font-weight: 650;
 }
 
+.portal-dashboard-action {
+  min-height: 42px;
+  padding: 10px 16px;
+  border: 1px solid var(--border-accent);
+  border-radius: 7px;
+  background: var(--bg-accent-subtle);
+  color: var(--accent-action);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.portal-dashboard-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgb(var(--shadow-rgb) / 10%);
+}
+
+.portal-dashboard-action:focus-visible,
+.student-grievance-dialog-close:focus-visible {
+  outline: 3px solid rgb(var(--accent-rgb) / 25%);
+  outline-offset: 2px;
+}
+
+.student-grievance-dialog {
+  width: min(760px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  overflow-y: auto;
+  border: 1px solid var(--border-accent);
+  border-radius: 12px;
+  background: var(--bg-surface);
+  color: var(--text-main);
+  box-shadow: 0 20px 60px rgb(var(--shadow-rgb) / 28%);
+}
+
+.student-grievance-dialog::backdrop {
+  background: rgb(0 0 0 / 62%);
+  backdrop-filter: blur(3px);
+}
+
+.student-grievance-dialog-close {
+  display: block;
+  min-height: 36px;
+  margin: 14px 14px 0 auto;
+  padding: 7px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 650;
+}
+
+.student-grievance-dialog .grievance-panel {
+  max-width: none;
+  margin: 0;
+  padding: 16px 30px 30px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 .portal-section-heading > div > p:last-child {
   margin-top: 7px;
   color: var(--text-muted);
@@ -319,9 +390,17 @@
     grid-template-columns: 1fr;
   }
 
+  .portal-section-heading {
+    flex-wrap: wrap;
+  }
+
   .portal-section-heading,
   .portal-card-heading {
     align-items: flex-start;
+  }
+
+  .portal-dashboard-action {
+    white-space: normal;
   }
 
   .portal-stats {

@@ -68,7 +68,13 @@ function PortalSidePanel({ role, activePage, onNavigate, onLogout }) {
   );
 }
 
-function PortalDashboard({ role, metrics, canEditContent, onMetricClick }) {
+function PortalDashboard({
+  role,
+  metrics,
+  canEditContent,
+  onMetricClick,
+  onAddGrievance,
+}) {
   const audienceLabel =
     role === "student"
       ? "Your grievance overview"
@@ -83,6 +89,15 @@ function PortalDashboard({ role, metrics, canEditContent, onMetricClick }) {
           <p className="eyebrow">Dashboard</p>
           <h3>{audienceLabel}</h3>
         </div>
+        {role === "student" && onAddGrievance && (
+          <button
+            type="button"
+            className="portal-dashboard-action"
+            onClick={onAddGrievance}
+          >
+            + Submit a grievance
+          </button>
+        )}
       </div>
       <section className="admin-stats portal-stats" aria-label={audienceLabel}>
         {metrics.map((metric) =>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   createGrievance,
   listStudentGrievances,
@@ -29,6 +29,8 @@ function StudentPage({
   const [threadGrievanceId, setThreadGrievanceId] = useState(null);
   const [activePage, setActivePage] = useState("Dashboard");
   const [dashboardMetric, setDashboardMetric] = useState("");
+  const [grievanceDialogOpen, setGrievanceDialogOpen] = useState(false);
+  const grievanceDialog = useRef(null);
 
   // The listStudentGrievances query is scoped to this signed-in student.
   const studentMetrics = [
@@ -104,6 +106,17 @@ function StudentPage({
     };
   }, [refresh, session.userId]);
 
+  useEffect(() => {
+    const dialog = grievanceDialog.current;
+    if (!dialog) return;
+
+    if (grievanceDialogOpen && !dialog.open) {
+      dialog.showModal();
+    } else if (!grievanceDialogOpen && dialog.open) {
+      dialog.close();
+    }
+  }, [grievanceDialogOpen]);
+
   async function handleSubmit(event) {
     event.preventDefault();
     setBusy(true);
@@ -177,6 +190,7 @@ function StudentPage({
               metrics={studentMetrics}
               canEditContent={false}
               onMetricClick={showMetricGrievances}
+              onAddGrievance={() => setGrievanceDialogOpen(true)}
             />
           )}
           {activePage === "Add New" && (
@@ -211,6 +225,35 @@ function StudentPage({
           )}
         </div>
       </div>
+      {activePage === "Dashboard" && (
+        <dialog
+          ref={grievanceDialog}
+          className="student-grievance-dialog"
+          aria-labelledby="grievance-title"
+          onClose={() => setGrievanceDialogOpen(false)}
+          onCancel={(event) => {
+            if (busy) event.preventDefault();
+          }}
+        >
+          <button
+            type="button"
+            className="student-grievance-dialog-close"
+            disabled={busy}
+            onClick={() => setGrievanceDialogOpen(false)}
+          >
+            Close
+          </button>
+          <GrievanceForm
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            selectedProblem={selectedProblem}
+            onProblemChange={setSelectedProblem}
+            busy={busy}
+            message={message}
+            onSubmit={handleSubmit}
+          />
+        </dialog>
+      )}
     </main>
   );
 }
