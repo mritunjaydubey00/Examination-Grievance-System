@@ -13,13 +13,24 @@ function LateEntryPassModal({ request, onClose }) {
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
   const [expired, setExpired] = useState(false);
+  const [now, setNow] = useState(0);
+  const [serverOffset, setServerOffset] = useState(0);
   const initialized = useRef(false);
+  const approvalExpiresAt = Date.parse(request.reviewed_at) + 60 * 60 * 1000;
+  const approvalExpired =
+    !Number.isFinite(approvalExpiresAt) ||
+    now + serverOffset >= approvalExpiresAt;
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const markExpiredIfNeeded = useCallback((passError) => {
     const message = passError.message || "";
     if (
       passError.code === "22023" ||
-      /pass has expired|pass can no longer be generated|session has expired|already used its two-minute pass/i.test(
+      /pass has expired|pass can no longer be generated|session has expired|already used its one-hour pass/i.test(
         message,
       )
     ) {
@@ -36,6 +47,7 @@ function LateEntryPassModal({ request, onClose }) {
       const current = await getLateEntryQRCodeToken(sessionId);
       setPayload(current.payload);
       const offset = new Date(current.server_now).getTime() - Date.now();
+      setServerOffset(offset);
       const remaining = Math.max(
         0,
         Math.ceil((new Date(current.expires_at).getTime() - (Date.now() + offset)) / 1000),
@@ -50,6 +62,15 @@ function LateEntryPassModal({ request, onClose }) {
   }, [markExpiredIfNeeded]);
 
   const startSession = useCallback(async () => {
+    if (
+      !Number.isFinite(approvalExpiresAt) ||
+      Date.now() + serverOffset >= approvalExpiresAt
+    ) {
+      setExpired(true);
+      setBusy(false);
+      return;
+    }
+
     setBusy(true);
     setError("");
     try {
@@ -63,7 +84,13 @@ function LateEntryPassModal({ request, onClose }) {
     } finally {
       setBusy(false);
     }
-  }, [markExpiredIfNeeded, refreshToken, request.id]);
+  }, [
+    approvalExpiresAt,
+    markExpiredIfNeeded,
+    refreshToken,
+    request.id,
+    serverOffset,
+  ]);
 
   useEffect(() => {
     if (initialized.current) return;
@@ -113,7 +140,7 @@ function LateEntryPassModal({ request, onClose }) {
             {error}
           </p>
         )}
-        {!busy && !error && !expired && payload && (
+        {!busy && !error && !expired && !approvalExpired && payload && (
           <div className="late-entry-qr-wrap">
             <QRCodeSVG
               value={payload}
@@ -125,15 +152,15 @@ function LateEntryPassModal({ request, onClose }) {
             <strong className="late-entry-countdown" role="timer">
               {formatCountdown(secondsRemaining)}
             </strong>
-            <p>The QR payload rotates every second and expires after 2 minutes.</p>
+            <p>The QR payload rotates every second; this pass expires after 1 hour.</p>
             <p className="late-entry-lens-hint">
               For testing, Google Lens can read the opaque payload. It contains no student details.
             </p>
           </div>
         )}
-        {expired && (
+        {(expired || approvalExpired) && (
           <div role="status" className="late-entry-modal-error">
-            This two-minute pass has expired. Pass generation is disabled for this request.
+            This one-hour pass has expired. Pass generation is disabled for this request.
           </div>
         )}
       </section>

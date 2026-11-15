@@ -24,7 +24,6 @@ import PortalLoading from "../components/PortalLoading.jsx";
 import LateEntryPassModal from "../components/StudentPage/LateEntryPassModal.jsx";
 
 function LateEntryRequestWorkspace({ session }) {
-  const [profile, setProfile] = useState({});
   const [schedules, setSchedules] = useState([]);
   const [scheduleId, setScheduleId] = useState("");
   const [requests, setRequests] = useState([]);
@@ -33,50 +32,62 @@ function LateEntryRequestWorkspace({ session }) {
   const [reason, setReason] = useState("");
   const [files, setFiles] = useState([]);
 
-  useEffect(() => {
-    let ignore = false;
-
-    async function loadProfile() {
-      try {
-        const snapshot = await getStudentProfileSnapshot(session.userId);
-        if (!ignore) {
-          setProfile(snapshot || {});
-          const studentSchedules = await listExamSchedulesForStudent({
-            department: snapshot.Department,
-            branch: snapshot.Branch,
-          });
-          if (!ignore) {
-            setSchedules(studentSchedules);
-            setScheduleId(studentSchedules[0]?.id || "");
-          }
-        }
-      } catch (error) {
-        if (!ignore) {
-          setMessage(
-            error.message || "Could not load your student profile. Please try again.",
-          );
-        }
-      }
-
-      try {
-        const lateEntries = await listLateEntryRequestsForStudent(session.userId);
-        if (!ignore) {
-          setRequests(lateEntries || []);
-        }
-      } catch (error) {
-        if (!ignore) {
-          setMessage(
-            error.message || "Could not load your late-entry request history.",
-          );
-        }
-      }
+  const refresh = useCallback(async () => {
+    try {
+      const snapshot = await getStudentProfileSnapshot(session.userId);
+      const [studentSchedules, lateEntries] = await Promise.all([
+        listExamSchedulesForStudent({
+          department: snapshot.Department,
+          branch: snapshot.Branch,
+        }),
+        listLateEntryRequestsForStudent(session.userId),
+      ]);
+      setSchedules(studentSchedules);
+      setScheduleId((current) =>
+        studentSchedules.some((schedule) => schedule.id === current)
+          ? current
+          : studentSchedules[0]?.id || "",
+      );
+      setRequests(lateEntries);
+      setMessage("");
+    } catch (error) {
+      setMessage(
+        error.message || "Could not load your late-entry requests and schedules.",
+      );
     }
-
-    loadProfile();
-    return () => {
-      ignore = true;
-    };
   }, [session.userId]);
+
+  useEffect(() => {
+    const initialLoad = window.setTimeout(refresh, 0);
+    const channel = supabase
+      .channel(`student-late-entry-${session.userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "late_entry_requests",
+          filter: `student_user_id=eq.${session.userId}`,
+        },
+        refresh,
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "late_entry_exam_schedules",
+        },
+        refresh,
+      )
+      .subscribe();
+    const timer = window.setInterval(refresh, 30000);
+    return () => {
+      window.clearTimeout(initialLoad);
+      window.clearInterval(timer);
+      supabase.removeChannel(channel);
+    };
+  }, [refresh, session.userId]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -105,14 +116,6 @@ function LateEntryRequestWorkspace({ session }) {
   const selectedSchedule = schedules.find(
     (schedule) => schedule.id === scheduleId,
   );
-  const studentMeta = [
-    { label: "Student ID / roll number", value: profile["User ID"] || "Not provided" },
-    { label: "Full name", value: profile["Full Name"] || "Not provided" },
-    { label: "Email", value: profile.email || "Not provided" },
-    { label: "Phone number", value: profile["Phone Number"] || "Not provided" },
-    { label: "Department", value: profile.Department || "Not provided" },
-    { label: "Branch", value: profile.Branch || "Not provided" },
-  ];
 
   return (
     <>
@@ -125,17 +128,8 @@ function LateEntryRequestWorkspace({ session }) {
         </p>
       </div>
       <form className="grievance-form" onSubmit={handleSubmit}>
-        <div className="form-grid">
-          {studentMeta.map((item) => (
-            <div className="form-field" key={item.label}>
-              <label>{item.label}</label>
-              <input type="text" value={item.value} readOnly />
-            </div>
-          ))}
-        </div>
-
         <div className="form-field">
-          <label htmlFor="late-entry-schedule">Examination schedule</label>
+          <label htmlFor="late-entry-schedule">Published examination</label>
           <select
             id="late-entry-schedule"
             required
@@ -150,8 +144,7 @@ function LateEntryRequestWorkspace({ session }) {
             </option>
             {schedules.map((schedule) => (
               <option key={schedule.id} value={schedule.id}>
-                {schedule.exam_type} · {schedule.course_name} ({schedule.course_code}) ·{" "}
-                {schedule.exam_date} {String(schedule.start_time).slice(0, 5)}
+                {schedule.exam_type} · {schedule.course_name} ({schedule.course_code})
               </option>
             ))}
           </select>
@@ -160,10 +153,8 @@ function LateEntryRequestWorkspace({ session }) {
           <div className="form-grid" aria-live="polite">
             {[
               ["Exam type", selectedSchedule.exam_type],
-              ["Course", selectedSchedule.course_name],
+              ["Course name", selectedSchedule.course_name],
               ["Course code", selectedSchedule.course_code],
-              ["Date", selectedSchedule.exam_date],
-              ["Time", String(selectedSchedule.start_time).slice(0, 5)],
             ].map(([label, value]) => (
               <div className="form-field" key={label}>
                 <label>{label}</label>
@@ -256,31 +247,56 @@ function LateEntryRequestWorkspace({ session }) {
 function ApprovedLateEntryPassPrompt({ userId }) {
   const [request, setRequest] = useState(null);
   const [error, setError] = useState("");
+  const [dismissedRequestId, setDismissedRequestId] = useState("");
 
   useEffect(() => {
     let active = true;
-    listLateEntryRequestsForStudent(userId)
-      .then((entries) => {
-        if (active) {
-          setRequest(
-            entries.find(
-              (entry) =>
-                entry.status === "approved" &&
-                !entry.entry_confirmed_at,
-            ) || null,
-          );
-        }
-      })
-      .catch((loadError) => {
-        if (active) {
-          setError(loadError.message || "Could not check for an approved late-entry request.");
-        }
-      });
+    const refresh = () =>
+      listLateEntryRequestsForStudent(userId)
+        .then((entries) => {
+          if (active) {
+            const now = Date.now();
+            setRequest(
+              entries.find(
+                (entry) =>
+                  entry.id !== dismissedRequestId &&
+                  entry.status === "approved" &&
+                  !entry.entry_confirmed_at &&
+                  Number.isFinite(Date.parse(entry.reviewed_at)) &&
+                  now < Date.parse(entry.reviewed_at) + 60 * 60 * 1000,
+              ) || null,
+            );
+            setError("");
+          }
+        })
+        .catch((loadError) => {
+          if (active) {
+            setError(loadError.message || "Could not check for an approved late-entry request.");
+          }
+        });
 
+    const initialLoad = window.setTimeout(refresh, 0);
+    const channel = supabase
+      .channel(`student-late-entry-pass-${userId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "late_entry_requests",
+          filter: `student_user_id=eq.${userId}`,
+        },
+        refresh,
+      )
+      .subscribe();
+    const timer = window.setInterval(refresh, 30000);
     return () => {
       active = false;
+      window.clearTimeout(initialLoad);
+      window.clearInterval(timer);
+      supabase.removeChannel(channel);
     };
-  }, [userId]);
+  }, [dismissedRequestId, userId]);
 
   if (error) {
     return (
@@ -298,7 +314,10 @@ function ApprovedLateEntryPassPrompt({ userId }) {
     <LateEntryPassModal
       key={request.id}
       request={request}
-      onClose={() => setRequest(null)}
+      onClose={() => {
+        setRequest(null);
+        setDismissedRequestId(request.id);
+      }}
     />
   );
 }

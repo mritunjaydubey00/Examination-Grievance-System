@@ -161,17 +161,6 @@ export async function createExamSchedule({
 export async function createLateEntryRequest({
   userId,
   scheduleId,
-  studentName,
-  studentEmail,
-  rollNumber,
-  enrollmentNumber,
-  department,
-  branch,
-  course,
-  examinationName,
-  subject,
-  examinationDate,
-  scheduledStartTime,
   reason,
   files = [],
 }) {
@@ -204,22 +193,8 @@ export async function createLateEntryRequest({
         .from("late_entry_requests")
         .insert({
           schedule_id: scheduleId,
-          student_user_id: userId,
-          student_name: studentName || "",
-          student_email: studentEmail || "",
-          student_roll_number: rollNumber || "",
-          student_registration_number: enrollmentNumber || "",
-          department: department || "",
-          branch: branch || "",
-          course: course || "",
-          examination_name: examinationName || "",
-          subject: subject || "",
-          examination_date: examinationDate || null,
-          scheduled_start_time: scheduledStartTime || "",
           reason: String(reason).trim(),
           supporting_documents: uploadedDocuments,
-          status: "pending",
-          requested_at: new Date().toISOString(),
         })
         .select()
         .single();
