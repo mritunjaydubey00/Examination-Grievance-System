@@ -157,6 +157,72 @@
   line-height: 1.5;
 }
 
+.late-entry-request-list {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.late-entry-request-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 18px;
+  border: 1px solid rgb(19 127 120 / 15%);
+  border-radius: 10px;
+  background: rgb(19 127 120 / 5%);
+  color: #52666c;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.late-entry-request-content {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.late-entry-request-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.late-entry-request-title strong {
+  color: #173b3d;
+  text-transform: capitalize;
+}
+
+.late-entry-request-card > .late-entry-open-qr-button {
+  flex: 0 0 auto;
+  min-width: 104px;
+  min-height: 38px;
+  padding: 8px 14px;
+  border: 1px solid rgb(19 127 120 / 28%);
+  border-radius: 7px;
+  background: rgb(255 255 255 / 78%);
+  color: #137f78;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.late-entry-request-card > .late-entry-open-qr-button:hover {
+  border-color: #137f78;
+  background: #fff;
+}
+
+.late-entry-request-card > .late-entry-open-qr-button:focus-visible {
+  outline: 2px solid #137f78;
+  outline-offset: 2px;
+}
+
 .portal-placeholder-message {
   color: #65777d;
   font-size: 0.88rem;
@@ -217,6 +283,19 @@
 .portal-add-button:disabled {
   cursor: not-allowed;
   opacity: 0.72;
+}
+
+@media (max-width: 520px) {
+  .late-entry-request-card {
+    align-items: flex-start;
+    gap: 12px;
+    padding: 13px;
+  }
+
+  .late-entry-request-card > .late-entry-open-qr-button {
+    min-width: 88px;
+    padding: 7px 10px;
+  }
 }
 
 .user-profile-grid {

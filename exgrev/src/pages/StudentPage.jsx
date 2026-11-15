@@ -26,30 +26,37 @@ import LateEntryPassModal from "../components/StudentPage/LateEntryPassModal.jsx
 
 function LateEntryRequestWorkspace({ session }) {
   const [schedules, setSchedules] = useState([]);
-  const [scheduleId, setScheduleId] = useState("");
   const [requests, setRequests] = useState([]);
+  const [qrIssuedToday, setQrIssuedToday] = useState(false);
+  const [qrRequest, setQrRequest] = useState(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [examType, setExamType] = useState("");
+  const [courseName, setCourseName] = useState("");
+  const [courseCode, setCourseCode] = useState("");
   const [reason, setReason] = useState("");
   const [files, setFiles] = useState([]);
+  const [now, setNow] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const refresh = useCallback(async () => {
     try {
       const snapshot = await getStudentProfileSnapshot(session.userId);
-      const [studentSchedules, lateEntries] = await Promise.all([
+      const [studentSchedules, lateEntries, hasQrToday] = await Promise.all([
         listExamSchedulesForStudent({
           department: snapshot.Department,
           branch: snapshot.Branch,
         }),
         listLateEntryRequestsForStudent(session.userId),
+        hasLateEntryQRCodeToday(),
       ]);
       setSchedules(studentSchedules);
-      setScheduleId((current) =>
-        studentSchedules.some((schedule) => schedule.id === current)
-          ? current
-          : studentSchedules[0]?.id || "",
-      );
       setRequests(lateEntries);
+      setQrIssuedToday(hasQrToday);
       setMessage("");
     } catch (error) {
       setMessage(
@@ -98,12 +105,15 @@ function LateEntryRequestWorkspace({ session }) {
     try {
       const request = await createLateEntryRequest({
         userId: session.userId,
-        scheduleId,
+        scheduleId: selectedSchedule.id,
         reason,
         files,
       });
 
       setRequests((current) => [request, ...current]);
+      setExamType("");
+      setCourseName("");
+      setCourseCode("");
       setReason("");
       setFiles([]);
       setMessage("Late entry request submitted successfully.");
@@ -114,9 +124,36 @@ function LateEntryRequestWorkspace({ session }) {
     }
   }
 
-  const selectedSchedule = schedules.find(
-    (schedule) => schedule.id === scheduleId,
+  const normalize = (value) => String(value || "").trim().toLowerCase();
+  const matchingSchedules = schedules.filter(
+    (schedule) =>
+      normalize(schedule.exam_type) === normalize(examType) &&
+      normalize(schedule.course_name) === normalize(courseName) &&
+      normalize(schedule.course_code) === normalize(courseCode),
   );
+  const selectedSchedule = matchingSchedules.reduce((nearest, schedule) => {
+    if (!nearest) return schedule;
+    const scheduledTime = (item) =>
+      new Date(`${item.exam_date}T${item.start_time}`).getTime();
+    return Math.abs(scheduledTime(schedule) - now) <
+      Math.abs(scheduledTime(nearest) - now)
+      ? schedule
+      : nearest;
+  }, null);
+  const selectedScheduleId = selectedSchedule?.id || "";
+  const canOpenQr = (request) => {
+    const reviewedAt = Date.parse(request.reviewed_at);
+    if (
+      request.status !== "approved" ||
+      request.entry_confirmed_at ||
+      !Number.isFinite(reviewedAt) ||
+      now >= reviewedAt + 60 * 60 * 1000
+    ) {
+      return false;
+    }
+
+    return Boolean(request.qr_session_id) || !qrIssuedToday;
+  };
 
   return (
     <>
@@ -129,33 +166,46 @@ function LateEntryRequestWorkspace({ session }) {
         </p>
       </div>
       <form className="grievance-form" onSubmit={handleSubmit}>
-        <div className="form-field">
-          <label htmlFor="late-entry-schedule">Published examination</label>
-          <select
-            id="late-entry-schedule"
-            required
-            value={scheduleId}
-            onChange={(event) => setScheduleId(event.target.value)}
-            disabled={!schedules.length}
-          >
-            <option value="">
-              {schedules.length
-                ? "Select your examination"
-                : "No published examination schedule for your department"}
-            </option>
-            {schedules.map((schedule) => (
-              <option key={schedule.id} value={schedule.id}>
-                {schedule.exam_type} · {schedule.course_name} ({schedule.course_code})
-              </option>
-            ))}
-          </select>
+        <div className="form-grid">
+          <div className="form-field">
+            <label htmlFor="late-entry-exam-type">Exam type</label>
+            <input
+              id="late-entry-exam-type"
+              type="text"
+              required
+              value={examType}
+              onChange={(event) => setExamType(event.target.value)}
+              placeholder="Enter the published exam type"
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="late-entry-course-name">Course name</label>
+            <input
+              id="late-entry-course-name"
+              type="text"
+              required
+              value={courseName}
+              onChange={(event) => setCourseName(event.target.value)}
+              placeholder="Enter the published course name"
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="late-entry-course-code">Course code</label>
+            <input
+              id="late-entry-course-code"
+              type="text"
+              required
+              value={courseCode}
+              onChange={(event) => setCourseCode(event.target.value)}
+              placeholder="Enter the published course code"
+            />
+          </div>
         </div>
-        {selectedSchedule && (
+        {selectedSchedule ? (
           <div className="form-grid" aria-live="polite">
             {[
-              ["Exam type", selectedSchedule.exam_type],
-              ["Course name", selectedSchedule.course_name],
-              ["Course code", selectedSchedule.course_code],
+              ["Examination date", selectedSchedule.exam_date],
+              ["Scheduled time", String(selectedSchedule.start_time).slice(0, 5)],
             ].map(([label, value]) => (
               <div className="form-field" key={label}>
                 <label>{label}</label>
@@ -163,6 +213,13 @@ function LateEntryRequestWorkspace({ session }) {
               </div>
             ))}
           </div>
+        ) : (
+          (examType || courseName || courseCode) && (
+            <p role="status" className="grievance-message">
+              Enter an exam type, course name, and course code that match a
+              published examination schedule for your department.
+            </p>
+          )
         )}
 
         <div className="form-field">
@@ -204,7 +261,7 @@ function LateEntryRequestWorkspace({ session }) {
           <button
             type="submit"
             className="submit-button"
-            disabled={busy || !reason.trim() || !scheduleId}
+            disabled={busy || !reason.trim() || !selectedScheduleId}
           >
             {busy ? "Submitting…" : "Submit Late Entry Request"}
           </button>
@@ -223,117 +280,53 @@ function LateEntryRequestWorkspace({ session }) {
             No late entry requests submitted yet.
           </p>
         ) : (
-          <ul className="portal-placeholder-list">
+          <ul className="late-entry-request-list">
             {requests.map((request) => (
-              <li key={request.id || request.student_user_id + request.requested_at}>
-                <strong>{request.status || "Pending"}</strong>
-                <span>
-                  {" "}
-                  · {request.exam_type || "Examination"} ·{" "}
-                  {request.course_name || request.subject || "Course"}{" "}
-                  {request.course_code ? `(${request.course_code})` : ""}
-                </span>
-                <div>
-                  {request.examination_date || "Date not available"} ·{" "}
-                  {String(request.scheduled_start_time || "").slice(0, 5)}
+              <li
+                className="late-entry-request-card"
+                key={request.id || request.student_user_id + request.requested_at}
+              >
+                <div className="late-entry-request-content">
+                  <div className="late-entry-request-title">
+                    <strong>{request.status || "Pending"}</strong>
+                    <span>
+                      {request.exam_type || "Examination"} ·{" "}
+                      {request.course_name || request.subject || "Course"}{" "}
+                      {request.course_code ? `(${request.course_code})` : ""}
+                    </span>
+                  </div>
+                  <div>
+                    {request.examination_date || "Date not available"} ·{" "}
+                    {String(request.scheduled_start_time || "").slice(0, 5)}
+                  </div>
+                  <div>{request.reason}</div>
                 </div>
-                <div>{request.reason}</div>
+                {canOpenQr(request) && (
+                  <button
+                    type="button"
+                    className="late-entry-open-qr-button"
+                    onClick={() => setQrRequest(request)}
+                  >
+                    Open QR
+                  </button>
+                )}
               </li>
             ))}
           </ul>
         )}
       </div>
     </section>
+    {qrRequest && (
+      <LateEntryPassModal
+        key={qrRequest.id}
+        request={qrRequest}
+        onClose={() => {
+          setQrRequest(null);
+          refresh();
+        }}
+      />
+    )}
     </>
-  );
-}
-
-function ApprovedLateEntryPassPrompt({ userId }) {
-  const [request, setRequest] = useState(null);
-  const [error, setError] = useState("");
-  const [dismissedRequestId, setDismissedRequestId] = useState("");
-
-  useEffect(() => {
-    let active = true;
-    const refresh = () =>
-      Promise.all([
-        listLateEntryRequestsForStudent(userId),
-        hasLateEntryQRCodeToday(),
-      ])
-        .then(([entries, qrIssuedToday]) => {
-          if (active) {
-            const now = Date.now();
-            const isAvailable = (entry) =>
-              entry.status === "approved" &&
-              !entry.entry_confirmed_at &&
-              Number.isFinite(Date.parse(entry.reviewed_at)) &&
-              now < Date.parse(entry.reviewed_at) + 60 * 60 * 1000;
-            const currentRequest = entries.find(
-              (entry) => entry.id === request?.id && isAvailable(entry),
-            );
-            setRequest(
-              currentRequest ||
-                (qrIssuedToday
-                  ? null
-                  : entries.find(
-                      (entry) =>
-                        entry.id !== dismissedRequestId && isAvailable(entry),
-                    )) ||
-                null,
-            );
-            setError("");
-          }
-        })
-        .catch((loadError) => {
-          if (active) {
-            setError(loadError.message || "Could not check for an approved late-entry request.");
-          }
-        });
-
-    const initialLoad = window.setTimeout(refresh, 0);
-    const channel = supabase
-      .channel(`student-late-entry-pass-${userId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "late_entry_requests",
-          filter: `student_user_id=eq.${userId}`,
-        },
-        refresh,
-      )
-      .subscribe();
-    const timer = window.setInterval(refresh, 30000);
-    return () => {
-      active = false;
-      window.clearTimeout(initialLoad);
-      window.clearInterval(timer);
-      supabase.removeChannel(channel);
-    };
-  }, [dismissedRequestId, request?.id, userId]);
-
-  if (error) {
-    return (
-      <div className="late-entry-modal-backdrop">
-        <section className="late-entry-modal" role="alert">
-          <h2>Could not load your entry pass</h2>
-          <p>{error}</p>
-        </section>
-      </div>
-    );
-  }
-  if (!request) return null;
-
-  return (
-    <LateEntryPassModal
-      key={request.id}
-      request={request}
-      onClose={() => {
-        setRequest(null);
-        setDismissedRequestId(request.id);
-      }}
-    />
   );
 }
 
@@ -480,7 +473,6 @@ function StudentPage({
             />
           </div>
         </div>
-        <ApprovedLateEntryPassPrompt userId={session.userId} />
       </div>
     );
   }
@@ -546,7 +538,6 @@ function StudentPage({
           )}
         </div>
       </div>
-      <ApprovedLateEntryPassPrompt userId={session.userId} />
     </main>
   );
 }
