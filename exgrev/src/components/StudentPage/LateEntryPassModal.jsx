@@ -30,9 +30,7 @@ function LateEntryPassModal({ request, onClose }) {
     const message = passError.message || "";
     if (
       passError.code === "22023" ||
-      /pass has expired|pass can no longer be generated|session has expired|already used its one-hour pass/i.test(
-        message,
-      )
+      /pass has expired|pass can no longer be generated|session has expired|already used its one-hour pass|one-hour approval window/i.test(message)
     ) {
       setExpired(true);
       setPayload("");

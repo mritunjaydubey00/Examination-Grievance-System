@@ -229,6 +229,12 @@ export async function listLateEntryRequestsForStudent(userId) {
   return data || [];
 }
 
+export async function hasLateEntryQRCodeToday() {
+  const { data, error } = await supabase.rpc("has_late_entry_qr_today");
+  if (error) throwIfLateEntryApiMissing(error, "checking today's QR pass limit");
+  return data;
+}
+
 export async function listLateEntryRequestsForExamCell() {
   const { data, error } = await supabase
     .from("late_entry_requests")

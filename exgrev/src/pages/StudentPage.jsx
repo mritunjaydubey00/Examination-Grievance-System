@@ -6,6 +6,7 @@ import {
 import {
   createLateEntryRequest,
   getStudentProfileSnapshot,
+  hasLateEntryQRCodeToday,
   listExamSchedulesForStudent,
   listLateEntryRequestsForStudent,
 } from "../services/lateEntryService.js";
@@ -196,7 +197,10 @@ function LateEntryRequestWorkspace({ session }) {
         )}
 
         <div className="form-footer">
-          <p>Your request is linked to your authenticated student record.</p>
+          <p>
+            Your request is linked to your authenticated student record. Only
+            one QR pass can be issued per UTC calendar day.
+          </p>
           <button
             type="submit"
             className="submit-button"
@@ -252,19 +256,30 @@ function ApprovedLateEntryPassPrompt({ userId }) {
   useEffect(() => {
     let active = true;
     const refresh = () =>
-      listLateEntryRequestsForStudent(userId)
-        .then((entries) => {
+      Promise.all([
+        listLateEntryRequestsForStudent(userId),
+        hasLateEntryQRCodeToday(),
+      ])
+        .then(([entries, qrIssuedToday]) => {
           if (active) {
             const now = Date.now();
+            const isAvailable = (entry) =>
+              entry.status === "approved" &&
+              !entry.entry_confirmed_at &&
+              Number.isFinite(Date.parse(entry.reviewed_at)) &&
+              now < Date.parse(entry.reviewed_at) + 60 * 60 * 1000;
+            const currentRequest = entries.find(
+              (entry) => entry.id === request?.id && isAvailable(entry),
+            );
             setRequest(
-              entries.find(
-                (entry) =>
-                  entry.id !== dismissedRequestId &&
-                  entry.status === "approved" &&
-                  !entry.entry_confirmed_at &&
-                  Number.isFinite(Date.parse(entry.reviewed_at)) &&
-                  now < Date.parse(entry.reviewed_at) + 60 * 60 * 1000,
-              ) || null,
+              currentRequest ||
+                (qrIssuedToday
+                  ? null
+                  : entries.find(
+                      (entry) =>
+                        entry.id !== dismissedRequestId && isAvailable(entry),
+                    )) ||
+                null,
             );
             setError("");
           }
@@ -296,7 +311,7 @@ function ApprovedLateEntryPassPrompt({ userId }) {
       window.clearInterval(timer);
       supabase.removeChannel(channel);
     };
-  }, [dismissedRequestId, userId]);
+  }, [dismissedRequestId, request?.id, userId]);
 
   if (error) {
     return (
