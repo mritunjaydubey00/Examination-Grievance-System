@@ -1,18 +1,23 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./App.css";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import LogIn from "./pages/LogIn.jsx";
 import ChangePassword from "./pages/ChangePassword.jsx";
 import ExaminationCell from "./pages/examinationCell.jsx";
 import StudentPage from "./pages/StudentPage.jsx";
 import TeachingStaffPage from "./pages/TeachingStaffPage.jsx";
 import PortalLoading from "./components/PortalLoading.jsx";
+import ThemeToggle from "./components/ThemeToggle.jsx";
 import { supabase } from "./lib/supabase.js";
 import { getAuthenticatedProfile, signOut } from "./services/userService.js";
 
 const RECOVERY_SESSION_KEY = "exgrev.passwordRecovery";
 
 function App() {
+  const [mobileMenuTarget, setMobileMenuTarget] = useState(null);
+  const captureMobileMenuTarget = useCallback((element) => {
+    setMobileMenuTarget(element);
+  }, []);
   const [profile, setProfile] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [authError, setAuthError] = useState("");
@@ -28,6 +33,16 @@ function App() {
     .toLowerCase()
     .replace(/[_-]+/g, " ")
     .replace(/\s+/g, " ");
+  const isKnownRole = [
+    "examination cell",
+    "exam cell",
+    "admin",
+    "exam cell admin",
+    "teaching staff",
+    "teaching",
+    "faculty",
+    "student",
+  ].includes(normalizedRole);
 
   useEffect(() => {
     let active = true;
@@ -154,7 +169,16 @@ function App() {
 
   return (
     <div className={`app-shell${profile ? "" : " app-shell-auth"}`}>
-      {profile && <h1 className="app-wordmark">ExGrev</h1>}
+      {(!authChecked ||
+        passwordRecovery ||
+        profile?.mustChangePassword ||
+        showPasswordSettings ||
+        (profile && !isKnownRole)) && <ThemeToggle />}
+      {profile && (
+        <header ref={captureMobileMenuTarget} className="app-topbar">
+          <h1 className="app-wordmark">ExGrev</h1>
+        </header>
+      )}
       {!authChecked ? (
         <PortalLoading label="Checking your session…" />
       ) : passwordRecovery ? (
@@ -190,18 +214,21 @@ function App() {
         ].includes(normalizedRole) ? (
         <ExaminationCell
           session={{ ...profile, uptimeSeconds }}
+          mobileMenuTarget={mobileMenuTarget}
           onLogout={handleLogout}
           onChangePassword={() => setShowPasswordSettings(true)}
         />
       ) : ["teaching staff", "teaching", "faculty"].includes(normalizedRole) ? (
         <TeachingStaffPage
           session={{ ...profile, uptimeSeconds }}
+          mobileMenuTarget={mobileMenuTarget}
           onLogout={handleLogout}
           onChangePassword={() => setShowPasswordSettings(true)}
         />
       ) : normalizedRole === "student" ? (
         <StudentPage
           session={{ ...profile, uptimeSeconds }}
+          mobileMenuTarget={mobileMenuTarget}
           onLogout={handleLogout}
           onChangePassword={() => setShowPasswordSettings(true)}
         />

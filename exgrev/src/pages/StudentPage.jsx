@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   createGrievance,
   listStudentGrievances,
@@ -21,7 +21,6 @@ import {
   PortalSidePanel,
 } from "../components/PortalNavigation.jsx";
 import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
-import PortalLoading from "../components/PortalLoading.jsx";
 import LateEntryPassModal from "../components/StudentPage/LateEntryPassModal.jsx";
 
 function LateEntryRequestWorkspace({ session }) {
@@ -332,6 +331,7 @@ function LateEntryRequestWorkspace({ session }) {
 
 function StudentPage({
   session,
+  mobileMenuTarget,
   onLogout,
   onChangePassword,
 }) {
@@ -344,6 +344,8 @@ function StudentPage({
   const [threadGrievanceId, setThreadGrievanceId] = useState(null);
   const [activePage, setActivePage] = useState("Dashboard");
   const [dashboardMetric, setDashboardMetric] = useState("");
+  const [grievanceDialogOpen, setGrievanceDialogOpen] = useState(false);
+  const grievanceDialog = useRef(null);
 
   // The listStudentGrievances query is scoped to this signed-in student.
   const studentMetrics = [
@@ -419,6 +421,17 @@ function StudentPage({
     };
   }, [refresh, session.userId]);
 
+  useEffect(() => {
+    const dialog = grievanceDialog.current;
+    if (!dialog) return;
+
+    if (grievanceDialogOpen && !dialog.open) {
+      dialog.showModal();
+    } else if (!grievanceDialogOpen && dialog.open) {
+      dialog.close();
+    }
+  }, [grievanceDialogOpen]);
+
   async function handleSubmit(event) {
     event.preventDefault();
     setBusy(true);
@@ -446,16 +459,13 @@ function StudentPage({
     }
   }
 
-  if (initialLoading) {
-    return <PortalLoading label="Loading your grievances…" />;
-  }
-
   if (threadGrievanceId) {
     return (
-      <div className="student-page portal-thread-shell">
+      <div className="student-page portal-thread-shell fade-in-up">
         <div className="portal-layout">
           <PortalSidePanel
             role="student"
+            mobileMenuTarget={mobileMenuTarget}
             activePage={activePage}
             onNavigate={(page) => {
               setThreadGrievanceId(null);
@@ -469,7 +479,6 @@ function StudentPage({
               grievanceId={threadGrievanceId}
               session={session}
               onBack={() => setThreadGrievanceId(null)}
-              onLogout={onLogout}
             />
           </div>
         </div>
@@ -478,14 +487,12 @@ function StudentPage({
   }
 
   return (
-    <main className="student-page">
-      <StudentHeader
-        session={session}
-        onLogout={onLogout}
-      />
+    <main className="student-page fade-in-up">
+      <StudentHeader session={session} />
       <div className="portal-layout">
         <PortalSidePanel
           role="student"
+          mobileMenuTarget={mobileMenuTarget}
           activePage={activePage}
           onNavigate={(page) => {
             setDashboardMetric("");
@@ -500,6 +507,7 @@ function StudentPage({
               metrics={studentMetrics}
               canEditContent={false}
               onMetricClick={showMetricGrievances}
+              onAddGrievance={() => setGrievanceDialogOpen(true)}
             />
           )}
           {activePage === "Add New" && (
@@ -519,9 +527,8 @@ function StudentPage({
           {activePage === "Your Grievances" && (
             <GrievanceHistory
               grievances={displayedGrievances}
+              loading={initialLoading}
               onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
-              onRefresh={refresh}
-              onSubmitNewGrievance={() => setActivePage("Add New")}
             />
           )}
           {activePage === "Profile" && (
@@ -538,6 +545,35 @@ function StudentPage({
           )}
         </div>
       </div>
+      {activePage === "Dashboard" && (
+        <dialog
+          ref={grievanceDialog}
+          className="student-grievance-dialog"
+          aria-labelledby="grievance-title"
+          onClose={() => setGrievanceDialogOpen(false)}
+          onCancel={(event) => {
+            if (busy) event.preventDefault();
+          }}
+        >
+          <button
+            type="button"
+            className="student-grievance-dialog-close"
+            disabled={busy}
+            onClick={() => setGrievanceDialogOpen(false)}
+          >
+            Close
+          </button>
+          <GrievanceForm
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            selectedProblem={selectedProblem}
+            onProblemChange={setSelectedProblem}
+            busy={busy}
+            message={message}
+            onSubmit={handleSubmit}
+          />
+        </dialog>
+      )}
     </main>
   );
 }

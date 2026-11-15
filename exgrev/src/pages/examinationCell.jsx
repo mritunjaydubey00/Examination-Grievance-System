@@ -439,6 +439,7 @@ function LateEntryPriorityDialog() {
 
 function ExaminationCell({
   session,
+  mobileMenuTarget,
   onLogout,
   onChangePassword,
 }) {
@@ -648,6 +649,7 @@ function ExaminationCell({
         <div className="portal-layout">
           <PortalSidePanel
             role="exam-cell"
+            mobileMenuTarget={mobileMenuTarget}
             activePage={activePage}
             onNavigate={(page) => {
               setThreadGrievanceId(null);
@@ -668,7 +670,6 @@ function ExaminationCell({
               grievanceId={threadGrievanceId}
               session={session}
               onBack={() => setThreadGrievanceId(null)}
-              onLogout={onLogout}
             />
           </div>
         </div>
@@ -678,13 +679,11 @@ function ExaminationCell({
 
   return (
     <main className="student-page examination-cell-page">
-      <AdminHeader
-        session={session}
-        onLogout={onLogout}
-      />
+      <AdminHeader session={session} />
       <div className="portal-layout">
         <PortalSidePanel
           role="exam-cell"
+          mobileMenuTarget={mobileMenuTarget}
           activePage={activePage}
           onNavigate={(page) => {
             setActivePage(page);

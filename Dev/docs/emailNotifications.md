@@ -84,9 +84,11 @@ Keep the printed value private. Use exactly the same value in the Edge Function 
 | `EXGREV_EMAIL_FROM`           | A sender at the verified domain, for example `ExGrev <notifications@notifications.example.edu>`. Use your real domain.                                       |
 | `EXGREV_APP_URL`              | The app origin users should open, for example `https://grievances.example.edu/`. For local testing, use the exact Vite URL such as `http://localhost:5173/`. |
 | `NOTIFICATION_WEBHOOK_SECRET` | The random value generated in Part 3.                                                                                                                        |
-| `SERVICE_ROLE_KEY_Supabase`   | The project's server-side service-role key only if the function runtime does not already provide it. Never add it to frontend configuration.                 |
+| `SUPABASE_SERVICE_ROLE_KEY`   | The project's server-side service-role key only if the function runtime does not already provide it. Never add it to frontend configuration.                 |
 
-`SUPABASE_URL` is provided by the Supabase Edge Function runtime. Do not create a `VITE_` variable for any secret above. `EXGREV_APP_URL` is reduced to its origin by the worker, so do not include a route, query string, or recovery token.
+The worker also requires `SUPABASE_URL`, which is provided by the Supabase Edge Function runtime. The function checks for the exact `SUPABASE_SERVICE_ROLE_KEY` name; a secret saved under another name will not satisfy it. Do not create a `VITE_` variable for any secret above. `EXGREV_APP_URL` is reduced to its origin by the worker, so do not include a route, query string, or recovery token.
+
+If the function log reports `Email notification worker secrets are not fully configured`, it returns HTTP 503 before contacting Resend. Check that all four notification-specific secrets above exist with non-empty values and exact spelling, and confirm the runtime provides `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. The generic error does not identify which value is missing. Do not paste secret values into support requests or chat.
 
 ## Part 5: Store dispatcher values in Supabase Vault
 

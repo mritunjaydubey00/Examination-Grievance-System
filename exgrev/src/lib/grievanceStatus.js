@@ -17,13 +17,17 @@ export function isAutoResolved(grievance, now = Date.now()) {
   );
 }
 
-export function getGrievanceStatusLabel(grievance, audience = "staff") {
-  if (isResolutionWindowOpen(grievance)) {
+export function getGrievanceStatusLabel(
+  grievance,
+  audience = "staff",
+  now = Date.now(),
+) {
+  if (isResolutionWindowOpen(grievance, now)) {
     return audience === "student"
       ? "Resolved by Exam Cell, Awaiting Your Response"
       : "Resolved, Awaiting Student Response";
   }
-  if (isAutoResolved(grievance)) {
+  if (isAutoResolved(grievance, now)) {
     return audience === "student" ? "Auto-Resolved" : "Closed (Auto-Resolved)";
   }
   if (grievance?.student_confirmed_at) return "Resolved (Accepted)";

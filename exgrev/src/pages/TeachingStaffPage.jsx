@@ -98,6 +98,7 @@ function LateEntryVerifier() {
 
 function TeachingStaffPage({
   session,
+  mobileMenuTarget,
   onLogout,
   onChangePassword,
 }) {
@@ -260,6 +261,7 @@ function TeachingStaffPage({
         <div className="portal-layout">
           <PortalSidePanel
             role="faculty"
+            mobileMenuTarget={mobileMenuTarget}
             activePage={activePage}
             onNavigate={(page) => {
               setThreadGrievanceId(null);
@@ -274,7 +276,6 @@ function TeachingStaffPage({
               grievanceId={threadGrievanceId}
               session={session}
               onBack={() => setThreadGrievanceId(null)}
-              onLogout={onLogout}
             />
           </div>
         </div>
@@ -284,13 +285,11 @@ function TeachingStaffPage({
 
   return (
     <main className="student-page examination-cell-page">
-      <TeachingStaffHeader
-        session={session}
-        onLogout={onLogout}
-      />
+      <TeachingStaffHeader session={session} />
       <div className="portal-layout">
         <PortalSidePanel
           role="faculty"
+          mobileMenuTarget={mobileMenuTarget}
           activePage={activePage}
           onNavigate={(page) => {
             setActivePage(page);

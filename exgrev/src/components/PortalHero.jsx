@@ -1,11 +1,11 @@
 import "./PortalHero.css";
+import ThemeToggle from "./ThemeToggle.jsx";
 
 function PortalHero({
   eyebrow,
   title,
   context,
   session,
-  onLogout,
   onBack,
 }) {
   return (
@@ -21,14 +21,12 @@ function PortalHero({
         {context && <p className="portal-hero-context">{context}</p>}
       </div>
       <div className="portal-hero-actions">
+        <ThemeToggle />
         <div className="portal-hero-session">
           <span className="status-dot" />
           Session active{" "}
           <strong>{session.uptimeSeconds ?? 0}s</strong>
         </div>
-        <button type="button" className="logout-button" onClick={onLogout}>
-          Log out
-        </button>
       </div>
     </header>
   );

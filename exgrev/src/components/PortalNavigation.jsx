@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import "./PortalNavigation.css";
 
 const grievanceLinks = {
@@ -17,18 +18,55 @@ const roleSpecificLinks = {
   "exam-cell": ["Late Entry Requests"],
 };
 
-function PortalSidePanel({ role, activePage, onNavigate, onLogout }) {
+function PortalSidePanel({
+  role,
+  activePage,
+  onNavigate,
+  onLogout,
+  mobileMenuTarget,
+}) {
   const [grievancesExpanded, setGrievancesExpanded] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const sidebarRef = useRef(null);
+  const mobileNavigationRef = useRef(null);
+  const menuButtonRef = useRef(null);
   const links = grievanceLinks[role];
   const extraLinks = roleSpecificLinks[role] || [];
 
-  return (
-    <aside className="portal-sidebar" aria-label="Portal navigation">
-      <nav>
+  useEffect(() => {
+    if (!mobileMenuOpen) return undefined;
+
+    function closeMenuOnOutsideClick(event) {
+      if (
+        !sidebarRef.current?.contains(event.target) &&
+        !mobileNavigationRef.current?.contains(event.target)
+      ) {
+        setMobileMenuOpen(false);
+      }
+    }
+
+    function closeMenuOnEscape(event) {
+      if (event.key === "Escape") {
+        setMobileMenuOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    }
+
+    document.addEventListener("pointerdown", closeMenuOnOutsideClick);
+    document.addEventListener("keydown", closeMenuOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeMenuOnOutsideClick);
+      document.removeEventListener("keydown", closeMenuOnEscape);
+    };
+  }, [mobileMenuOpen]);
+
+  function renderNavigation() {
+    return (
+      <>
         <button
           type="button"
           className={`portal-nav-link${activePage === "Dashboard" ? " is-active" : ""}`}
-          onClick={() => onNavigate("Dashboard")}
+          onClick={() => navigateTo("Dashboard")}
         >
           Dashboard
         </button>
@@ -50,7 +88,7 @@ function PortalSidePanel({ role, activePage, onNavigate, onLogout }) {
                 type="button"
                 key={link}
                 className={`portal-nav-link portal-subnav-link${activePage === link ? " is-active" : ""}`}
-                onClick={() => onNavigate(link)}
+                onClick={() => navigateTo(link)}
               >
                 {link}
               </button>
@@ -62,7 +100,7 @@ function PortalSidePanel({ role, activePage, onNavigate, onLogout }) {
             type="button"
             key={item}
             className={`portal-nav-link${activePage === item ? " is-active" : ""}`}
-            onClick={() => onNavigate(item)}
+            onClick={() => navigateTo(item)}
           >
             {item}
           </button>
@@ -72,20 +110,78 @@ function PortalSidePanel({ role, activePage, onNavigate, onLogout }) {
             type="button"
             key={item}
             className={`portal-nav-link${activePage === item ? " is-active" : ""}`}
-            onClick={() => onNavigate(item)}
+            onClick={() => navigateTo(item)}
           >
             {item}
           </button>
         ))}
-        <button type="button" className="portal-nav-link" onClick={onLogout}>
+        <button
+          type="button"
+          className="portal-nav-link"
+          onClick={() => {
+            setMobileMenuOpen(false);
+            onLogout();
+          }}
+        >
           Logout
         </button>
-      </nav>
-    </aside>
+      </>
+    );
+  }
+
+  function navigateTo(page) {
+    onNavigate(page);
+    setMobileMenuOpen(false);
+    if (window.matchMedia("(max-width: 680px)").matches) {
+      menuButtonRef.current?.focus();
+    }
+  }
+
+  return (
+    <>
+      <aside
+        ref={sidebarRef}
+        className="portal-sidebar"
+        aria-label="Portal navigation"
+      >
+        <nav>{renderNavigation()}</nav>
+      </aside>
+      {mobileMenuTarget &&
+        createPortal(
+          <div
+            ref={mobileNavigationRef}
+            className={`portal-mobile-navigation${mobileMenuOpen ? " is-open" : ""}`}
+          >
+            <button
+              ref={menuButtonRef}
+              type="button"
+              className="portal-mobile-menu-toggle"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="portal-navigation-menu"
+              onClick={() => setMobileMenuOpen((open) => !open)}
+            >
+              <span className="portal-mobile-menu-icon" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </span>
+              Menu
+            </button>
+            <nav id="portal-navigation-menu">{renderNavigation()}</nav>
+          </div>,
+          mobileMenuTarget,
+        )}
+    </>
   );
 }
 
-function PortalDashboard({ role, metrics, canEditContent, onMetricClick }) {
+function PortalDashboard({
+  role,
+  metrics,
+  canEditContent,
+  onMetricClick,
+  onAddGrievance,
+}) {
   const audienceLabel =
     role === "student"
       ? "Your grievance overview"
@@ -100,6 +196,15 @@ function PortalDashboard({ role, metrics, canEditContent, onMetricClick }) {
           <p className="eyebrow">Dashboard</p>
           <h3>{audienceLabel}</h3>
         </div>
+        {role === "student" && onAddGrievance && (
+          <button
+            type="button"
+            className="portal-dashboard-action"
+            onClick={onAddGrievance}
+          >
+            + Submit a grievance
+          </button>
+        )}
       </div>
       <section className="admin-stats portal-stats" aria-label={audienceLabel}>
         {metrics.map((metric) =>

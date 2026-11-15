@@ -97,6 +97,12 @@ For the complete setup, prerequisites, and troubleshooting details, read [`exgre
 
 For a first-time account, login accepts the Student's User ID or a staff member's email. The temporary password is the phone number stored for that account; the user is required to change it after signing in.
 
+## Deploying online
+
+For a step-by-step, free Cloudflare Pages deployment guide—including Supabase
+configuration, production verification, and the update workflow—see
+[`exgrev/DEPLOYMENT.md`](./exgrev/DEPLOYMENT.md).
+
 ## Application and data flow
 
 - `src/services/userService.js` invokes the `login-by-user-id` function, establishes the Supabase session, restores the user's profile, and handles password changes and sign-out.

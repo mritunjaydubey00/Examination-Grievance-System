@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   addGrievanceRemarkWithAttachments,
+  confirmGrievanceResolution,
   getThreadAttachmentUrl,
   getGrievanceThread,
 } from "../services/grievanceService.js";
@@ -129,7 +130,6 @@ function GrievanceThreadPage({
   grievanceId,
   session,
   onBack,
-  onLogout,
 }) {
   const [thread, setThread] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -137,6 +137,8 @@ function GrievanceThreadPage({
   const [remark, setRemark] = useState("");
   const [attachments, setAttachments] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [confirmingResolution, setConfirmingResolution] = useState(false);
+  const [resolutionError, setResolutionError] = useState("");
   const [notice, setNotice] = useState("");
   const [noticeType, setNoticeType] = useState("success");
   const [now, setNow] = useState(() => Date.now());
@@ -248,6 +250,21 @@ function GrievanceThreadPage({
     }
   }
 
+  async function handleConfirmResolution() {
+    setConfirmingResolution(true);
+    setResolutionError("");
+    try {
+      await confirmGrievanceResolution(grievanceId);
+      await refresh();
+    } catch (error) {
+      setResolutionError(
+        error.message || "Could not confirm the proposed resolution.",
+      );
+    } finally {
+      setConfirmingResolution(false);
+    }
+  }
+
   function handleAttachmentSelection(event) {
     const selected = Array.from(event.currentTarget.files || []);
     event.currentTarget.value = "";
@@ -337,7 +354,6 @@ function GrievanceThreadPage({
             : "View grievance updates and messages."
         }
         session={session}
-        onLogout={onLogout}
         onBack={onBack}
       />
 
@@ -392,6 +408,23 @@ function GrievanceThreadPage({
               <p>{grievance.resolution_remark}</p>
             </section>
           )}
+          {isStudent && responseWindowOpen && (
+            <section className="thread-resolution-actions">
+              <button
+                type="button"
+                className="admin-confirm-button is-resolve"
+                disabled={confirmingResolution}
+                onClick={handleConfirmResolution}
+              >
+                {confirmingResolution ? "Accepting…" : "Accept resolution"}
+              </button>
+              {resolutionError && (
+                <p className="thread-error" role="alert">
+                  {resolutionError}
+                </p>
+              )}
+            </section>
+          )}
 
           <section className="thread-events" aria-label="Grievance events">
             <div className="thread-section-heading">
@@ -420,6 +453,12 @@ function GrievanceThreadPage({
                         <p className="thread-event-sender">
                           <strong>Role</strong>{" "}
                           {event.actor_role.replaceAll("_", " ")}
+                        </p>
+                      )}
+                      {event.event_type === "submitted" && grievance?.description && (
+                        <p className="thread-event-description">
+                          <strong>Description</strong>{" "}
+                          {grievance.description}
                         </p>
                       )}
                       {event.event_type === "forwarded" ||
@@ -494,7 +533,7 @@ function GrievanceThreadPage({
           </button>
           <dialog
             ref={replyDialog}
-            className="thread-reply-dialog"
+            className="thread-reply-dialog dialog-content"
             aria-labelledby="thread-reply-title"
             onClose={() => setReplyDialogOpen(false)}
           >

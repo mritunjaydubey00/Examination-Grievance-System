@@ -6,6 +6,7 @@ import {
 import LoginIntro from "../components/LogIn/LoginIntro.jsx";
 import LoginForm from "../components/LogIn/LoginForm.jsx";
 import ForgotPassword from "./ForgotPassword.jsx";
+import ThemeToggle from "../components/ThemeToggle.jsx";
 
 function getOAuthError() {
   const parameters = new URLSearchParams(
@@ -90,6 +91,7 @@ function LogIn({ onLogin, authError = "", notice = "" }) {
     <>
       <header className="auth-page-header">
         <span className="auth-page-brand">ExGrev</span>
+        <ThemeToggle />
       </header>
       <main className="login-page">
         <LoginIntro />
