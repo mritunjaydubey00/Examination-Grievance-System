@@ -11,9 +11,16 @@ const grievanceLinks = {
   ],
 };
 
+const roleSpecificLinks = {
+  student: ["Late Entry Request"],
+  faculty: ["Scan Late Entry Pass"],
+  "exam-cell": ["Late Entry Requests"],
+};
+
 function PortalSidePanel({ role, activePage, onNavigate, onLogout }) {
   const [grievancesExpanded, setGrievancesExpanded] = useState(false);
   const links = grievanceLinks[role];
+  const extraLinks = roleSpecificLinks[role] || [];
 
   return (
     <aside className="portal-sidebar" aria-label="Portal navigation">
@@ -50,6 +57,16 @@ function PortalSidePanel({ role, activePage, onNavigate, onLogout }) {
             ))}
           </div>
         )}
+        {extraLinks.map((item) => (
+          <button
+            type="button"
+            key={item}
+            className={`portal-nav-link${activePage === item ? " is-active" : ""}`}
+            onClick={() => onNavigate(item)}
+          >
+            {item}
+          </button>
+        ))}
         {["Guidelines", "Profile", "Notice Board"].map((item) => (
           <button
             type="button"

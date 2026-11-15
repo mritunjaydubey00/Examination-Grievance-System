@@ -13,10 +13,88 @@ import {
   addGrievanceRemark,
   listAssignedGrievances,
 } from "../services/grievanceService.js";
+import { verifyLateEntryQRCode } from "../services/lateEntryService.js";
 import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 import { supabase } from "../lib/supabase.js";
 import PortalLoading from "../components/PortalLoading.jsx";
 import "./ExaminationCell.css";
+
+function LateEntryVerifier() {
+  const [qrPayload, setQrPayload] = useState("");
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setBusy(true);
+    setResult(null);
+    setError("");
+
+    try {
+      setResult(await verifyLateEntryQRCode(qrPayload.trim()));
+    } catch (verificationError) {
+      setError(verificationError.message || "Could not verify the late entry pass.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="grievance-panel" aria-labelledby="late-entry-scanner-title">
+      <div className="panel-intro">
+        <p className="eyebrow">Faculty verification</p>
+        <h3 id="late-entry-scanner-title">Scan Late Entry Pass</h3>
+        <p>
+          Scan the student’s live QR with a camera or Google Lens, then paste the decoded
+          opaque text below to validate it against the server.
+        </p>
+      </div>
+      <form className="grievance-form" onSubmit={handleSubmit}>
+        <div className="form-field">
+          <label htmlFor="late-entry-qr-payload">Scanned QR content</label>
+          <textarea
+            id="late-entry-qr-payload"
+            rows="4"
+            required
+            value={qrPayload}
+            onChange={(event) => setQrPayload(event.target.value)}
+            placeholder="EXGREV-LATE-ENTRY:…"
+          />
+        </div>
+        {error && (
+          <p role="status" className="grievance-message">
+            {error}
+          </p>
+        )}
+        {result && (
+          <div className="portal-info-card" role="status">
+            <p><strong>Pass verified</strong> · {result.student_name}</p>
+            <p>Student ID: {result.student_roll_number || "Not recorded"}</p>
+            <p>Department: {result.department}{result.branch ? ` · ${result.branch}` : ""}</p>
+            <p>{result.exam_type} · {result.course_name} ({result.course_code})</p>
+            <p>{result.exam_date} · {String(result.start_time || "").slice(0, 5)}</p>
+            <p>Approved by: {result.approved_by || "Examination Cell"}</p>
+            <p>
+              Validated: {new Date(result.verified_at).toLocaleString("en-IN", {
+                timeZone: "Asia/Kolkata",
+              })}
+            </p>
+            <p>Verify the student's original ID card and physical identity before allowing entry.</p>
+          </div>
+        )}
+        <div className="form-footer">
+          <p>
+            This validates the pass only; it does not confirm entry.
+          </p>
+          <button type="submit" className="submit-button" disabled={busy || !qrPayload.trim()}>
+            {busy ? "Validating…" : "Validate scanned pass"}
+          </button>
+        </div>
+      </form>
+    </section>
+  );
+}
 
 function TeachingStaffPage({
   session,
@@ -248,6 +326,9 @@ function TeachingStaffPage({
               }
               onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
             />
+          )}
+          {activePage === "Scan Late Entry Pass" && (
+            <LateEntryVerifier />
           )}
           {activePage === "Profile" && (
             <UserProfileSection
