@@ -1,20 +1,21 @@
 :root {
   color-scheme: light;
-  --bg-primary: #f8fafc;
-  --bg-surface: #ffffff;
-  --bg-elevated: #f1f5f9;
+  --bg-base: #f8fafc;
+  --bg-surface-1: #ffffff;
+  --bg-surface-2: #f1f5f9;
+  --bg-surface-3: #e8edf3;
   --bg-accent-subtle: #e8f4f1;
-  --text-main: #0f172a;
+  --text-primary: #0f172a;
   --text-secondary: #334155;
   --text-muted: #5b6678;
   --text-disabled: #8793a2;
   --text-on-accent: #ffffff;
-  --border-color: #e2e8f0;
+  --border-subtle: #e2e8f0;
   --border-accent: #b8d5d1;
-  --accent-teal: #0d9488;
-  --accent-teal-hover: #0f766e;
-  --accent-teal-subtle: #ccfbf1;
-  --accent-teal-text: #115e59;
+  --accent-primary: #0d9488;
+  --accent-primary-hover: #0f766e;
+  --accent-primary-subtle: #ccfbf1;
+  --accent-primary-text: #115e59;
   --accent-action: #0f766e;
   --accent-action-hover: #115e59;
   --accent-rgb: 13 148 136;
@@ -43,6 +44,15 @@
     border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --bg-primary: var(--bg-base);
+  --bg-surface: var(--bg-surface-1);
+  --bg-elevated: var(--bg-surface-2);
+  --text-main: var(--text-primary);
+  --border-color: var(--border-subtle);
+  --accent-teal: var(--accent-primary);
+  --accent-teal-hover: var(--accent-primary-hover);
+  --accent-teal-subtle: var(--accent-primary-subtle);
+  --accent-teal-text: var(--accent-primary-text);
   --sans: system-ui, "Segoe UI", Roboto, sans-serif;
   --heading: system-ui, "Segoe UI", Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
@@ -59,44 +69,51 @@
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg-primary: #0b0f17;
-  --bg-surface: #111827;
-  --bg-elevated: #1f2937;
-  --bg-accent-subtle: #134e4a;
-  --text-main: #f9fafb;
-  --text-secondary: #d1d5db;
-  --text-muted: #aeb8c7;
-  --text-disabled: #7d8999;
-  --text-on-accent: #0b0f17;
-  --border-color: #374151;
-  --border-accent: #31635d;
-  --accent-teal: #14b8a6;
-  --accent-teal-hover: #2dd4bf;
-  --accent-teal-subtle: #134e4a;
-  --accent-teal-text: #5eead4;
-  --accent-action: #5eead4;
-  --accent-action-hover: #2dd4bf;
-  --accent-rgb: 20 184 166;
-  --border-rgb: 55 65 81;
-  --surface-rgb: 17 24 39;
+  --bg-base: #121418;
+  --bg-surface-1: #191b20;
+  --bg-surface-2: #22252c;
+  --bg-surface-3: #2b2f37;
+  --bg-accent-subtle: #203532;
+  --text-primary: #e4e4e7;
+  --text-secondary: #c4c6ce;
+  --text-muted: #a1a1aa;
+  --text-disabled: #9a9aa3;
+  --text-on-accent: #101b1a;
+  --border-subtle: rgb(255 255 255 / 9%);
+  --border-accent: #456b65;
+  --accent-primary: #78bdb2;
+  --accent-primary-hover: #91cec3;
+  --accent-primary-subtle: #203b36;
+  --accent-primary-text: #a5e0d5;
+  --accent-action: #8bcac0;
+  --accent-action-hover: #a0d8cf;
+  --accent-rgb: 120 189 178;
+  --border-rgb: 84 92 104;
+  --surface-rgb: 25 27 32;
   --shadow-rgb: 0 0 0;
   --overlay-rgb: 0 0 0;
-  --status-pending-bg: #451a03;
-  --status-pending-text: #fde68a;
-  --status-resolved-bg: #064e3b;
-  --status-resolved-text: #a7f3d0;
-  --status-rejected-bg: #7f1d1d;
-  --status-rejected-text: #fecaca;
-  --status-info-bg: #1e3a5f;
-  --status-info-text: #bfdbfe;
-  --status-warning-border: #7f1d1d;
-  --status-info-border: #1e3a5f;
-  --status-resolved-border: #064e3b;
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
-  --shadow-md:
-    0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
-  --shadow-lg:
-    0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+  --status-pending-bg: #332d20;
+  --status-pending-text: #f0d18a;
+  --status-resolved-bg: #20352d;
+  --status-resolved-text: #a8d7ba;
+  --status-rejected-bg: #3a282b;
+  --status-rejected-text: #f0b0b4;
+  --status-info-bg: #26313b;
+  --status-info-text: #b5cfe3;
+  --status-warning-border: #69494b;
+  --status-info-border: #405364;
+  --status-resolved-border: #3c5a49;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --bs-body-color: var(--text-primary);
+  --bs-body-bg: var(--bg-base);
+  --bs-border-color: var(--border-subtle);
+  --bs-secondary-color: var(--text-secondary);
+  --bs-tertiary-color: var(--text-muted);
+  --bs-form-control-bg: var(--bg-surface-2);
+  --bs-form-control-color: var(--text-primary);
+  --bs-form-control-border-color: var(--border-subtle);
 }
 
 @media (max-width: 1024px) {
@@ -193,8 +210,77 @@ button:not(:disabled):active {
 }
 
 button:focus-visible {
-  outline: 3px solid rgb(var(--accent-rgb) / 35%);
+  outline: 3px solid var(--accent-primary);
   outline-offset: 2px;
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  color-scheme: dark;
+}
+
+[data-theme="dark"] ::selection {
+  color: var(--text-primary);
+  background: var(--accent-primary-subtle);
+}
+
+[data-theme="dark"] :focus-visible {
+  outline-color: var(--accent-primary-hover);
+}
+
+[data-theme="dark"]
+  :where(button, input, select, textarea, a, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent-primary-hover);
+  outline-offset: 2px;
+}
+
+[data-theme="dark"] {
+  scrollbar-color: var(--bg-surface-3) var(--bg-base);
+}
+
+[data-theme="dark"]::-webkit-scrollbar,
+[data-theme="dark"] *::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+[data-theme="dark"]::-webkit-scrollbar-track,
+[data-theme="dark"] *::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+
+[data-theme="dark"]::-webkit-scrollbar-thumb,
+[data-theme="dark"] *::-webkit-scrollbar-thumb {
+  border: 2px solid var(--bg-base);
+  border-radius: 999px;
+  background: var(--bg-surface-3);
+}
+
+:root[data-theme="dark"] .app-shell :where(*, *::before, *::after) {
+  box-shadow: none;
+}
+
+[data-theme="dark"]
+  .app-shell
+  :where(
+    .admin-dialog,
+    .thread-reply-dialog,
+    .dropdown-menu,
+    .portal-mobile-menu
+  ) {
+  border-color: var(--border-subtle);
+  background-color: var(--bg-surface-3);
+}
+
+[data-theme="dark"] .app-shell .dropdown-item {
+  color: var(--text-secondary);
+}
+
+[data-theme="dark"] .app-shell .dropdown-item:hover,
+[data-theme="dark"] .app-shell .dropdown-item:focus {
+  background-color: var(--bg-surface-2);
+  color: var(--text-primary);
 }
 
 .fade-in-up {
