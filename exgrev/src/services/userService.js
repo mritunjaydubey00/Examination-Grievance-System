@@ -1,4 +1,7 @@
-import { supabase } from "../lib/supabase.js";
+import {
+  supabase,
+  supabaseConfigurationError,
+} from "../lib/supabase.js";
 
 const PROFILE_KEY = "exgrev.profile";
 function normalizeUserRole(value) {
@@ -21,6 +24,9 @@ function normalizeUserRole(value) {
 }
 
 export async function authenticateUser(identifier, password) {
+  if (supabaseConfigurationError) {
+    return { user: null, error: supabaseConfigurationError };
+  }
   const loginIdentifier = String(identifier ?? "").trim();
   const { data, error } = await supabase.functions.invoke("login-by-user-id", {
     body: { identifier: loginIdentifier, password },

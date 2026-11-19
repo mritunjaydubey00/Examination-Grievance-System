@@ -27,7 +27,7 @@ function throwIfError({ data, error }) {
 export async function listGrievances() {
   const { data, error } = await supabase
     .from("grievances")
-    .select("*, users!grievances_student_user_id_fkey(\"Full Name\", Branch)")
+    .select("*, users!grievances_student_user_id_fkey(\"Full Name\", Branch, Department)")
     .order("created_at", { ascending: false });
   return throwIfError({ data, error });
 }
@@ -100,7 +100,24 @@ export async function listAssignableUsers(searchTerm = "") {
   );
 }
 
-export async function createGrievance({ userId, subject, description, category, problemType, files }) {
+export async function createGrievance({ userId, subject, description, category, problemType, otherText = "", files }) {
+  const title = String(subject || "").trim();
+  const trimmedDescription = String(description || "").trim();
+  if (title.length < 5 || title.length > 200) {
+    throw new Error("Problem title must be between 5 and 200 characters.");
+  }
+  if (trimmedDescription.length < 20 || trimmedDescription.length > 10000) {
+    throw new Error("Description must be between 20 and 10000 characters.");
+  }
+  if (!String(category || "").trim() || !String(problemType || "").trim()) {
+    throw new Error("Category and sub-category are required.");
+  }
+  if (
+    (category === "Any Other" || problemType === "Any Other") &&
+    String(otherText || "").trim().length < 3
+  ) {
+    throw new Error("Please specify the other category or sub-category.");
+  }
   const paths = [];
   for (const file of files) {
     const path = `${userId}/${crypto.randomUUID()}-${file.name.replace(/[^\w.-]/g, "_")}`;
@@ -110,8 +127,14 @@ export async function createGrievance({ userId, subject, description, category, 
   }
   const { data: grievance, error } = await supabase.from("grievances").insert({
     student_user_id: userId,
-    subject: subject.trim(), description: description.trim(),
-    problem_category: category, problem_type: problemType,
+    subject: title,
+    title,
+    description: trimmedDescription,
+    problem_category: category,
+    problem_type: problemType,
+    category,
+    sub_category: problemType,
+    other_text: String(otherText || "").trim() || null,
     supporting_documents: paths,
   }).select().single();
   if (error) {
@@ -307,4 +330,41 @@ export async function getDocumentUrl(path) {
   const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(path, 60);
   if (error) throw error;
   return data.signedUrl;
+}
+
+export async function createGrievanceGroup({ name, masterGrievanceId, memberIds }) {
+  const { data, error } = await supabase.rpc("create_grievance_group", {
+    p_name: name,
+    p_master_grievance_id: masterGrievanceId,
+    p_member_ids: memberIds,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function forwardGrievanceGroupSolution({
+  groupId,
+  memberIds,
+  solutionText,
+  attachments = [],
+}) {
+  const { data, error } = await supabase.rpc("forward_grievance_group_solution", {
+    p_group_id: groupId,
+    p_member_ids: memberIds,
+    p_solution_text: solutionText,
+    p_attachments: attachments,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function listActiveGroupsForMaster(masterGrievanceId) {
+  const { data, error } = await supabase
+    .from("grievance_groups")
+    .select("*, grievance_group_members(grievance_id, removed_at)")
+    .eq("master_grievance_id", masterGrievanceId)
+    .eq("status", "active")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data || [];
 }

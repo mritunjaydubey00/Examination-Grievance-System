@@ -10,11 +10,11 @@ import GrievanceForm from "../components/StudentPage/GrievanceForm.jsx";
 import GrievanceHistory from "../components/StudentPage/GrievanceHistory.jsx";
 import {
   PortalDashboard,
-  PortalPlaceholderPage,
   PortalSidePanel,
 } from "../components/PortalNavigation.jsx";
 import MajorExamStudentView from "../components/MajorExamStudentView.jsx";
 import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
+import ContentManager from "../components/ContentManager.jsx";
 
 function StudentPage({
   session,
@@ -128,10 +128,11 @@ function StudentPage({
     try {
       await createGrievance({
         userId: session.userId,
-        subject: form.get("subject"),
+        subject: form.get("title"),
         description: form.get("description"),
         category: selectedCategory,
         problemType: selectedProblem,
+        otherText: form.get("other_text"),
         files: form.getAll("documents").filter((file) => file.size > 0),
       });
       formElement.reset();
@@ -225,10 +226,7 @@ function StudentPage({
             />
           )}
           {["Guidelines", "Notice Board"].includes(activePage) && (
-            <PortalPlaceholderPage
-              page={activePage}
-              canEditContent={false}
-            />
+            <ContentManager type={activePage === "Guidelines" ? "guideline" : "notice"} canEdit={false} />
           )}
         </div>
       </div>

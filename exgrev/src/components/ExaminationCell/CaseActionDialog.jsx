@@ -4,6 +4,7 @@ import SupportingDocuments from "../StudentPage/SupportingDocuments.jsx";
 import CalendarDatePicker from "../CalendarDatePicker.jsx";
 import { listAssignableUsers } from "../../services/grievanceService.js";
 import { getGrievanceStatusLabel } from "../../lib/grievanceStatus.js";
+import { getAdmissionYear, getStudyYear } from "../../config/enrollment.js";
 
 function getTodayDateValue() {
   const today = new Date();
@@ -116,7 +117,13 @@ function CaseActionDialog({
           </div>
           <div>
             <dt>Department</dt>
-            <dd>{grievance.users?.Department || "Not provided"}</dd>
+            <dd>{grievance.users?.Department || grievance.student_department || "Unknown"}</dd>
+          </div>
+          <div>
+            <dt>Admission year / Study year</dt>
+            <dd>
+              {getAdmissionYear(grievance.student_user_id) || "Unknown"} · {getStudyYear(grievance.student_user_id)}
+            </dd>
           </div>
           <div>
             <dt>Created</dt>
@@ -125,9 +132,15 @@ function CaseActionDialog({
           <div>
             <dt>Category</dt>
             <dd>
-              {grievance.problem_category} · {grievance.problem_type}
+              {grievance.category || grievance.problem_category} · {grievance.sub_category || grievance.problem_type}
             </dd>
           </div>
+          {grievance.other_text && (
+            <div>
+              <dt>Other specification</dt>
+              <dd>{grievance.other_text}</dd>
+            </div>
+          )}
           <div>
             <dt>Status / priority</dt>
             <dd>

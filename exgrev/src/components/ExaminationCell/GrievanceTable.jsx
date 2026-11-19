@@ -1,4 +1,5 @@
 import { getGrievanceStatusLabel } from "../../lib/grievanceStatus.js";
+import { getAdmissionYear, getStudyYear } from "../../config/enrollment.js";
 
 function GrievanceTable({
   grievances,
@@ -32,7 +33,8 @@ function GrievanceTable({
                 "Subject",
                 "Created",
                 "Category",
-                "Problem type",
+                "Sub-category",
+                "Department / Year",
                 "Status",
                 "",
               ].map((heading) => (
@@ -43,13 +45,13 @@ function GrievanceTable({
           <tbody>
             {loading ? (
               <tr>
-                <td className="admin-empty-state" colSpan="8">
+                <td className="admin-empty-state" colSpan="9">
                   <strong>Loading grievances…</strong>
                 </td>
               </tr>
             ) : error ? (
               <tr>
-                <td className="admin-empty-state" colSpan="8">
+                <td className="admin-empty-state" colSpan="9">
                   <strong>Grievances could not be loaded: {error}</strong>
                 </td>
               </tr>
@@ -69,8 +71,13 @@ function GrievanceTable({
                   </td>
                   <td>{grievance.subject}</td>
                   <td>{new Date(grievance.created_at).toLocaleString()}</td>
-                  <td>{grievance.problem_category}</td>
-                  <td>{grievance.problem_type}</td>
+                  <td>{grievance.category || grievance.problem_category}</td>
+                  <td>{grievance.sub_category || grievance.problem_type}</td>
+                  <td>
+                    {grievance.users?.Department || grievance.student_department || "Unknown"}
+                    <br />
+                    {getStudyYear(grievance.student_user_id)} / Admission {getAdmissionYear(grievance.student_user_id) || "Unknown"}
+                  </td>
                   <td>
                     <span
                       className={`admin-status admin-status-${String(grievance.status || "").toLowerCase().replaceAll(" ", "-")}`}
@@ -98,7 +105,7 @@ function GrievanceTable({
               ))
             ) : (
               <tr>
-                <td className="admin-empty-state" colSpan="8">
+                <td className="admin-empty-state" colSpan="9">
                   <strong>
                     {isTeachingStaff
                       ? "No assigned cases to display."

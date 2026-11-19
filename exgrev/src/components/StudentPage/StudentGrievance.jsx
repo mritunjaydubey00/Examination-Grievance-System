@@ -24,7 +24,7 @@ function StudentGrievance({ grievance, onOpenThread }) {
         <h4>{grievance.subject || "Untitled grievance"}</h4>
         {(grievance.problem_category || grievance.problem_type) && (
           <p>
-            {[grievance.problem_category, grievance.problem_type]
+            {[grievance.category || grievance.problem_category, grievance.sub_category || grievance.problem_type]
               .filter(Boolean)
               .join(" · ")}
           </p>

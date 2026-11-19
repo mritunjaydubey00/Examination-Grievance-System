@@ -6,7 +6,6 @@ import TeachingStaffCaseDialog from "../components/teachingStaff/TeachingStaffCa
 import ToastNotice from "../components/ToastNotice.jsx";
 import {
   PortalDashboard,
-  PortalPlaceholderPage,
   PortalSidePanel,
 } from "../components/PortalNavigation.jsx";
 import {
@@ -16,6 +15,7 @@ import {
 import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 import { supabase } from "../lib/supabase.js";
 import PortalLoading from "../components/PortalLoading.jsx";
+import ContentManager from "../components/ContentManager.jsx";
 import "./ExaminationCell.css";
 
 function TeachingStaffPage({
@@ -255,10 +255,7 @@ function TeachingStaffPage({
             />
           )}
           {["Guidelines", "Notice Board"].includes(activePage) && (
-            <PortalPlaceholderPage
-              page={activePage}
-              canEditContent={false}
-            />
+            <ContentManager type={activePage === "Guidelines" ? "guideline" : "notice"} canEdit={false} />
           )}
         </div>
       </div>

@@ -1,39 +1,5 @@
-export const categoryOptions = [
-  "Major Exam",
-  "Minor Exam",
-  "Central Level Quiz",
-  "Marksheet/Result Issue",
-];
+export { grievanceCategoryOptions as categoryOptions } from "./grievanceCategories.js";
 
-export const problemTypeOptions = {
-  "Major Exam": [
-    "Absent on exam day",
-    "Report misconduct",
-    "Desktop issue",
-    "Incorrect Question",
-    "Exam date clash with another exam",
-    "Exam paper issue",
-    "Course not in time-table",
-  ],
-  "Minor Exam": [
-    "Absent on exam day",
-    "Report Misconduct",
-    "Incorrect Question",
-    "Date Clash with another exam",
-    "Discrepancy in question paper",
-    "Exam paper issue",
-  ],
-  "Central Level Quiz": [
-    "Absent on quiz day",
-    "Report Misconduct",
-    "Desktop issue",
-    "Date clash with another exam",
-  ],
-  "Marksheet/Result Issue": [
-    "Result Not Published",
-    "Incorrect Marks",
-    "Marksheet Not Available",
-    "Data Change Request",
-    "Request for duplicate Marksheet",
-  ],
-};
+import { grievanceSubCategories } from "./grievanceCategories.js";
+
+export const problemTypeOptions = grievanceSubCategories;

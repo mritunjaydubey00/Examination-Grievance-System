@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { listContent } from "../services/contentService.js";
 import { createPortal } from "react-dom";
 import "./PortalNavigation.css";
 
@@ -182,6 +183,23 @@ function PortalDashboard({
   onMetricClick,
   onAddGrievance,
 }) {
+  const [notices, setNotices] = useState([]);
+  const [guidelines, setGuidelines] = useState([]);
+  const [contentLoading, setContentLoading] = useState(true);
+  useEffect(() => {
+    let active = true;
+    Promise.all([listContent("notice"), listContent("guideline")])
+      .then(([noticeRows, guidelineRows]) => {
+        if (active) {
+          setNotices(noticeRows.slice(0, 5));
+          setGuidelines(guidelineRows.slice(0, 5));
+        }
+      })
+      .finally(() => {
+        if (active) setContentLoading(false);
+      });
+    return () => { active = false; };
+  }, []);
   const audienceLabel =
     role === "student"
       ? "Your grievance overview"
@@ -243,16 +261,18 @@ function PortalDashboard({
               <h3 id="dashboard-notices">Notice Board</h3>
             </div>
             {canEditContent && (
-              <button type="button" className="portal-add-button" disabled>
-                Add notice
-              </button>
+              <span className="portal-add-button" aria-label="Manage notices from the Notice Board page">Manage</span>
             )}
           </div>
-          <ul className="portal-placeholder-list">
-            {/* TODO: Replace notice placeholders with Notice Board content. */}
-            <li>Examination grievance portal is open for submissions.</li>
-            <li>Check your portal regularly for grievance updates.</li>
-          </ul>
+          {contentLoading ? (
+            <p role="status">Loading notices…</p>
+          ) : notices.length ? (
+            <ul className="portal-placeholder-list">
+              {notices.map((item) => <li key={item.id}><strong>{item.title}</strong><br />{item.content}</li>)}
+            </ul>
+          ) : (
+            <p>No notices yet</p>
+          )}
         </section>
         <section className="portal-info-card" aria-labelledby="dashboard-guidelines">
           <div className="portal-card-heading">
@@ -261,20 +281,18 @@ function PortalDashboard({
               <h3 id="dashboard-guidelines">Guidelines</h3>
             </div>
             {canEditContent && (
-              <button type="button" className="portal-add-button" disabled>
-                Add guideline
-              </button>
+              <span className="portal-add-button" aria-label="Manage guidelines from the Guidelines page">Manage</span>
             )}
           </div>
-          <ul className="portal-placeholder-list">
-            {/* TODO: Replace guideline placeholders with published guidelines. */}
-            <li>Provide clear details and relevant examination information.</li>
-            <li>Attach supporting documents where applicable.</li>
-            <li>
-              After the Exam Cell marks a grievance resolved, respond within 48
-              hours to accept or continue it.
-            </li>
-          </ul>
+          {contentLoading ? (
+            <p role="status">Loading guidelines…</p>
+          ) : guidelines.length ? (
+            <ul className="portal-placeholder-list">
+              {guidelines.map((item) => <li key={item.id}><strong>{item.title}</strong><br />{item.content}</li>)}
+            </ul>
+          ) : (
+            <p>No guidelines yet</p>
+          )}
         </section>
       </div>
     </section>

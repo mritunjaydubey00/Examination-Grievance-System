@@ -1,142 +1,152 @@
 # ExGrev - Examination Grievance System
 
-ExGrev is a web application for submitting, assigning, tracking, and resolving examination grievances. This repository's application is in [`exgrev/`](./exgrev/README.md); this document is the developer guide for working on it.
+ExGrev is a React and Supabase portal for examination-grievance submission and resolution. It supports Student, Examination Cell, and Teaching Staff roles.
 
-## What the application does
+## Features
 
-The app has three role-based workspaces:
+### Student
+- Sign in with User ID or approved email; change password.
+- Submit a grievance with title, required description, category, sub-category, optional "Any Other" specification, and supporting documents.
+- View grievance history and category/sub-category.
+- Open the grievance thread, add remarks/attachments, accept a resolution, or continue it within 48 hours.
+- Read notices and guidelines.
 
-- **Students** submit grievances with supporting documents, follow case activity, and confirm a proposed resolution.
-- **Examination Cell staff** review all cases, assign or reassign them to staff, set priority and due dates, add remarks, and propose resolutions.
-- **Teaching staff** review cases assigned to them and add remarks to the case timeline.
+### Examination Cell
+- Review, search, filter, and paginate grievances.
+- Filter by department, admission year/study year, status, category, sub-category, date range, and keyword.
+- Assign or reassign cases, set priority/due date, add remarks, and propose resolutions.
+- Select multiple similar grievances, create a group, choose a master, and atomically forward the master's common solution.
+- Add, edit, hide/show, and delete notices and guidelines, with optional PDF/image attachments.
 
-The frontend is not the authorization boundary. Supabase Auth, Row Level Security (RLS), database functions, and Storage policies enforce access to protected data.
+### Teaching Staff
+- Review assigned grievances and add remarks.
+- Read notice board and guidelines.
 
 ## Technology
 
-- React 19 and Vite 8
-- React Router 7
+- React 19, React Router 7, Vite 8
 - Bootstrap 5 / React Bootstrap
-- Supabase JavaScript client, Auth, Postgres, Storage, Realtime, and Edge Functions
-- Oxlint
+- Supabase Auth, Postgres, RLS, Storage, Realtime, Edge Functions
+- Oxlint and Node test runner
 
 ## Repository layout
 
 ```text
 exgrev/
-  public/                  Static assets
   src/
-    components/            Role-specific UI and shared controls
-    data/                  Form categories and sample display data
-    lib/supabase.js         Supabase client initialization
-    pages/                 Login, password change, and role workspaces
-    services/              Authentication and grievance data operations
-    App.jsx                 Session restoration and role-based page selection
-    main.jsx                React entry point
+    components/          Shared and role-specific UI
+    config/enrollment.js Enrollment/year/branch rules
+    data/                Category and exam data
+    lib/                 Supabase and shared helpers
+    pages/               Role dashboards and grievance thread
+    services/            Supabase data operations
   supabase/
-    functions/              Supabase Edge Functions
-    migrations/             Ordered database migrations
-  .env.example              Frontend environment variable template
-  SUPABASE_SETUP.md         Detailed backend setup and login notes
-  package.json              Scripts and dependencies
+    functions/           login and profile Edge Functions
+    migrations/          Timestamped SQL migrations
+  .env.example
+  SUPABASE_SETUP.md
+  package.json
+  vite.config.js
 ```
-
-The browser application starts in `src/main.jsx`. `App.jsx` restores the Supabase session and selects a workspace based on the authenticated profile. Keep data access in `src/services/` rather than embedding Supabase queries throughout presentational components.
 
 ## Prerequisites
 
-- Node.js compatible with Vite 8 (Node.js 20.19+ or 22.12+)
+- Node.js 20.19+ or 22.12+
 - npm
-- Access to a Supabase project configured for ExGrev
-- Supabase Dashboard access; the Supabase CLI is needed to deploy the Edge Function
+- Supabase project and Dashboard access
+- Supabase CLI for Edge Functions
 
-## Local development
+## Environment variables
 
-Run these commands from the frontend directory:
+Create `exgrev/.env.local`:
+
+```dotenv
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=your-browser-publishable-key
+```
+
+Use only the browser-safe publishable/anon key. Never place the service-role key in `VITE_*`, source control, or SQL sent to the browser.
+
+## Run locally
 
 ```powershell
 cd exgrev
 npm ci
 Copy-Item .env.example .env.local
-```
-
-Set the following values in `exgrev/.env.local`:
-
-```dotenv
-VITE_SUPABASE_URL=https://your-project-ref.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=your-supabase-publishable-key
-```
-
-Use the publishable/anon key intended for browser clients. Never put a Supabase service-role key or other server secret in a `VITE_` variable or commit it. The local environment file is ignored by Git.
-
-Start the development server:
-
-```powershell
 npm run dev
 ```
 
-Vite prints the local URL (typically `http://localhost:5173`). The frontend requires a reachable Supabase project with the schema, policies, and login function described below; setting the two browser variables alone does not provision the backend.
+Open the URL printed by Vite, normally `http://localhost:5173`.
 
 ## Supabase setup
 
-The application expects an existing `public.users` table. Its current database and login integration uses the exact column names `User ID`, `Full Name`, `Ex Factor`, `Branch`, `Department`, `Phone Number`, and `email`. User IDs must be present for Student accounts; email addresses must be unique, and all accounts need an email and phone number. `Ex Factor` determines the role: `Student`, `Examination Cell`, or `Teaching staff`.
-
-For the complete setup, prerequisites, and troubleshooting details, read [`exgrev/SUPABASE_SETUP.md`](./exgrev/SUPABASE_SETUP.md). In brief:
-
-1. Enable Email/password sign-in in Supabase Auth.
-2. In the Supabase SQL Editor, apply the SQL migrations in `exgrev/supabase/migrations/` in filename order, after confirming that the existing `users` table meets the schema requirements. The migrations create the grievance tables, access policies, Storage bucket, database actions, and related behavior.
-3. Configure the `SUPABASE_SERVICE_ROLE_KEY` as a **Supabase Edge Function secret only**.
-4. Deploy `login-by-user-id` from `exgrev/` using the Supabase CLI:
-
-   ```powershell
-   npx supabase login
-   npx supabase functions deploy login-by-user-id --project-ref <your-project-ref>
-   ```
-
-   Replace the placeholder with the Supabase project reference. Do not put access tokens or service-role keys in source control.
-
-For a first-time account, login accepts the Student's User ID or a staff member's email. The temporary password is the phone number stored for that account; the user is required to change it after signing in.
-
-## Deploying online
-
-For a step-by-step, free Cloudflare Pages deployment guide—including Supabase
-configuration, production verification, and the update workflow—see
-[`exgrev/DEPLOYMENT.md`](./exgrev/DEPLOYMENT.md).
-
-## Application and data flow
-
-- `src/services/userService.js` invokes the `login-by-user-id` function, establishes the Supabase session, restores the user's profile, and handles password changes and sign-out.
-- `src/services/grievanceService.js` reads and writes grievances and timeline events, uploads supporting documents to the private `grievance-documents` bucket, and requests short-lived signed URLs for access.
-- `grievances` stores the current case state; `grievance_events` stores the case activity timeline. Realtime subscriptions keep role workspaces refreshed.
-- Database migrations and RLS policies are authoritative for data access. When changing a role's capabilities or a query's data requirements, update and review the associated database policy/function as well as the UI.
-
-## Contributor workflow
-
-1. Create a focused branch from the project's current base branch.
-2. Install dependencies with `npm ci` from `exgrev/`.
-3. Keep UI changes in the relevant page/component and shared data operations in `src/services/`.
-4. For schema, policy, Storage, or database function changes, add a new, timestamp-prefixed migration; do not rewrite an already-applied migration. Test it against a non-production Supabase project and check its RLS behavior for each affected role.
-5. Run the checks below and manually verify the affected role workflows against a configured Supabase project.
-6. Submit a pull request describing the behavior change, migration/deployment requirements, and verification performed.
-
-Follow the existing JavaScript/JSX patterns, keep error states visible to users, and avoid placing credentials or environment-specific configuration in source files.
-
-## Checks and production preview
-
-From `exgrev/`:
+1. Enable Email/password in **Authentication → Providers**.
+2. Add local and deployed redirect URLs in **Authentication → URL Configuration**.
+3. Apply `exgrev/supabase/migrations/` in filename order through the Supabase SQL Editor.
+4. At minimum, run the existing migrations followed by `202611190001_predeploy_fixes.sql`.
+5. Deploy `login-by-user-id` and `resolve-authenticated-profile`:
 
 ```powershell
+npx supabase login
+npx supabase functions deploy login-by-user-id --project-ref <project-ref>
+npx supabase functions deploy resolve-authenticated-profile --project-ref <project-ref>
+```
+
+6. Create or verify `grievance-documents`, `grievance-thread-attachments`, `notices`, and `guidelines` Storage buckets. The migration creates/verifies their private-bucket configuration and policies.
+7. Set the Edge Function secrets and the existing exam notification secrets as described in `exgrev/SUPABASE_SETUP.md`.
+
+## Auth redirect URLs
+
+Use the current app origin. Add these Supabase Redirect URLs:
+
+- `http://localhost:5173`
+- `http://127.0.0.1:5173`
+- Your deployed HTTPS application URL
+
+Set the production app URL as the Supabase Site URL. Google sign-in, when enabled, requires:
+
+- Google JavaScript origin: local origin and deployed HTTPS origin
+- Google authorized redirect URI: `https://<project-ref>.supabase.co/auth/v1/callback`
+
+## Enrollment year logic
+
+The shared helper in `exgrev/src/config/enrollment.js` implements:
+
+- Admission year: characters at 1-based positions 5–6. `BTCB25O1116` becomes 2025.
+- Study year: academic sessions start in July (`ACADEMIC_YEAR_CONFIG.academicSessionStartsInMonth = 7`).
+- The program length is configured as four years. A later admission becomes `Passed out`.
+- Invalid or short values return `Unknown`.
+- The assumed branch code extraction is characters 3–4. Known mappings:
+  - `CB`: Computer Science and Business Systems
+  - `CS`: Computer Science
+  - `IT`: Information Technology
+  - `EC`: Electronics and Communication
+  - `EE`: Electrical
+  - `ME`: Mechanical
+  - `CE`: Civil
+  - `BT`: Biotechnology
+
+Stored `users.Department` and `users.Branch` values are preferred. `admission_year` is generated and indexed when applying the predeploy migration.
+
+## Checks
+
+```powershell
+cd exgrev
+npm run test
 npm run lint
 npm run build
 npm run preview
 ```
 
-The current package scripts do not define an automated test command. For changes to authentication, case permissions, uploads, or resolution behavior, also verify the affected student, Examination Cell, and teaching-staff workflows in a configured development Supabase project.
+Test the student, teaching-staff, and Examination Cell flows against a non-production Supabase project before deployment.
 
-## Troubleshooting
+## Branch
 
-- **Missing Supabase environment variables:** ensure `.env.local` exists in `exgrev/` and contains both variables from `.env.example`; restart Vite after changing environment values.
-- **Login function not deployed:** deploy `login-by-user-id` to the same Supabase project used by the frontend.
-- **Email provider disabled:** enable Email/password sign-in in Supabase Auth.
-- **Login setup or permission errors:** check the `users` column names and values, apply the required migrations, confirm the Edge Function secret is configured, and verify that the signed-in user's role matches `Ex Factor`.
-- **Case data or document access denied:** inspect the relevant RLS or Storage policy and test as the role that needs access; do not solve authorization problems by exposing the bucket or disabling RLS.
+The implementation branch is `version3`. Keep database migrations and frontend environment values synchronized across the deployed build.
+
+## Known limitations
+
+- Notice/guideline attachment URLs are created for private buckets and should be renewed if viewing after the signed URL expiry.
+- Google sign-in may remain disabled until the provider is enabled and its OAuth credentials are configured in Supabase.
+- Legacy grievances are backfilled to `Grievance / General`; administrators should review unusual legacy data.
+- Deployment hosting must receive the build-time `VITE_*` variables and be rebuilt after changing them.

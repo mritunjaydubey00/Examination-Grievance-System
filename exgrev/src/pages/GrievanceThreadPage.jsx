@@ -372,8 +372,9 @@ function GrievanceThreadPage({
               </p>
               <h2>{grievance.subject}</h2>
               <p>
-                {grievance.problem_category} · {grievance.problem_type}
+                {grievance.category || grievance.problem_category} · {grievance.sub_category || grievance.problem_type}
               </p>
+              {grievance.other_text && <p><strong>Other specification:</strong> {grievance.other_text}</p>}
             </div>
             <span
               className={`admin-status admin-status-${String(grievance.status || "").toLowerCase().replaceAll(" ", "-")}`}

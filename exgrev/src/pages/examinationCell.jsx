@@ -4,11 +4,11 @@ import UserProfileSection from "../components/UserProfileSection.jsx";
 import AdminWorkspace from "../components/ExaminationCell/AdminWorkspace.jsx";
 import CaseActionDialog from "../components/ExaminationCell/CaseActionDialog.jsx";
 import MajorExamMaterialAdmin from "../components/MajorExamMaterialAdmin.jsx";
+import ContentManager from "../components/ContentManager.jsx";
 import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 import ToastNotice from "../components/ToastNotice.jsx";
 import {
   PortalDashboard,
-  PortalPlaceholderPage,
   PortalSidePanel,
 } from "../components/PortalNavigation.jsx";
 import {
@@ -38,6 +38,7 @@ function ExaminationCell({
   const [loadError, setLoadError] = useState("");
   const [threadGrievanceId, setThreadGrievanceId] = useState(null);
   const [activePage, setActivePage] = useState("Dashboard");
+  const [forwardPromptGrievance, setForwardPromptGrievance] = useState(null);
 
   // listGrievances supplies the overall set visible to the Examination Cell.
   const examinationCellMetrics = [
@@ -91,6 +92,7 @@ function ExaminationCell({
         ...row,
         student_name: row.users?.["Full Name"] || row.student_user_id,
         branch: row.users?.Branch || "",
+        student_department: row.users?.Department || "Unknown",
         assigned_faculty_name: row.assigned_faculty || "ExGrev Unforward",
         supporting_documents: row.supporting_documents || [],
       }));
@@ -215,6 +217,13 @@ function ExaminationCell({
             ? "Resolution proposed. The grievance will be resolved after the student confirms."
             : "Grievance updated.",
       );
+      if (activeAction.action === "resolve") {
+        setForwardPromptGrievance({
+          ...activeAction.grievance,
+          resolution_remark: notes.trim(),
+          resolution_pending: true,
+        });
+      }
       await refresh();
     } catch (error) {
       setNoticeType("error");
@@ -294,6 +303,7 @@ function ExaminationCell({
             activePage,
           ) && (
             <AdminWorkspace
+              autoForwardGrievance={forwardPromptGrievance}
               grievances={filteredGrievances}
               loading={loading}
               error={loadError}
@@ -317,9 +327,9 @@ function ExaminationCell({
             />
           )}
           {["Guidelines", "Notice Board"].includes(activePage) && (
-            <PortalPlaceholderPage
-              page={activePage}
-              canEditContent
+            <ContentManager
+              type={activePage === "Guidelines" ? "guideline" : "notice"}
+              canEdit
             />
           )}
         </div>
