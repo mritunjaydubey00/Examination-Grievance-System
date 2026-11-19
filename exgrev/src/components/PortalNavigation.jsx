@@ -12,6 +12,12 @@ const grievanceLinks = {
   ],
 };
 
+const roleExtras = {
+  student: ["Question Papers & Answer Keys"],
+  faculty: [],
+  "exam-cell": ["Question Papers & Answer Keys"],
+};
+
 function PortalSidePanel({
   role,
   activePage,
@@ -25,6 +31,7 @@ function PortalSidePanel({
   const mobileNavigationRef = useRef(null);
   const menuButtonRef = useRef(null);
   const links = grievanceLinks[role];
+  const extraLinks = roleExtras[role] || [];
 
   useEffect(() => {
     if (!mobileMenuOpen) return undefined;
@@ -88,6 +95,16 @@ function PortalSidePanel({
             ))}
           </div>
         )}
+        {extraLinks.map((item) => (
+          <button
+            type="button"
+            key={item}
+            className={`portal-nav-link${activePage === item ? " is-active" : ""}`}
+            onClick={() => navigateTo(item)}
+          >
+            {item}
+          </button>
+        ))}
         {["Guidelines", "Profile", "Notice Board"].map((item) => (
           <button
             type="button"

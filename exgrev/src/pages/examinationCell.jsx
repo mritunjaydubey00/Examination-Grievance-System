@@ -3,6 +3,7 @@ import AdminHeader from "../components/ExaminationCell/AdminHeader.jsx";
 import UserProfileSection from "../components/UserProfileSection.jsx";
 import AdminWorkspace from "../components/ExaminationCell/AdminWorkspace.jsx";
 import CaseActionDialog from "../components/ExaminationCell/CaseActionDialog.jsx";
+import MajorExamMaterialAdmin from "../components/MajorExamMaterialAdmin.jsx";
 import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 import ToastNotice from "../components/ToastNotice.jsx";
 import {
@@ -305,6 +306,9 @@ function ExaminationCell({
               }
               onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
             />
+          )}
+          {activePage === "Question Papers & Answer Keys" && (
+            <MajorExamMaterialAdmin />
           )}
           {activePage === "Profile" && (
             <UserProfileSection

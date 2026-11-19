@@ -13,6 +13,7 @@ import {
   PortalPlaceholderPage,
   PortalSidePanel,
 } from "../components/PortalNavigation.jsx";
+import MajorExamStudentView from "../components/MajorExamStudentView.jsx";
 import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
 
 function StudentPage({
@@ -213,6 +214,9 @@ function StudentPage({
               loading={initialLoading}
               onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
             />
+          )}
+          {activePage === "Question Papers & Answer Keys" && (
+            <MajorExamStudentView session={session} />
           )}
           {activePage === "Profile" && (
             <UserProfileSection
