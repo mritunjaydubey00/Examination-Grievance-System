@@ -527,19 +527,34 @@
 .answer-key-form {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 20px;
-  padding: 16px;
+  gap: 16px;
+  margin-bottom: 22px;
+  padding: 20px;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--bg-surface);
+}
+
+.answer-key-form-heading h4 {
+  margin: 0;
+  color: var(--text-main);
+  font-family: var(--heading);
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.answer-key-form-heading p {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
 }
 
 .answer-key-form label {
   display: grid;
-  gap: 7px;
+  min-width: 0;
+  gap: 6px;
   color: var(--text-secondary);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 700;
 }
 
@@ -547,14 +562,27 @@
 .answer-key-form select {
   box-sizing: border-box;
   width: 100%;
-  min-height: 42px;
-  padding: 9px 11px;
+  min-height: 40px;
+  padding: 8px 10px;
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: 7px;
   background: var(--bg-primary);
   color: var(--text-main);
   font: inherit;
-  font-size: 0.82rem;
+  font-size: 0.84rem;
+  font-weight: 500;
+}
+
+.answer-key-form input:focus,
+.answer-key-form select:focus {
+  border-color: var(--accent-teal-hover);
+  outline: 3px solid rgb(var(--accent-rgb) / 13%);
+}
+
+.answer-key-year-hint {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 500;
 }
 
 .answer-key-form-wide {
@@ -565,23 +593,35 @@
 .answer-key-card-actions {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   gap: 8px;
   flex-wrap: wrap;
 }
 
 .portal-secondary-button,
 .answer-key-card-actions button {
-  min-height: 34px;
-  padding: 7px 10px;
+  min-height: 36px;
+  padding: 7px 11px;
   border: 1px solid var(--border-color);
-  border-radius: 5px;
+  border-radius: 6px;
   background: var(--bg-elevated);
   color: var(--text-secondary);
   cursor: pointer;
   font: inherit;
-  font-size: 0.74rem;
+  font-size: 0.76rem;
   font-weight: 700;
+}
+
+.portal-secondary-button:disabled,
+.answer-key-card-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.answer-key-form-actions .submit-button {
+  min-height: 38px;
+  padding: 9px 14px;
+  font-size: 0.8rem;
 }
 
 .answer-key-message {
@@ -590,10 +630,15 @@
   font-size: 0.84rem;
 }
 
+.answer-key-message.error {
+  color: var(--status-rejected-text);
+}
+
 .answer-key-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  align-items: stretch;
+  gap: 16px;
 }
 
 .answer-key-card {
@@ -601,19 +646,31 @@
   min-height: 190px;
   flex-direction: column;
   justify-content: space-between;
-  gap: 16px;
-  padding: 17px;
+  gap: 14px;
+  padding: 18px;
   border: 1px solid var(--border-color);
-  border-top: 3px solid var(--accent-action);
-  border-radius: 8px;
+  border-top: 3px solid var(--border-accent);
+  border-radius: 10px;
   background: var(--bg-surface);
-  box-shadow: 0 8px 20px rgb(var(--shadow-rgb) / 6%);
+  box-shadow: var(--shadow-sm);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.answer-key-card:hover {
+  border-top-color: var(--accent-action);
+  box-shadow: 0 8px 20px rgb(var(--shadow-rgb) / 8%);
+  transform: translateY(-2px);
 }
 
 .answer-key-card h4 {
-  margin: 5px 0 8px;
+  margin: 6px 0 8px;
   color: var(--text-main);
   font-size: 1rem;
+  font-weight: 650;
+  overflow-wrap: anywhere;
 }
 
 .answer-key-card p {
@@ -626,21 +683,34 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 38px;
-  padding: 8px 12px;
-  border-radius: 5px;
-  background: var(--accent-action);
-  color: var(--text-on-accent);
+  min-height: 36px;
+  padding: 7px 11px;
+  border: 1px solid var(--border-accent);
+  border-radius: 6px;
+  background: var(--bg-accent-subtle);
+  color: var(--accent-action);
   text-decoration: none;
-  font-size: 0.78rem;
-  font-weight: 750;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.answer-key-card a:hover {
+  background: var(--accent-teal-subtle);
+  color: var(--accent-action-hover);
+}
+
+.answer-key-card a:focus-visible,
+.answer-key-card-actions button:focus-visible,
+.portal-secondary-button:focus-visible {
+  outline: 3px solid rgb(var(--accent-rgb) / 25%);
+  outline-offset: 2px;
 }
 
 .answer-key-status {
   display: inline-flex;
   margin-top: 8px;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 4px 9px;
+  border-radius: 5px;
   background: var(--status-rejected-bg);
   color: var(--status-rejected-text);
   font-size: 0.7rem;
@@ -657,7 +727,7 @@
   margin: 0;
   padding: 24px;
   border: 1px dashed var(--border-color);
-  border-radius: 8px;
+  border-radius: 10px;
   color: var(--text-muted);
   text-align: center;
 }

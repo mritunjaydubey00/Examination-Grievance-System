@@ -6,7 +6,40 @@ import {
   updateAnswerKey,
 } from "../../services/answerKeyService.js";
 
+const YEAR_LEVELS = [
+  { value: 1, label: "1st year" },
+  { value: 2, label: "2nd year" },
+  { value: 3, label: "3rd year" },
+  { value: 4, label: "4th year" },
+];
+
+function getAcademicYearStartYear(date = new Date()) {
+  return date.getMonth() >= 6 ? date.getFullYear() : date.getFullYear() - 1;
+}
+
+function getAdmissionYearForLevel(yearLevel, academicYearStart) {
+  if (yearLevel.startsWith("cohort:")) {
+    const admissionYear = Number(yearLevel.slice("cohort:".length));
+    return Number.isInteger(admissionYear) ? admissionYear : null;
+  }
+
+  const level = Number(yearLevel);
+  return Number.isInteger(level) && level >= 1 && level <= YEAR_LEVELS.length
+    ? academicYearStart - level + 1
+    : null;
+}
+
+function getYearLevelForAdmissionYear(admissionYear, academicYearStart) {
+  const level = academicYearStart - admissionYear + 1;
+  return level >= 1 && level <= YEAR_LEVELS.length
+    ? String(level)
+    : `cohort:${admissionYear}`;
+}
+
 function AnswerKeyManager({ session }) {
+  const academicYearStart = getAcademicYearStartYear();
+  const isTeachingStaff = session.role === "teaching staff";
+  const department = String(session.department || "").trim();
   const [answerKeys, setAnswerKeys] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -15,7 +48,7 @@ function AnswerKeyManager({ session }) {
   const [form, setForm] = useState({
     subjectCode: "",
     subjectName: "",
-    admissionYear: "",
+    yearLevel: "",
     branchCode: "",
     semester: "",
     title: "",
@@ -49,7 +82,7 @@ function AnswerKeyManager({ session }) {
     setForm({
       subjectCode: "",
       subjectName: "",
-      admissionYear: "",
+      yearLevel: "",
       branchCode: "",
       semester: "",
       title: "",
@@ -62,7 +95,10 @@ function AnswerKeyManager({ session }) {
     setForm({
       subjectCode: answerKey.subject_code,
       subjectName: answerKey.subject_name,
-      admissionYear: String(answerKey.admission_year),
+      yearLevel: getYearLevelForAdmissionYear(
+        answerKey.admission_year,
+        academicYearStart,
+      ),
       branchCode: answerKey.branch_code,
       semester: answerKey.semester,
       title: answerKey.title,
@@ -74,6 +110,22 @@ function AnswerKeyManager({ session }) {
     event.preventDefault();
     setBusy(true);
     setMessage("");
+
+    const admissionYear = getAdmissionYearForLevel(
+      form.yearLevel,
+      academicYearStart,
+    );
+    if (!admissionYear) {
+      setMessage("Select a valid student year.");
+      setBusy(false);
+      return;
+    }
+
+    if (isTeachingStaff && !department) {
+      setMessage("Your account has no department assigned. Contact the administrator.");
+      setBusy(false);
+      return;
+    }
 
     const branch = BRANCH_OPTIONS.find(
       (option) => option.code === form.branchCode,
@@ -89,7 +141,7 @@ function AnswerKeyManager({ session }) {
         await updateAnswerKey(editingId, {
           subject_code: form.subjectCode.trim().toUpperCase(),
           subject_name: form.subjectName.trim(),
-          admission_year: Number(form.admissionYear),
+          admission_year: admissionYear,
           branch_code: branch.code,
           branch_name: branch.name,
           semester: form.semester.trim(),
@@ -101,10 +153,10 @@ function AnswerKeyManager({ session }) {
         await saveAnswerKey({
           subjectCode: form.subjectCode,
           subjectName: form.subjectName,
-          admissionYear: form.admissionYear,
+          admissionYear,
           branchCode: branch.code,
           branchName: branch.name,
-          department: session.department,
+          department: isTeachingStaff ? department : session.department,
           semester: form.semester,
           title: form.title,
           driveUrl: form.driveUrl,
@@ -144,73 +196,109 @@ function AnswerKeyManager({ session }) {
         <div>
           <p className="eyebrow">Major semester exams</p>
           <h3 id="answer-key-manager-title">Answer key management</h3>
-          <p>Publish subject answer-key links for the correct branch and admission year.</p>
+          <p>
+            {isTeachingStaff
+              ? department
+                ? `Showing and publishing answer keys for ${department} only.`
+                : "A department must be assigned before you can manage answer keys."
+              : "View and manage answer keys across all departments."}
+          </p>
         </div>
       </div>
 
-      <form className="answer-key-form" onSubmit={handleSubmit}>
-        <label>
-          Subject code
-          <input name="subjectCode" value={form.subjectCode} onChange={updateField} required />
-        </label>
-        <label>
-          Subject name
-          <input name="subjectName" value={form.subjectName} onChange={updateField} required />
-        </label>
-        <label>
-          Admission year
-          <input
-            name="admissionYear"
-            type="number"
-            min="2000"
-            max="2100"
-            value={form.admissionYear}
-            onChange={updateField}
-            required
-          />
-        </label>
-        <label>
-          Branch
-          <select name="branchCode" value={form.branchCode} onChange={updateField} required>
-            <option value="">Select branch</option>
-            {BRANCH_OPTIONS.map((branch) => (
-              <option key={branch.code} value={branch.code}>
-                {branch.code} - {branch.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Semester
-          <input name="semester" value={form.semester} onChange={updateField} placeholder="Semester 5" required />
-        </label>
-        <label>
-          Card title
-          <input name="title" value={form.title} onChange={updateField} required />
-        </label>
-        <label className="answer-key-form-wide">
-          Google Drive link
-          <input
-            name="driveUrl"
-            type="url"
-            value={form.driveUrl}
-            onChange={updateField}
-            placeholder="https://drive.google.com/..."
-            required
-          />
-        </label>
-        {message && <p className="answer-key-message answer-key-form-wide" role="status">{message}</p>}
-        <div className="answer-key-form-actions answer-key-form-wide">
-          {editingId && (
-            <button type="button" className="portal-secondary-button" onClick={resetForm} disabled={busy}>
-              Cancel
+      {isTeachingStaff && !department ? (
+        <p className="answer-key-message error" role="alert">
+          No department is assigned to your account. Contact the administrator to request access.
+        </p>
+      ) : (
+        <form className="answer-key-form" onSubmit={handleSubmit}>
+          <div className="answer-key-form-heading answer-key-form-wide">
+            <h4>{editingId ? "Edit answer key" : "Publish an answer key"}</h4>
+            <p>
+              {editingId
+                ? "Update the subject details and link for this answer key."
+                : "Add the subject details and a Google Drive link for students."}
+            </p>
+          </div>
+          <label>
+            Subject code
+            <input name="subjectCode" value={form.subjectCode} onChange={updateField} required />
+          </label>
+          <label>
+            Subject name
+            <input name="subjectName" value={form.subjectName} onChange={updateField} required />
+          </label>
+          <label>
+            Student year
+            <select
+              name="yearLevel"
+              value={form.yearLevel}
+              onChange={updateField}
+              required
+            >
+              <option value="">Select year</option>
+              {YEAR_LEVELS.map(({ value, label }) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+              {form.yearLevel.startsWith("cohort:") && (
+                <option value={form.yearLevel}>
+                  Existing cohort — admission year{" "}
+                  {form.yearLevel.slice("cohort:".length)}
+                </option>
+              )}
+            </select>
+            {form.yearLevel && (
+              <small className="answer-key-year-hint">
+                Admission cohort:{" "}
+                {getAdmissionYearForLevel(form.yearLevel, academicYearStart)}
+              </small>
+            )}
+          </label>
+          <label>
+            Branch
+            <select name="branchCode" value={form.branchCode} onChange={updateField} required>
+              <option value="">Select branch</option>
+              {BRANCH_OPTIONS.map((branch) => (
+                <option key={branch.code} value={branch.code}>
+                  {branch.code} - {branch.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Semester
+            <input name="semester" value={form.semester} onChange={updateField} placeholder="Semester 5" required />
+          </label>
+          <label>
+            Card title
+            <input name="title" value={form.title} onChange={updateField} required />
+          </label>
+          <label className="answer-key-form-wide">
+            Google Drive link
+            <input
+              name="driveUrl"
+              type="url"
+              value={form.driveUrl}
+              onChange={updateField}
+              placeholder="https://drive.google.com/..."
+              required
+            />
+          </label>
+          {message && <p className="answer-key-message answer-key-form-wide" role="status">{message}</p>}
+          <div className="answer-key-form-actions answer-key-form-wide">
+            {editingId && (
+              <button type="button" className="portal-secondary-button" onClick={resetForm} disabled={busy}>
+                Cancel
+              </button>
+            )}
+            <button type="submit" className="submit-button" disabled={busy}>
+              {busy ? "Saving..." : editingId ? "Save changes" : "Publish answer key"}
             </button>
-          )}
-          <button type="submit" className="submit-button" disabled={busy}>
-            {busy ? "Saving..." : editingId ? "Save changes" : "Publish answer key"}
-          </button>
-        </div>
-      </form>
+          </div>
+        </form>
+      )}
 
       <div className="answer-key-grid" aria-live="polite">
         {loading ? (
@@ -232,10 +320,15 @@ function AnswerKeyManager({ session }) {
               <a href={answerKey.drive_url} target="_blank" rel="noopener noreferrer">
                 Open Drive link
               </a>
-              <button type="button" onClick={() => beginEdit(answerKey)} disabled={busy}>Edit</button>
-              <button type="button" onClick={() => togglePublished(answerKey)} disabled={busy}>
-                {answerKey.is_published ? "Hide" : "Publish"}
-              </button>
+              {(session.role === "examination cell" ||
+                answerKey.uploaded_by === session.userId) && (
+                <>
+                  <button type="button" onClick={() => beginEdit(answerKey)} disabled={busy}>Edit</button>
+                  <button type="button" onClick={() => togglePublished(answerKey)} disabled={busy}>
+                    {answerKey.is_published ? "Hide" : "Publish"}
+                  </button>
+                </>
+              )}
             </div>
           </article>
         ))}
