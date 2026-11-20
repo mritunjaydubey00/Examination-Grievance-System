@@ -17,6 +17,7 @@ import {
 } from "../services/grievanceService.js";
 import { supabase } from "../lib/supabase.js";
 import PortalLoading from "../components/PortalLoading.jsx";
+import AnswerKeyManager from "../components/AnswerKeys/AnswerKeyManager.jsx";
 import "./ExaminationCell.css";
 
 function ExaminationCell({
@@ -311,6 +312,9 @@ function ExaminationCell({
               session={session}
               onChangePassword={onChangePassword}
             />
+          )}
+          {activePage === "Answer Keys" && (
+            <AnswerKeyManager session={session} />
           )}
           {["Guidelines", "Notice Board"].includes(activePage) && (
             <PortalPlaceholderPage
