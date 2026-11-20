@@ -7,10 +7,14 @@ ExGrev is a web application for submitting, assigning, tracking, and resolving e
 The app has three role-based workspaces:
 
 - **Students** submit grievances with supporting documents, follow case activity, and confirm a proposed resolution.
-- **Examination Cell staff** review all cases, assign or reassign them to staff, set priority and due dates, add remarks, and propose resolutions.
+- **Examination Cell staff** review and filter cases, assign or reassign them to staff, set priority and due dates, add remarks, propose resolutions, manage notices and guidelines, and group similar cases for solution forwarding.
 - **Teaching staff** review cases assigned to them and add remarks to the case timeline.
 
 The frontend is not the authorization boundary. Supabase Auth, Row Level Security (RLS), database functions, and Storage policies enforce access to protected data.
+
+The grievance form captures a title, description, category, sub-category, and required details when “Any other issue” is selected. The Examination Cell workspace supports server-side search and filters (department, study year/admission batch, status, category, and created-date range), exact filtered counts, pagination, and URL-backed filter state. Grouped solutions are proposed through the existing 48-hour student response flow; each affected grievance receives its own timeline event and in-app notification. Notices and guidelines are managed by the Examination Cell and shown to students and teaching staff when active.
+
+Study year is derived from the two-digit admission year in positions 5–6 of the enrollment number, with an August academic-year boundary and a four-year program length. A stored branch value takes precedence; the enrollment-code fallback currently maps only `CB` to Computer Science & Engineering. Confirm the institution's authoritative enrollment-code mapping before adding more branch codes.
 
 ## Technology
 
@@ -84,7 +88,7 @@ The application expects an existing `public.users` table. Its current database a
 For the complete setup, prerequisites, and troubleshooting details, read [`exgrev/SUPABASE_SETUP.md`](./exgrev/SUPABASE_SETUP.md). In brief:
 
 1. Enable Email/password sign-in in Supabase Auth.
-2. In the Supabase SQL Editor, apply the SQL migrations in `exgrev/supabase/migrations/` in filename order, after confirming that the existing `users` table meets the schema requirements. The migrations create the grievance tables, access policies, Storage bucket, database actions, and related behavior.
+2. In the Supabase SQL Editor, apply the SQL migrations in `exgrev/supabase/migrations/` in filename order, after confirming that the existing `users` table meets the schema requirements. The migrations create the grievance tables, access policies, Storage buckets, database actions, and related behavior. The final migration, `202611200001_predeploy_fixes.sql`, adds category/sub-category and admission-year fields, grouping and notifications, notices/guidelines, and their RLS and Storage policies. Review its assumptions against the target project's live schema before applying it.
 3. Configure the `SUPABASE_SERVICE_ROLE_KEY` as a **Supabase Edge Function secret only**.
 4. Deploy `login-by-user-id` from `exgrev/` using the Supabase CLI:
 
@@ -126,12 +130,19 @@ Follow the existing JavaScript/JSX patterns, keep error states visible to users,
 From `exgrev/`:
 
 ```powershell
+npm test
 npm run lint
 npm run build
 npm run preview
 ```
 
-The current package scripts do not define an automated test command. For changes to authentication, case permissions, uploads, or resolution behavior, also verify the affected student, Examination Cell, and teaching-staff workflows in a configured development Supabase project.
+Before release, manually verify these workflows with accounts for each role in a non-production Supabase project:
+
+- Submit a grievance with each category and sub-category; confirm “Any other issue” details are required and displayed in the student, faculty, and Examination Cell views.
+- Open the grievance thread as the student and assigned faculty, exchange remarks in both directions, and verify attachments and status updates are visible to permitted participants.
+- Group at least two open cases with matching categories, propose a resolution for the master case, review the member checklist, and forward the solution. Confirm per-case timeline entries, notifications, attachments, and the 48-hour response window; also verify a student continuing a case removes it from the active group.
+- Create, edit, hide, show, expire, and delete a notice and a guideline. Verify active content and attachments are visible to students and teaching staff, while inactive content remains available only to the Examination Cell.
+- Combine search, department/year, status, category, and date filters; check counts, pagination, URL updates, and browser back/forward behavior.
 
 ## Troubleshooting
 

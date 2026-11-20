@@ -81,7 +81,13 @@ function TeachingStaffCaseDialog({
           <div>
             <dt>Category</dt>
             <dd>
-              {grievance.problem_category} · {grievance.problem_type}
+              {[
+                grievance.category || grievance.problem_category,
+                grievance.sub_category || grievance.problem_type,
+                grievance.other_text,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
             </dd>
           </div>
           <div>

@@ -237,6 +237,128 @@
   font-size: 0.88rem;
 }
 
+.portal-content-error {
+  color: var(--status-rejected-text);
+  font-size: 0.86rem;
+}
+
+.portal-content-form,
+.portal-content-items {
+  display: grid;
+  gap: 14px;
+}
+
+.portal-content-form {
+  margin-top: 18px;
+}
+
+.portal-content-form h4,
+.portal-content-item-heading h4 {
+  margin: 0;
+  color: var(--text-main);
+  font-family: var(--heading);
+  font-size: 1rem;
+}
+
+.portal-content-form > label {
+  display: grid;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.portal-content-form input:not([type="checkbox"]),
+.portal-content-form textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-main);
+  font: inherit;
+}
+
+.portal-content-form textarea {
+  resize: vertical;
+}
+
+.portal-content-form input[type="file"] {
+  color: var(--text-secondary);
+  font: inherit;
+}
+
+.portal-content-form a,
+.portal-content-items a,
+.portal-placeholder-list a {
+  color: var(--accent-action);
+  font-size: 0.82rem;
+}
+
+.portal-content-active-toggle {
+  display: flex !important;
+  align-items: center;
+  gap: 8px !important;
+}
+
+.portal-content-item-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.portal-content-item-heading small,
+.portal-notification-list time {
+  color: var(--text-muted);
+  font-size: 0.74rem;
+}
+
+.portal-content-hidden {
+  padding: 4px 8px;
+  border-radius: 5px;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.portal-content-items > article > p {
+  margin: 12px 0;
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.portal-notification-list {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.portal-notification-list li {
+  padding-bottom: 11px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.portal-notification-list strong {
+  color: var(--text-main);
+  font-size: 0.86rem;
+}
+
+.portal-notification-list p {
+  margin: 4px 0;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.portal-content-page > .portal-section-heading {
+  margin-bottom: 18px;
+}
+
 .portal-add-button {
   min-height: 34px;
   padding: 7px 10px;

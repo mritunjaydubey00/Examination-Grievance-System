@@ -372,7 +372,13 @@ function GrievanceThreadPage({
               </p>
               <h2>{grievance.subject}</h2>
               <p>
-                {grievance.problem_category} · {grievance.problem_type}
+                {[
+                  grievance.category || grievance.problem_category,
+                  grievance.sub_category || grievance.problem_type,
+                  grievance.other_text,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
               </p>
             </div>
             <span
@@ -456,10 +462,25 @@ function GrievanceThreadPage({
                         </p>
                       )}
                       {event.event_type === "submitted" && grievance?.description && (
-                        <p className="thread-event-description">
-                          <strong>Description</strong>{" "}
-                          {grievance.description}
-                        </p>
+                        <>
+                          {(event.details?.category ||
+                            event.details?.sub_category) && (
+                            <p className="thread-event-description">
+                              <strong>Category</strong>{" "}
+                              {[
+                                event.details.category,
+                                event.details.sub_category,
+                                event.details.other_text,
+                              ]
+                                .filter(Boolean)
+                                .join(" · ")}
+                            </p>
+                          )}
+                          <p className="thread-event-description">
+                            <strong>Description</strong>{" "}
+                            {grievance.description}
+                          </p>
+                        </>
                       )}
                       {event.event_type === "forwarded" ||
                       event.event_type === "reassigned" ? (

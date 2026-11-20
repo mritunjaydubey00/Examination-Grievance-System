@@ -1097,6 +1097,12 @@
   color: var(--text-disabled);
 }
 
+.form-validation-error {
+  margin: 4px 0 0;
+  color: var(--status-rejected-text);
+  font-size: 0.82rem;
+}
+
 .form-field input:focus,
 .form-field textarea:focus,
 .dropdown-button:focus {

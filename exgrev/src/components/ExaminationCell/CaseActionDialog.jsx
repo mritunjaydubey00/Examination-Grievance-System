@@ -4,6 +4,11 @@ import SupportingDocuments from "../StudentPage/SupportingDocuments.jsx";
 import CalendarDatePicker from "../CalendarDatePicker.jsx";
 import { listAssignableUsers } from "../../services/grievanceService.js";
 import { getGrievanceStatusLabel } from "../../lib/grievanceStatus.js";
+import {
+  formatStudyYear,
+  getEnrollmentBranch,
+  getStudyYear,
+} from "../../lib/enrollment.js";
 
 function getTodayDateValue() {
   const today = new Date();
@@ -29,6 +34,8 @@ function CaseActionDialog({
   const [notes, setNotes] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [priority, setPriority] = useState("medium");
+  const [resolutionFiles, setResolutionFiles] = useState([]);
+  const [attachmentError, setAttachmentError] = useState("");
 
   const isViewing = action === "view";
   const isForwarding = action === "forward";
@@ -44,6 +51,8 @@ function CaseActionDialog({
     setNotes("");
     setDueDate("");
     setPriority("medium");
+    setResolutionFiles([]);
+    setAttachmentError("");
   }, [grievance, action]);
 
   useEffect(() => {
@@ -82,6 +91,27 @@ function CaseActionDialog({
 
   if (!grievance || !action) return null;
 
+  function handleResolutionFiles(event) {
+    const files = Array.from(event.currentTarget.files || []);
+    event.currentTarget.value = "";
+    const accepted = [];
+    const rejected = [];
+    for (const file of files) {
+      const extension = file.name.split(".").pop()?.toLowerCase();
+      if (!["pdf", "png", "jpg", "jpeg", "doc", "docx"].includes(extension)) {
+        rejected.push(`${file.name}: unsupported file type`);
+      } else if (file.size > 10 * 1024 * 1024) {
+        rejected.push(`${file.name}: exceeds 10 MB`);
+      } else {
+        accepted.push(file);
+      }
+    }
+    setResolutionFiles((current) => [...current, ...accepted]);
+    setAttachmentError(
+      rejected.length ? `Some files were not added: ${rejected.join("; ")}.` : "",
+    );
+  }
+
   return (
     <div
       className="admin-dialog-backdrop dialog-overlay"
@@ -116,7 +146,17 @@ function CaseActionDialog({
           </div>
           <div>
             <dt>Department</dt>
-            <dd>{grievance.users?.Department || "Not provided"}</dd>
+            <dd>
+              {grievance.users?.Department || "Unknown"} ·{" "}
+              {getEnrollmentBranch(
+                grievance.student_user_id,
+                grievance.users?.Branch,
+              ) || "Branch unknown"}
+            </dd>
+          </div>
+          <div>
+            <dt>Study year</dt>
+            <dd>{formatStudyYear(getStudyYear(grievance.student_user_id))}</dd>
           </div>
           <div>
             <dt>Created</dt>
@@ -125,7 +165,13 @@ function CaseActionDialog({
           <div>
             <dt>Category</dt>
             <dd>
-              {grievance.problem_category} · {grievance.problem_type}
+              {[
+                grievance.category || grievance.problem_category,
+                grievance.sub_category || grievance.problem_type,
+                grievance.other_text,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
             </dd>
           </div>
           <div>
@@ -171,7 +217,13 @@ function CaseActionDialog({
             className="admin-dialog-form"
             onSubmit={(event) => {
               event.preventDefault();
-              onSubmit({ faculty, notes, dueDate, priority });
+              onSubmit({
+                faculty,
+                notes,
+                dueDate,
+                priority,
+                files: resolutionFiles,
+              });
             }}
           >
             {isForwarding && (
@@ -234,6 +286,45 @@ function CaseActionDialog({
                     onChange={setDueDate}
                   />
                 </label>
+                {isResolving && (
+                  <div className="form-field">
+                    <label htmlFor="resolution-files">
+                      Resolution attachments <span>(optional)</span>
+                    </label>
+                    <input
+                      id="resolution-files"
+                      type="file"
+                      multiple
+                      accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+                      onChange={handleResolutionFiles}
+                    />
+                    <small>PDF, PNG, JPG, DOC, or DOCX; up to 10 MB per file.</small>
+                    {attachmentError && (
+                      <span className="login-error" role="alert">
+                        {attachmentError}
+                      </span>
+                    )}
+                    {resolutionFiles.length > 0 && (
+                      <ul className="thread-selected-attachments">
+                        {resolutionFiles.map((file, index) => (
+                          <li key={`${file.name}-${file.lastModified}-${index}`}>
+                            <span>{file.name}</span>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setResolutionFiles((current) =>
+                                  current.filter((_, fileIndex) => fileIndex !== index),
+                                )
+                              }
+                            >
+                              Remove
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
                 <label className="form-field">
                   <span>Priority</span>
                   <select

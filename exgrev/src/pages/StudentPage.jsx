@@ -25,7 +25,9 @@ function StudentPage({
   const [selectedProblem, setSelectedProblem] = useState("");
   const [grievances, setGrievances] = useState([]);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [grievanceLoadError, setGrievanceLoadError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [formResetVersion, setFormResetVersion] = useState(0);
   const [message, setMessage] = useState("");
   const [threadGrievanceId, setThreadGrievanceId] = useState(null);
   const [activePage, setActivePage] = useState("Dashboard");
@@ -75,12 +77,18 @@ function StudentPage({
   const refresh = useCallback(async () => {
     try {
       setGrievances(await listStudentGrievances(session.userId));
+      setGrievanceLoadError("");
     } catch (error) {
-      setMessage(error.message || "Could not load your grievances.");
+      setGrievanceLoadError(error.message || "Could not load your grievances.");
     } finally {
       setInitialLoading(false);
     }
   }, [session.userId]);
+
+  function handleCategoryChange(category) {
+    setSelectedCategory(category);
+    setSelectedProblem("");
+  }
 
   useEffect(() => {
     refresh();
@@ -127,15 +135,17 @@ function StudentPage({
     try {
       await createGrievance({
         userId: session.userId,
-        subject: form.get("subject"),
+        title: form.get("title"),
         description: form.get("description"),
         category: selectedCategory,
-        problemType: selectedProblem,
+        subCategory: selectedProblem,
+        otherText: form.get("otherText") || "",
         files: form.getAll("documents").filter((file) => file.size > 0),
       });
       formElement.reset();
       setSelectedCategory("");
       setSelectedProblem("");
+      setFormResetVersion((version) => version + 1);
       setMessage("Grievance submitted successfully.");
       await refresh();
     } catch (error) {
@@ -151,6 +161,7 @@ function StudentPage({
         <div className="portal-layout">
           <PortalSidePanel
             role="student"
+            userId={session.userId}
             mobileMenuTarget={mobileMenuTarget}
             activePage={activePage}
             onNavigate={(page) => {
@@ -190,6 +201,7 @@ function StudentPage({
           {activePage === "Dashboard" && (
             <PortalDashboard
               role="student"
+              userId={session.userId}
               metrics={studentMetrics}
               canEditContent={false}
               onMetricClick={showMetricGrievances}
@@ -199,11 +211,12 @@ function StudentPage({
           {activePage === "Add New" && (
             <GrievanceForm
               selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
+              onCategoryChange={handleCategoryChange}
               selectedProblem={selectedProblem}
               onProblemChange={setSelectedProblem}
               busy={busy}
               message={message}
+              resetVersion={formResetVersion}
               onSubmit={handleSubmit}
             />
           )}
@@ -211,6 +224,7 @@ function StudentPage({
             <GrievanceHistory
               grievances={displayedGrievances}
               loading={initialLoading}
+              error={grievanceLoadError}
               onOpenThread={(grievance) => setThreadGrievanceId(grievance.id)}
             />
           )}
@@ -224,6 +238,7 @@ function StudentPage({
             <PortalPlaceholderPage
               page={activePage}
               canEditContent={false}
+              userId={session.userId}
             />
           )}
         </div>
@@ -248,11 +263,12 @@ function StudentPage({
           </button>
           <GrievanceForm
             selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
+            onCategoryChange={handleCategoryChange}
             selectedProblem={selectedProblem}
             onProblemChange={setSelectedProblem}
             busy={busy}
             message={message}
+            resetVersion={formResetVersion}
             onSubmit={handleSubmit}
           />
         </dialog>

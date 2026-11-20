@@ -146,9 +146,9 @@ function TeachingStaffPage({
         (dashboardMetric === "awaiting-response" &&
           grievance.resolution_pending)
       : activePage === "Active Grievances"
-        ? grievance.status !== "Resolved"
+        ? grievance.status !== "Resolved" || grievance.resolution_pending
         : activePage === "Resolved Grievances"
-          ? grievance.status === "Resolved"
+          ? grievance.status === "Resolved" && !grievance.resolution_pending
           : true;
     return (
       searchMatches &&
@@ -183,6 +183,7 @@ function TeachingStaffPage({
         <div className="portal-layout">
           <PortalSidePanel
             role="faculty"
+            userId={session.userId}
             mobileMenuTarget={mobileMenuTarget}
             activePage={activePage}
             onNavigate={(page) => {
@@ -230,6 +231,7 @@ function TeachingStaffPage({
           {activePage === "Dashboard" && (
             <PortalDashboard
               role="faculty"
+              userId={session.userId}
               metrics={facultyMetrics}
               canEditContent={false}
               onMetricClick={showMetricGrievances}
@@ -258,6 +260,7 @@ function TeachingStaffPage({
             <PortalPlaceholderPage
               page={activePage}
               canEditContent={false}
+              userId={session.userId}
             />
           )}
         </div>

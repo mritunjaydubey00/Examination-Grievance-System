@@ -155,4 +155,16 @@ Apply [supabase/migrations/202610280002_grievance_thread_attachments.sql](supaba
 
 Apply [supabase/migrations/202610310002_resolution_acceptance_window.sql](supabase/migrations/202610310002_resolution_acceptance_window.sql) after all existing grievance migrations. It changes the Exam Cell's Resolve action to start a 48-hour student response window, adds Accept and Continue actions, records role-stamped thread events, enforces append-only event entries, and schedules expired windows to auto-close every minute with `pg_cron`. Verify `pg_cron` is available/enabled for the Supabase project before applying this migration. Students may accept or continue only before `window_expires_at`; the database rejects late responses even between scheduled runs. Continuing reopens the grievance as `In Progress`.
 
+Apply [supabase/migrations/202611200001_predeploy_fixes.sql](supabase/migrations/202611200001_predeploy_fixes.sql) after the grievance migrations. It adds the `title`, `category`, `sub_category`, `other_text`, `resolution_attachments`, and generated `admission_year` columns used by the current frontend, plus grouped grievances, notifications, notices, guidelines, and their policies. The migration sends `NOTIFY pgrst, 'reload schema'` after its changes commit. Confirm the category fields exist if the app reports a missing-column or schema-cache error:
+
+```sql
+select column_name
+from information_schema.columns
+where table_schema = 'public'
+  and table_name = 'grievances'
+  and column_name in ('title', 'category', 'sub_category', 'other_text');
+```
+
+If the columns are missing, apply the migration; a schema-cache reload alone does not create them. If all columns exist but the API still reports them missing, run `notify pgrst, 'reload schema';` in the SQL Editor and retry after the API refreshes.
+
 First login: use the User ID for Students or email for other roles, and the exact phone number stored in the row as the password. Later logins use the new password. If login reports that the function is not deployed, complete step 3; if it reports that Email Auth is disabled, enable Email in step 1.

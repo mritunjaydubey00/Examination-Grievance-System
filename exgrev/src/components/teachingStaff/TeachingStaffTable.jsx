@@ -19,7 +19,7 @@ function TeachingStaffTable({ grievances, onOpenGrievance, onOpenThread }) {
               <th>Subject</th>
               <th>Created</th>
               <th>Category</th>
-              <th>Problem type</th>
+              <th>Sub-category</th>
               <th>Status</th>
               <th aria-label="Actions" />
             </tr>
@@ -39,8 +39,11 @@ function TeachingStaffTable({ grievances, onOpenGrievance, onOpenThread }) {
                   </td>
                   <td>{grievance.subject}</td>
                   <td>{new Date(grievance.created_at).toLocaleString()}</td>
-                  <td>{grievance.problem_category}</td>
-                  <td>{grievance.problem_type}</td>
+                  <td>
+                    {grievance.category || grievance.problem_category}
+                    {grievance.other_text ? ` · ${grievance.other_text}` : ""}
+                  </td>
+                  <td>{grievance.sub_category || grievance.problem_type}</td>
                   <td>
                     <span
                       className={`admin-status admin-status-${String(grievance.status || "").toLowerCase().replaceAll(" ", "-")}`}

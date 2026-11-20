@@ -1,4 +1,5 @@
 import { getGrievanceStatusLabel } from "../../lib/grievanceStatus.js";
+import { formatStudyYear, getStudyYear, getEnrollmentBranch } from "../../lib/enrollment.js";
 
 function GrievanceTable({
   grievances,
@@ -6,6 +7,8 @@ function GrievanceTable({
   error = "",
   onAction,
   onOpenThread,
+  selectedIds = [],
+  onToggleSelection,
   audience = "examination-cell",
 }) {
   const isTeachingStaff = audience === "teaching-staff";
@@ -27,12 +30,15 @@ function GrievanceTable({
           <thead>
             <tr>
               {[
+                ...(!isTeachingStaff ? ["Select"] : []),
                 "Grievance ID",
                 identifierHeading,
                 "Subject",
                 "Created",
                 "Category",
-                "Problem type",
+                "Sub-category",
+                "Department / Branch",
+                "Year",
                 "Status",
                 "",
               ].map((heading) => (
@@ -43,19 +49,34 @@ function GrievanceTable({
           <tbody>
             {loading ? (
               <tr>
-                <td className="admin-empty-state" colSpan="8">
+                <td className="admin-empty-state" colSpan={isTeachingStaff ? 10 : 11}>
                   <strong>Loading grievances…</strong>
                 </td>
               </tr>
             ) : error ? (
               <tr>
-                <td className="admin-empty-state" colSpan="8">
+                <td className="admin-empty-state" colSpan={isTeachingStaff ? 10 : 11}>
                   <strong>Grievances could not be loaded: {error}</strong>
                 </td>
               </tr>
             ) : grievances.length ? (
               grievances.map((grievance) => (
                 <tr className="stagger-item" key={grievance.id}>
+                  {!isTeachingStaff && (
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(grievance.id)}
+                        disabled={
+                          (grievance.status === "Resolved" ||
+                            grievance.resolution_pending) &&
+                          !selectedIds.includes(grievance.id)
+                        }
+                        onChange={() => onToggleSelection?.(grievance)}
+                        aria-label={`Select grievance ${grievance.grievance_code || grievance.id}`}
+                      />
+                    </td>
+                  )}
                   <td>
                     <strong className="admin-case-id">
                       {grievance.grievance_code || "ID pending"}
@@ -69,8 +90,22 @@ function GrievanceTable({
                   </td>
                   <td>{grievance.subject}</td>
                   <td>{new Date(grievance.created_at).toLocaleString()}</td>
-                  <td>{grievance.problem_category}</td>
-                  <td>{grievance.problem_type}</td>
+                  <td>{grievance.category || grievance.problem_category}</td>
+                  <td>{grievance.sub_category || grievance.problem_type}</td>
+                  <td>
+                    <strong>{grievance.users?.Department || "Unknown"}</strong>
+                    <small className="admin-table-secondary">
+                      {getEnrollmentBranch(
+                        grievance.student_user_id,
+                        grievance.users?.Branch,
+                      ) || "Branch unknown"}
+                    </small>
+                  </td>
+                  <td>
+                    {formatStudyYear(
+                      getStudyYear(grievance.student_user_id),
+                    )}
+                  </td>
                   <td>
                     <span
                       className={`admin-status admin-status-${String(grievance.status || "").toLowerCase().replaceAll(" ", "-")}`}
@@ -98,7 +133,7 @@ function GrievanceTable({
               ))
             ) : (
               <tr>
-                <td className="admin-empty-state" colSpan="8">
+                <td className="admin-empty-state" colSpan={isTeachingStaff ? 10 : 11}>
                   <strong>
                     {isTeachingStaff
                       ? "No assigned cases to display."

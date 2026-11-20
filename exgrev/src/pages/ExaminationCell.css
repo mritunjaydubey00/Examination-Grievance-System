@@ -134,6 +134,7 @@
 
 .admin-toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   padding: 15px;
@@ -146,6 +147,7 @@
 
 .admin-search-field input,
 .admin-filter-field select,
+.admin-filter-field input,
 .admin-dialog-form select,
 .admin-dialog-form textarea {
   box-sizing: border-box;
@@ -163,6 +165,7 @@
 
 .admin-search-field input:focus,
 .admin-filter-field select:focus,
+.admin-filter-field input:focus,
 .admin-dialog-form select:focus,
 .admin-dialog-form textarea:focus {
   border-color: var(--accent-teal-hover);
@@ -171,6 +174,21 @@
 
 .admin-filter-field {
   flex: 0 1 190px;
+}
+.admin-filter-result-count {
+  margin: 0;
+  padding: 0 15px 12px;
+  color: var(--text-muted);
+  font-size: .8rem;
+}
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 14px;
+  color: var(--text-secondary);
+  font-size: .82rem;
 }
 .admin-case-panel {
   min-width: 0;
@@ -390,6 +408,17 @@
 .grievance-detail-grid .detail-description { grid-column: 1 / -1; }
 .document-link { display: inline-block; margin: 0 8px 12px 0; color: var(--accent-action); font-size: .82rem; }
 .grievance-message { margin: 14px; color: var(--status-resolved-text); font-size: .85rem; }
+.grievance-load-error { color: var(--status-rejected-text); }
+.admin-table-secondary { display: block; margin-top: 3px; color: var(--text-muted); font-size: .74rem; }
+.similar-grievance-suggestions,
+.pending-grievance-groups { margin: 14px 0; padding: 14px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-surface); color: var(--text-main); }
+.similar-grievance-suggestions ul { display: grid; gap: 8px; margin: 10px 0 0; padding: 0; list-style: none; }
+.similar-grievance-suggestions label { display: flex; align-items: flex-start; gap: 8px; color: var(--text-secondary); font-size: .84rem; }
+.pending-grievance-groups p { display: flex; align-items: center; gap: 10px; margin: 8px 0 0; color: var(--text-secondary); font-size: .84rem; }
+.grievance-group-dialog { width: min(620px, calc(100vw - 32px)); max-height: 90vh; overflow-y: auto; }
+.group-member-checklist { display: grid; gap: 10px; max-height: 280px; overflow-y: auto; padding: 12px; border: 1px solid var(--border-color); border-radius: 7px; }
+.group-member-checklist legend { padding: 0 6px; color: var(--text-main); font-size: .86rem; font-weight: 700; }
+.group-member-checklist label { display: flex; gap: 8px; color: var(--text-secondary); font-size: .84rem; }
 .resolution-pending-notice { flex-basis: 100%; margin: 0; color: var(--text-muted); font-size: .84rem; }
 .student-resolution-confirmation { margin: 14px 0; padding: 14px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-elevated); }
 .student-resolution-confirmation > p:first-child { margin: 0 0 12px; color: var(--text-secondary); font-size: .88rem; }

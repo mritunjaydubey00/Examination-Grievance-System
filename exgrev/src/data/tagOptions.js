@@ -3,7 +3,11 @@ export const categoryOptions = [
   "Minor Exam",
   "Central Level Quiz",
   "Marksheet/Result Issue",
+  "Enquiry",
+  "Any other issue",
 ];
+
+export const otherCategoryValue = "Any other issue";
 
 export const problemTypeOptions = {
   "Major Exam": [
@@ -35,5 +39,13 @@ export const problemTypeOptions = {
     "Marksheet Not Available",
     "Data Change Request",
     "Request for duplicate Marksheet",
+  ],
+  "Enquiry": [
+    "Enquiry about exam",
+    "Enquiry about marksheet",
+    "Somethinng else"
+  ],
+  "Any other issue": [
+    "Any other issue"
   ],
 };

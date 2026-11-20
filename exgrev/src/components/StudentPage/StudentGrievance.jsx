@@ -22,9 +22,16 @@ function StudentGrievance({ grievance, onOpenThread }) {
           {grievance.grievance_code || "ID pending"}
         </strong>
         <h4>{grievance.subject || "Untitled grievance"}</h4>
-        {(grievance.problem_category || grievance.problem_type) && (
+        {(grievance.category ||
+          grievance.sub_category ||
+          grievance.problem_category ||
+          grievance.problem_type) && (
           <p>
-            {[grievance.problem_category, grievance.problem_type]
+            {[
+              grievance.category || grievance.problem_category,
+              grievance.sub_category || grievance.problem_type,
+              grievance.other_text,
+            ]
               .filter(Boolean)
               .join(" · ")}
           </p>

@@ -3,6 +3,7 @@ import StudentGrievance from "./StudentGrievance.jsx";
 function GrievanceHistory({
   grievances,
   loading = false,
+  error = "",
   onOpenThread,
 }) {
   return (
@@ -26,16 +27,25 @@ function GrievanceHistory({
             </div>
           ))}
         </div>
-      ) : grievances.length ? (
-        grievances.map((grievance) => (
-          <StudentGrievance
-            key={grievance.id}
-            grievance={grievance}
-            onOpenThread={onOpenThread}
-          />
-        ))
       ) : (
-        <p>No grievances submitted yet.</p>
+        <>
+          {error && (
+            <p className="grievance-message grievance-load-error" role="alert">
+              {error}
+            </p>
+          )}
+          {grievances.length ? (
+            grievances.map((grievance) => (
+              <StudentGrievance
+                key={grievance.id}
+                grievance={grievance}
+                onOpenThread={onOpenThread}
+              />
+            ))
+          ) : !error ? (
+            <p>No grievances submitted yet.</p>
+          ) : null}
+        </>
       )}
     </section>
   );
