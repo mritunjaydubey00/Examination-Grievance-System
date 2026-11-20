@@ -2,6 +2,8 @@
 
 ExGrev is a web application for submitting, assigning, tracking, and resolving examination grievances. This repository's application is in [`exgrev/`](./exgrev/README.md); this document is the developer guide for working on it.
 
+For implementation status, role permissions, workflows, Supabase changes, tests, and the Supabase/VS Code handoff checklists, see [`progress.md`](./progress.md).
+
 ## What the application does
 
 The app has three role-based workspaces:

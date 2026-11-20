@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "oxlint",
     "test": "node --test",
+    "generate:department-seed": "node scripts/generate-department-seed.js",
     "preview": "vite preview",
     "deploy": "npm run build && wrangler deploy"
   },

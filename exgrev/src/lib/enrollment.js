@@ -1,8 +1,11 @@
 import {
   ACADEMIC_YEAR_START_MONTH,
-  ENROLLMENT_BRANCH_CODES,
   PROGRAM_LENGTH_YEARS,
 } from "../config/enrollment.js";
+import {
+  ENROLLMENT_DEPARTMENT_CODES,
+  getDepartmentByCode,
+} from "../department.js";
 
 export function getAdmissionYear(enrollmentNo) {
   if (typeof enrollmentNo !== "string") return null;
@@ -71,7 +74,25 @@ export function getEnrollmentBranch(enrollmentNo, storedBranch = "") {
   }
   if (typeof enrollmentNo !== "string") return null;
   const branchCode = enrollmentNo.trim().slice(2, 4).toUpperCase();
-  return ENROLLMENT_BRANCH_CODES[branchCode] || null;
+  if (branchCode !== "CB") return null;
+  return "Computer Science & Engineering";
+}
+
+export function getEnrollmentDepartment(enrollmentNo, storedDepartment = "") {
+  if (typeof storedDepartment === "string" && storedDepartment.trim()) {
+    return storedDepartment.trim();
+  }
+  if (typeof enrollmentNo !== "string") return null;
+  const branchCode = enrollmentNo.trim().slice(2, 4).toUpperCase();
+  const departmentCode = ENROLLMENT_DEPARTMENT_CODES[branchCode];
+  return departmentCode ? getDepartmentByCode(departmentCode) : null;
+}
+
+export function getEnrollmentDepartmentAndBranch(enrollmentNo, storedDepartment = "", storedBranch = "") {
+  return {
+    department: getEnrollmentDepartment(enrollmentNo, storedDepartment),
+    branch: getEnrollmentBranch(enrollmentNo, storedBranch),
+  };
 }
 
 export function formatStudyYear(studyYear) {

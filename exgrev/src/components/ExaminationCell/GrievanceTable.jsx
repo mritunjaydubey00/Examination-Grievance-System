@@ -1,5 +1,5 @@
 import { getGrievanceStatusLabel } from "../../lib/grievanceStatus.js";
-import { formatStudyYear, getStudyYear, getEnrollmentBranch } from "../../lib/enrollment.js";
+import { formatStudyYear, getStudyYear, getEnrollmentBranch, getEnrollmentDepartment } from "../../lib/enrollment.js";
 
 function GrievanceTable({
   grievances,
@@ -38,6 +38,7 @@ function GrievanceTable({
                 "Category",
                 "Sub-category",
                 "Department / Branch",
+                "Group",
                 "Year",
                 "Status",
                 "",
@@ -49,13 +50,13 @@ function GrievanceTable({
           <tbody>
             {loading ? (
               <tr>
-                <td className="admin-empty-state" colSpan={isTeachingStaff ? 10 : 11}>
+                <td className="admin-empty-state" colSpan={isTeachingStaff ? 11 : 12}>
                   <strong>Loading grievances…</strong>
                 </td>
               </tr>
             ) : error ? (
               <tr>
-                <td className="admin-empty-state" colSpan={isTeachingStaff ? 10 : 11}>
+                <td className="admin-empty-state" colSpan={isTeachingStaff ? 11 : 12}>
                   <strong>Grievances could not be loaded: {error}</strong>
                 </td>
               </tr>
@@ -93,13 +94,25 @@ function GrievanceTable({
                   <td>{grievance.category || grievance.problem_category}</td>
                   <td>{grievance.sub_category || grievance.problem_type}</td>
                   <td>
-                    <strong>{grievance.users?.Department || "Unknown"}</strong>
+                    <strong>{getEnrollmentDepartment(
+                      grievance.student_user_id,
+                      grievance.users?.Department,
+                    ) || "Unknown"}</strong>
                     <small className="admin-table-secondary">
                       {getEnrollmentBranch(
                         grievance.student_user_id,
                         grievance.users?.Branch,
                       ) || "Branch unknown"}
                     </small>
+                  </td>
+                  <td>
+                    {grievance.group_name ? (
+                      <span className="admin-status admin-status-in-progress">
+                        {grievance.group_name}
+                      </span>
+                    ) : (
+                      "—"
+                    )}
                   </td>
                   <td>
                     {formatStudyYear(
@@ -133,7 +146,7 @@ function GrievanceTable({
               ))
             ) : (
               <tr>
-                <td className="admin-empty-state" colSpan={isTeachingStaff ? 10 : 11}>
+                <td className="admin-empty-state" colSpan={isTeachingStaff ? 11 : 12}>
                   <strong>
                     {isTeachingStaff
                       ? "No assigned cases to display."

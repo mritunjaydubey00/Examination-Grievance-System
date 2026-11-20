@@ -1,4 +1,6 @@
 import GrievanceTable from "./GrievanceTable.jsx";
+import { getDepartmentBranchOptions } from "../../department.js";
+import { GROUPED_FILTER_VALUE } from "../../data/tagOptions.js";
 
 const statusOptions = ["New", "In Progress", "Resolved", "Over Due"];
 
@@ -59,9 +61,25 @@ function AdminWorkspace({
             onChange={(event) => onFilterChange("department", event.target.value)}
           >
             <option value="">All departments</option>
-            {filterOptions.departments.map((department) => (
-              <option key={department} value={department}>{department}</option>
+            {getDepartmentBranchOptions().map(({ department, departmentCode }) => (
+              <option key={departmentCode} value={departmentCode}>{department}</option>
             ))}
+          </select>
+        </label>
+        <label className="admin-filter-field">
+          <span className="visually-hidden">Filter by branch</span>
+          <select
+            value={filters.branch || ""}
+            disabled={!filters.department}
+            onChange={(event) => onFilterChange("branch", event.target.value)}
+          >
+            <option value="">All branches</option>
+            {getDepartmentBranchOptions()
+              .filter(({ departmentCode }) => departmentCode === filters.department)
+              .flatMap(({ branches }) => branches)
+              .map(({ branch, branchCode }) => (
+                <option key={branchCode} value={branchCode}>{branch}</option>
+              ))}
           </select>
         </label>
         <label className="admin-filter-field">
@@ -103,6 +121,12 @@ function AdminWorkspace({
             {categories.map((category) => (
               <option key={category} value={category}>{category}</option>
             ))}
+            {canGroup && (
+              <>
+                <option disabled value="">──────────</option>
+                <option value={GROUPED_FILTER_VALUE}>Grouped Grievances</option>
+              </>
+            )}
           </select>
         </label>
         <label className="admin-filter-field">

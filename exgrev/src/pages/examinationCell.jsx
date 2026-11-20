@@ -35,6 +35,7 @@ const GRIEVANCE_PAGE_SIZE = 25;
 const FILTER_QUERY_KEYS = {
   search: "q",
   department: "department",
+  branch: "branch",
   year: "year",
   status: "status",
   category: "category",

@@ -8,6 +8,10 @@ import {
   savePortalContent,
   setPortalContentActive,
 } from "../services/portalContentService.js";
+import {
+  getDepartmentBranchOptions,
+  getDepartmentLabel,
+} from "../department.js";
 import "./PortalNavigation.css";
 
 const grievanceLinks = {
@@ -401,6 +405,9 @@ function PortalPlaceholderPage({ page, canEditContent, userId }) {
   const [error, setError] = useState("");
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [noticeYears, setNoticeYears] = useState([]);
+  const [noticeDepartments, setNoticeDepartments] = useState([]);
+  const [noticeBranches, setNoticeBranches] = useState([]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -426,6 +433,9 @@ function PortalPlaceholderPage({ page, canEditContent, userId }) {
 
   function startEditing(item = null) {
     setEditingItem(item);
+    setNoticeYears(item?.target_years || []);
+    setNoticeDepartments(item?.target_departments || []);
+    setNoticeBranches(item?.target_branches || []);
     setFormOpen(true);
     setError("");
   }
@@ -446,6 +456,9 @@ function PortalPlaceholderPage({ page, canEditContent, userId }) {
         isActive: form.get("is_active") === "on",
         expiresAt: form.get("expires_at"),
         file: file?.size ? file : null,
+        targetYears: noticeYears,
+        targetDepartments: noticeDepartments,
+        targetBranches: noticeBranches,
       });
       setFormOpen(false);
       setEditingItem(null);
@@ -542,6 +555,67 @@ function PortalPlaceholderPage({ page, canEditContent, userId }) {
                 defaultValue={localDateTimeValue}
               />
             </label>
+          )}
+          {isNoticeBoard && (
+            <fieldset className="portal-content-audience">
+              <legend>Audience</legend>
+              <label>
+                Year
+                <select
+                  name="target_year"
+                  value={noticeYears.length > 1 ? "__multiple__" : String(noticeYears[0] || "")}
+                  onChange={(event) => {
+                    const value = event.currentTarget.value;
+                    setNoticeYears(value && value !== "__multiple__" ? [Number(value)] : []);
+                  }}
+                >
+                  <option value="">All years</option>
+                  {noticeYears.length > 1 && (
+                    <option value="__multiple__" disabled>
+                      Existing selection ({noticeYears.length} years)
+                    </option>
+                  )}
+                  {[1, 2, 3, 4].map((year) => (
+                    <option key={year} value={year}>
+                      {year}{year === 1 ? "st" : year === 2 ? "nd" : year === 3 ? "rd" : "th"} year
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Department
+                <select
+                  name="target_department"
+                  value={noticeDepartments.length > 1
+                    ? "__multiple__"
+                    : noticeDepartments[0] || ""}
+                  onChange={(event) => {
+                    const value = event.currentTarget.value;
+                    setNoticeDepartments(value && value !== "__multiple__" ? [value] : []);
+                    setNoticeBranches([]);
+                  }}
+                >
+                  <option value="">All departments</option>
+                  {noticeDepartments.length > 1 && (
+                    <option value="__multiple__" disabled>
+                      Existing selection ({noticeDepartments.length} departments)
+                    </option>
+                  )}
+                  {getDepartmentBranchOptions().map(({ department, departmentCode }) => (
+                    <option key={departmentCode} value={departmentCode}>
+                      {department}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <p className="portal-content-audience-preview">
+                Visible to: {noticeYears.length
+                  ? noticeYears.map((year) => `${year}${year === 1 ? "st" : year === 2 ? "nd" : year === 3 ? "rd" : "th"} year`).join(" & ")
+                  : "All years"} · {noticeDepartments.length
+                  ? noticeDepartments.map(getDepartmentLabel).join(", ")
+                  : "All departments"}
+              </p>
+            </fieldset>
           )}
           <label>
             Attachment (optional PDF or image)

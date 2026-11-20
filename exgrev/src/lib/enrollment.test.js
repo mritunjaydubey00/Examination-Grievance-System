@@ -5,6 +5,7 @@ import {
   getAdmissionYear,
   getAdmissionYearForStudyYear,
   getEnrollmentBranch,
+  getEnrollmentDepartment,
   getStudyYear,
   getStudyYearFilter,
 } from "./enrollment.js";
@@ -63,4 +64,12 @@ test("prefers the stored branch over an enrollment-code mapping", () => {
     "Computer Science & Engineering",
   );
   assert.equal(getEnrollmentBranch("BTXX25O1116"), null);
+});
+
+test("resolves BTCB25O1116 department and unknown department values", () => {
+  assert.equal(
+    getEnrollmentDepartment("BTCB25O1116"),
+    "Department of Computer Science & Engineering",
+  );
+  assert.equal(getEnrollmentDepartment("BTXX25O1116"), null);
 });

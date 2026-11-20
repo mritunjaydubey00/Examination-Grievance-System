@@ -9,6 +9,9 @@ export const categoryOptions = [
 
 export const otherCategoryValue = "Any other issue";
 
+// Virtual Exam-Cell filter only; never include this in submission validation or database categories.
+export const GROUPED_FILTER_VALUE = "__grouped__";
+
 export const problemTypeOptions = {
   "Major Exam": [
     "Absent on exam day",

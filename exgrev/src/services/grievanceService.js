@@ -4,7 +4,9 @@ import {
   categoryOptions,
   otherCategoryValue,
   problemTypeOptions,
+  GROUPED_FILTER_VALUE,
 } from "../data/tagOptions.js";
+import { getDepartmentByCode, getAllDepartments, BRANCH_CODES } from "../department.js";
 
 const BUCKET = "grievance-documents";
 const THREAD_ATTACHMENT_BUCKET = "grievance-thread-attachments";
@@ -45,7 +47,14 @@ function getDateBoundary(value, offsetDays = 0) {
 
 function applyGrievanceFilters(query, filters = {}, metric = "") {
   if (filters.department) {
-    query = query.eq("users.Department", filters.department);
+    const department = getDepartmentByCode(filters.department) || filters.department;
+    query = query.eq("users.Department", department);
+  }
+  if (filters.branch) {
+    const branchName = Object.entries(BRANCH_CODES).find(
+      ([, code]) => code === filters.branch,
+    )?.[0];
+    if (branchName) query = query.eq("users.Branch", branchName);
   }
   if (filters.category) query = query.eq("category", filters.category);
   if (filters.status && filters.status !== "ALL") {
@@ -109,6 +118,15 @@ export async function listGrievances({
   page = 1,
   pageSize = 25,
 } = {}) {
+  let groupedIds = null;
+  if (filters.category === GROUPED_FILTER_VALUE) {
+    const { data, error } = await supabase
+      .from("grievance_group_members")
+      .select("grievance_id")
+      .eq("is_active", true);
+    if (error) throw error;
+    groupedIds = [...new Set((data || []).map(({ grievance_id }) => grievance_id))];
+  }
   let query = supabase
     .from("grievances")
     .select(
@@ -116,7 +134,16 @@ export async function listGrievances({
       { count: "exact" },
     )
     .order("created_at", { ascending: false });
-  query = applyGrievanceFilters(query, filters, metric);
+  const normalFilters = filters.category === GROUPED_FILTER_VALUE
+    ? { ...filters, category: "" }
+    : filters;
+  query = applyGrievanceFilters(query, normalFilters, metric);
+  if (groupedIds) {
+    if (groupedIds.length === 0) {
+      return { rows: [], count: 0 };
+    }
+    query = query.in("id", groupedIds);
+  }
   const start = (page - 1) * pageSize;
   const { data, error, count } = await query.range(start, start + pageSize - 1);
   if (error) throw error;
@@ -125,6 +152,15 @@ export async function listGrievances({
 
 export async function countGrievancesByFilters(filters = {}) {
   const metrics = ["total", "pending", "resolved", "awaiting-response", "forwarded"];
+  let groupedIds = null;
+  if (filters.category === GROUPED_FILTER_VALUE) {
+    const { data, error } = await supabase
+      .from("grievance_group_members")
+      .select("grievance_id")
+      .eq("is_active", true);
+    if (error) throw error;
+    groupedIds = [...new Set((data || []).map(({ grievance_id }) => grievance_id))];
+  }
   const counts = await Promise.all(
     metrics.map(async (metric) => {
       let query = supabase
@@ -133,7 +169,14 @@ export async function countGrievancesByFilters(filters = {}) {
           "id, users!grievances_student_user_id_fkey!inner(Department)",
           { count: "exact", head: true },
         );
-      query = applyGrievanceFilters(query, filters, metric === "total" ? "" : metric);
+      const normalFilters = filters.category === GROUPED_FILTER_VALUE
+        ? { ...filters, category: "" }
+        : filters;
+      query = applyGrievanceFilters(query, normalFilters, metric === "total" ? "" : metric);
+      if (groupedIds) {
+        if (!groupedIds.length) return [metric, 0];
+        query = query.in("id", groupedIds);
+      }
       const { count, error } = await query;
       if (error) throw error;
       return [metric, count || 0];
@@ -144,7 +187,7 @@ export async function countGrievancesByFilters(filters = {}) {
 
 export async function listGrievanceFilterOptions() {
   const [
-    { data: users, error: usersError },
+    { error: usersError },
     { data: grievances, error: grievanceError },
   ] =
     await Promise.all([
@@ -162,11 +205,7 @@ export async function listGrievanceFilterOptions() {
   if (usersError) throw usersError;
   if (grievanceError) throw grievanceError;
   return {
-    departments: [...new Set(
-      (users || [])
-        .map(({ Department }) => String(Department || "").trim())
-        .filter(Boolean),
-    )].sort((left, right) => left.localeCompare(right)),
+    departments: getAllDepartments(),
     admissionYears: [...new Set(
       (grievances || [])
         .map(({ admission_year }) => admission_year)

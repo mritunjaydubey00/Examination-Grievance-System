@@ -69,6 +69,9 @@ export async function savePortalContent({
   isActive = true,
   expiresAt = "",
   file,
+  targetYears = [],
+  targetDepartments = [],
+  targetBranches = [],
 }) {
   const { bucket, table } = getConfig(kind);
   const cleanTitle = String(title || "").trim();
@@ -118,7 +121,12 @@ export async function savePortalContent({
         attachment_name: file.name,
       } : {}),
       ...(kind === "notices"
-        ? { expires_at: expiresAt ? new Date(expiresAt).toISOString() : null }
+        ? {
+          expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
+          target_years: targetYears.length ? targetYears : [],
+          target_departments: targetDepartments.length ? targetDepartments : [],
+          target_branches: targetBranches.length ? targetBranches : [],
+        }
         : {}),
       ...(kind === "guidelines" && id
         ? { updated_at: new Date().toISOString() }
