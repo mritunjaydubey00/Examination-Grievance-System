@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { BRANCH_OPTIONS } from "../../data/Branch-Mapping.js";
+import { DEPARTMENT_BRANCHES } from "../../data/Department-Branches.js";
 import {
   listAnswerKeysForStaff,
   saveAnswerKey,
@@ -36,6 +37,41 @@ function getYearLevelForAdmissionYear(admissionYear, academicYearStart) {
     : `cohort:${admissionYear}`;
 }
 
+function normalizeBranchName(name) {
+  const normalized = String(name || "")
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[().]/g, "")
+    .replace(/\s+/g, " ");
+  if (
+    normalized ===
+    "information technology artificial intelligence and robotics"
+  ) {
+    return "artificial intelligence and robotics";
+  }
+  if (normalized === "internet of things iot") return "internet of things";
+  return normalized;
+}
+
+function getFeedBranchesForDepartment(department) {
+  const departmentKey = Object.keys(DEPARTMENT_BRANCHES).find(
+    (option) =>
+      option.trim().toLowerCase() ===
+      String(department || "").trim().toLowerCase(),
+  );
+  return departmentKey ? DEPARTMENT_BRANCHES[departmentKey] : [];
+}
+
+function getBranchOptionsForDepartment(department) {
+  return getFeedBranchesForDepartment(department).flatMap((branchName) =>
+    BRANCH_OPTIONS.filter(
+      (option) =>
+        normalizeBranchName(option.name) === normalizeBranchName(branchName),
+    ),
+  );
+}
+
 function AnswerKeyManager({ session }) {
   const academicYearStart = getAcademicYearStartYear();
   const isTeachingStaff = session.role === "teaching staff";
@@ -48,6 +84,7 @@ function AnswerKeyManager({ session }) {
   const [form, setForm] = useState({
     subjectCode: "",
     subjectName: "",
+    department: isTeachingStaff ? department : "",
     yearLevel: "",
     branchCode: "",
     semester: "",
@@ -71,6 +108,15 @@ function AnswerKeyManager({ session }) {
   }, []);
 
   function updateField(event) {
+    if (event.target.name === "department") {
+      setForm((current) => ({
+        ...current,
+        department: event.target.value,
+        branchCode: "",
+      }));
+      return;
+    }
+
     setForm((current) => ({
       ...current,
       [event.target.name]: event.target.value,
@@ -82,6 +128,7 @@ function AnswerKeyManager({ session }) {
     setForm({
       subjectCode: "",
       subjectName: "",
+      department: isTeachingStaff ? department : "",
       yearLevel: "",
       branchCode: "",
       semester: "",
@@ -95,6 +142,7 @@ function AnswerKeyManager({ session }) {
     setForm({
       subjectCode: answerKey.subject_code,
       subjectName: answerKey.subject_name,
+      department: answerKey.department || "",
       yearLevel: getYearLevelForAdmissionYear(
         answerKey.admission_year,
         academicYearStart,
@@ -110,6 +158,21 @@ function AnswerKeyManager({ session }) {
     event.preventDefault();
     setBusy(true);
     setMessage("");
+
+    const selectedDepartment = String(form.department || "").trim();
+    if (!selectedDepartment) {
+      setMessage("Select a department.");
+      setBusy(false);
+      return;
+    }
+    if (
+      isTeachingStaff &&
+      selectedDepartment.toLowerCase() !== department.toLowerCase()
+    ) {
+      setMessage("You can only manage answer keys for your assigned department.");
+      setBusy(false);
+      return;
+    }
 
     const admissionYear = getAdmissionYearForLevel(
       form.yearLevel,
@@ -127,11 +190,11 @@ function AnswerKeyManager({ session }) {
       return;
     }
 
-    const branch = BRANCH_OPTIONS.find(
+    const branch = getBranchOptionsForDepartment(selectedDepartment).find(
       (option) => option.code === form.branchCode,
     );
     if (!branch) {
-      setMessage("Select a valid branch.");
+      setMessage("Select a valid branch for the chosen department.");
       setBusy(false);
       return;
     }
@@ -144,6 +207,7 @@ function AnswerKeyManager({ session }) {
           admission_year: admissionYear,
           branch_code: branch.code,
           branch_name: branch.name,
+          department: selectedDepartment,
           semester: form.semester.trim(),
           title: form.title.trim(),
           drive_url: form.driveUrl,
@@ -156,7 +220,7 @@ function AnswerKeyManager({ session }) {
           admissionYear,
           branchCode: branch.code,
           branchName: branch.name,
-          department: isTeachingStaff ? department : session.department,
+          department: selectedDepartment,
           semester: form.semester,
           title: form.title,
           driveUrl: form.driveUrl,
@@ -189,6 +253,9 @@ function AnswerKeyManager({ session }) {
       setBusy(false);
     }
   }
+
+  const departmentOptions = Object.keys(DEPARTMENT_BRANCHES);
+  const availableBranches = getBranchOptionsForDepartment(form.department);
 
   return (
     <section className="answer-key-section" aria-labelledby="answer-key-manager-title">
@@ -229,6 +296,23 @@ function AnswerKeyManager({ session }) {
             <input name="subjectName" value={form.subjectName} onChange={updateField} required />
           </label>
           <label>
+            Department
+            <select
+              name="department"
+              value={form.department}
+              onChange={updateField}
+              disabled={isTeachingStaff}
+              required
+            >
+              <option value="">Select department</option>
+              {departmentOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
             Student year
             <select
               name="yearLevel"
@@ -258,9 +342,17 @@ function AnswerKeyManager({ session }) {
           </label>
           <label>
             Branch
-            <select name="branchCode" value={form.branchCode} onChange={updateField} required>
-              <option value="">Select branch</option>
-              {BRANCH_OPTIONS.map((branch) => (
+            <select
+              name="branchCode"
+              value={form.branchCode}
+              onChange={updateField}
+              disabled={!form.department || availableBranches.length === 0}
+              required
+            >
+              <option value="">
+                {form.department ? "Select branch" : "Select department first"}
+              </option>
+              {availableBranches.map((branch) => (
                 <option key={branch.code} value={branch.code}>
                   {branch.code} - {branch.name}
                 </option>
@@ -293,7 +385,11 @@ function AnswerKeyManager({ session }) {
                 Cancel
               </button>
             )}
-            <button type="submit" className="submit-button" disabled={busy}>
+            <button
+              type="submit"
+              className="submit-button"
+              disabled={busy}
+            >
               {busy ? "Saving..." : editingId ? "Save changes" : "Publish answer key"}
             </button>
           </div>

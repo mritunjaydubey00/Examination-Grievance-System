@@ -579,6 +579,11 @@
   outline: 3px solid rgb(var(--accent-rgb) / 13%);
 }
 
+.answer-key-form select:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
 .answer-key-year-hint {
   color: var(--text-muted);
   font-size: 0.72rem;
