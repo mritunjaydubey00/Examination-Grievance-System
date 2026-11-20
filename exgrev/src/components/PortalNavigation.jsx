@@ -557,8 +557,14 @@ function PortalPlaceholderPage({ page, canEditContent, userId }) {
             </label>
           )}
           {isNoticeBoard && (
-            <fieldset className="portal-content-audience">
-              <legend>Audience</legend>
+            <div
+              className="portal-content-audience"
+              role="group"
+              aria-labelledby="notice-audience-heading"
+            >
+              <p className="portal-content-audience-heading" id="notice-audience-heading">
+                Audience
+              </p>
               <label>
                 Year
                 <select
@@ -615,7 +621,7 @@ function PortalPlaceholderPage({ page, canEditContent, userId }) {
                   ? noticeDepartments.map(getDepartmentLabel).join(", ")
                   : "All departments"}
               </p>
-            </fieldset>
+            </div>
           )}
           <label>
             Attachment (optional PDF or image)
