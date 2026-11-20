@@ -88,6 +88,13 @@ function PortalSidePanel({
             ))}
           </div>
         )}
+        <button
+          type="button"
+          className={`portal-nav-link${activePage === "Answer Keys" ? " is-active" : ""}`}
+          onClick={() => navigateTo("Answer Keys")}
+        >
+          Answer Keys
+        </button>
         {["Guidelines", "Profile", "Notice Board"].map((item) => (
           <button
             type="button"

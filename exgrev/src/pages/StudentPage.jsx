@@ -14,6 +14,7 @@ import {
   PortalSidePanel,
 } from "../components/PortalNavigation.jsx";
 import GrievanceThreadPage from "./GrievanceThreadPage.jsx";
+import StudentAnswerKeys from "../components/AnswerKeys/StudentAnswerKeys.jsx";
 
 function StudentPage({
   session,
@@ -219,6 +220,9 @@ function StudentPage({
               session={session}
               onChangePassword={onChangePassword}
             />
+          )}
+          {activePage === "Answer Keys" && (
+            <StudentAnswerKeys session={session} />
           )}
           {["Guidelines", "Notice Board"].includes(activePage) && (
             <PortalPlaceholderPage
