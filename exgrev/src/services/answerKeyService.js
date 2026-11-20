@@ -10,7 +10,7 @@ export function validateGoogleDriveUrl(value) {
 
   const host = url.hostname.toLowerCase();
   if (!["drive.google.com", "docs.google.com"].includes(host)) {
-    throw new Error("The answer-key link must be a Google Drive or Google Docs link.");
+    throw new Error("Enter a valid Google Drive or Google Docs link.");
   }
   if (!["http:", "https:"].includes(url.protocol)) {
     throw new Error("The answer-key link must use HTTP or HTTPS.");
